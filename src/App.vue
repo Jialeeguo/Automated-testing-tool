@@ -5,18 +5,29 @@ import Greet from "./components/Greet.vue";
 </script>
 
 <template>
+  <div>
+    <div>
+      配置
+    </div>
+    <div>
+      脚本
+    </div>
+    <div>
+      执行次数
+    </div>
+  </div>
   <div class="container">
     <h1>Welcome to Tauri!</h1>
-
+    
     <div class="row">
       <a href="https://vitejs.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
+        
       </a>
       <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
+        
       </a>
       <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
+       
       </a>
     </div>
 
@@ -38,6 +49,12 @@ import Greet from "./components/Greet.vue";
     </p>
 
     <Greet />
+  </div>
+  <div>
+    <button>开始录制</button>
+    <button>启动</button>
+    <button>截图</button>
+    <button>暂停录制</button>
   </div>
 </template>
 
