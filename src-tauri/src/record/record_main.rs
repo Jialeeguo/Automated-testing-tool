@@ -1,19 +1,25 @@
 pub mod record_main {
+    use chrono::prelude::*;
     use device_query::{DeviceQuery, DeviceState, Keycode};
     use rdev::listen;
-    use std::process::Command;
+    use std::io::prelude::*;
+    use std::io::BufReader;
+    use std::process::{Command, Stdio};
+    use std::sync::{Arc, Mutex};
+    use std::time::Instant;
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
 
     use crate::record::mouse_monitor;
-
     use crate::MOUSE_MOVE_TIME;
+    use crate::MOUSE_THREAD_FLAG;
     use crate::SCREEN_SHOT_FLAG;
     use crate::START_TIME;
-    use crate::MOUSE_THREAD_FLAG;
 
     pub fn start_record() {
         let mut status = "init";
         let device_state = DeviceState::new();
+        //存储工作目录文件夹名
+        let mut now_dir = String::new();
         println!("请按下F1开始");
         //设定开始按键
         loop {
@@ -21,13 +27,26 @@ pub mod record_main {
             if start_keys.is_empty() || start_keys[0] != Keycode::F1 {
                 continue;
             } else {
+                sleep(Duration::from_millis(200));
                 // let duration = START_TIME.lock().unwrap().elapsed().as_millis();
                 println!("程序开始");
                 println!("F2启动截图功能");
+
+                //记录启动准备
+
+                //获取系统时间，创建当前项目文件夹
+                let local: DateTime<Local> = Local::now();
+                now_dir = local.format("%Y-%m-%d %H-%M-%S").to_string();
+                std::fs::create_dir_all(format!("./result/{}", now_dir)).unwrap();
+
+                //开启计时
                 status = "started";
-                sleep(Duration::from_millis(200));
-                let start_time = START_TIME.lock().unwrap().elapsed().as_millis();
-                *MOUSE_MOVE_TIME.lock().unwrap() = Some(start_time);
+                //重置计时时间
+                let mut start_time = START_TIME.lock().unwrap();
+                *start_time = Instant::now();
+
+                *MOUSE_MOVE_TIME.lock().unwrap() = Some(start_time.elapsed().as_millis());
+                //鼠标监听标志
                 let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
                 *mouse_flag = false;
                 break;
@@ -39,12 +58,18 @@ pub mod record_main {
             .write(true)
             .create(true)
             .append(true)
-            .open("./result/record.txt")
+            .open(format!("./result/{}/record.txt", now_dir))
             .unwrap();
 
+        let mouse_record_dir = Arc::new(Mutex::new(now_dir.clone()));
         // 鼠标监听线程
-        thread::spawn(|| {
-            if let Err(error) = listen(mouse_monitor::mouse::callback) {
+        thread::spawn(move || {
+            if let Err(error) = listen(move |event| {
+                mouse_monitor::mouse::callback(
+                    event,
+                    Arc::clone(&mouse_record_dir).lock().unwrap().clone(),
+                )
+            }) {
                 println!("Error: {:?}", error);
             }
         });
@@ -55,11 +80,32 @@ pub mod record_main {
                 sleep(Duration::from_millis(300));
                 //截图事件F2触发
                 println!("进入截图功能");
-                let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
-                *screen_flag = true;
-                Command::new("textshot")
-                    .spawn()
+                println!("请等待几秒，正在提取图片文字...");
+                {
+                    let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
+                    *screen_flag = true;
+                }
+                let output = Command::new("textshot")
+                    .arg("eng+chi_sim")
+                    .output()
                     .expect("无法启动 textshot 命令");
+
+                    if output.status.success() {
+        
+                        let mut file = OpenOptions::new()
+                            .write(true)
+                            .create(true)
+                            .append(true)
+                            .open(format!("./result/{}/textshot.txt",now_dir))
+                            .expect("无法打开文件");
+                        
+                        file.write_all(&output.stdout).expect("提取文字命令写入文件失败");
+                        println!("提取文字执行成功！请继续操作。");
+                    } else {
+                        let error = String::from_utf8_lossy(&output.stderr);
+                        println!("提取文字命令执行失败: {}", error);
+                    }
+
                 continue;
             } else if keys.len() != 0 && keys[0] != Keycode::F1 {
                 let duration_key = START_TIME.lock().unwrap().elapsed().as_millis();

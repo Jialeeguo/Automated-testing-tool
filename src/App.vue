@@ -1,15 +1,16 @@
 <template>
-  <div>
-    <div style="background-color: rgb(230, 227, 227);">
-    <div style="background-color: rgb(230, 227, 227);">
-      <div style="border: 2px solid white; margin: 10px; padding: 10px;">
-        <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);">配置</label>
-        <div style="display: flex; align-items: center;">
+  <div style="background-color: rgb(230, 227, 227);">
+    <div>
 
-         
-          
+      <div style="background-color: rgb(230, 227, 227);">
+        <div style="border: 2px solid white; margin: 5px; padding: 10px;">
+          <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);">配置</label>
+          <div style="display: flex; align-items: center;">
+
+
+
             <label for="lang" class="ziti">脚本</label>
-            <select name="languages" id="lang" style="width: 140px;" value = "F1">
+            <select name="languages" id="lang" style="width: 140px;" value="F1">
               <option value="F1">F1</option>
               <option value="F2">F2</option>
               <option value="F3">F3</option>
@@ -19,128 +20,132 @@
               <option value="F7">F7</option>
               <option value="F8">F8</option>
             </select>
-            <button onclick="chooseFile()" style="margin-left: 7px; height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: crimson; ">...</button>
-            
-          <div style="margin: auto;"></div>
-          
-          <form action="#">
-            <label for="lang" class="ziti">执行次数</label>
-            <select name="languages" id="lang" style="width: 200px; " value = "1" >
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
+            <button onclick="chooseFile()"
+              style="margin-left: 7px; height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: red; ">...</button>
 
-          </form>
-     
+            <div style="margin: auto;"></div>
+
+            <form action="#">
+              <label for="lang" class="ziti">执行次数</label>
+              <select name="languages" id="lang" style="width: 200px; " value="1">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+              </select>
+
+            </form>
+
+          </div>
+
+
+
+          <!-- <input type="file" id="docpicker" accept=".txt" /> -->
+
+          <div style="display: flex; ">
+            <form action="#">
+              <label for="lang" class="ziti">开始/暂停执行</label>
+              <select name="languages" id="lang" style="width: 200px;" value="F1">
+                <option value="F1">F1</option>
+                <option value="F2">F2</option>
+                <option value="F3">F3</option>
+                <option value="F4">F4</option>
+                <option value="F5">F5</option>
+                <option value="F6">F6</option>
+                <option value="F7">F7</option>
+                <option value="F8">F8</option>
+              </select>
+
+            </form>
+
+            <div style="margin: auto;"></div>
+            <form action="#">
+              <label for="lang" class="ziti">开始/暂停录制</label>
+              <select name="languages" id="lang" style="width: 200px;" value="F2">
+                <option value="F1">F1</option>
+                <option value="F2">F2</option>
+                <option value="F3">F3</option>
+                <option value="F4">F4</option>
+                <option value="F5">F5</option>
+                <option value="F6">F6</option>
+                <option value="F7">F7</option>
+                <option value="F8">F8</option>
+              </select>
+            </form>
+          </div>
+          <div style="display: flex; ">
+            <form action="#">
+              <label for="lang" class="ziti">终止录制</label>
+              <select name="languages" id="lang" style="width: 200px;" value="F3">
+                <option value="F1">F1</option>
+                <option value="F2">F2</option>
+                <option value="F3">F3</option>
+                <option value="F4">F4</option>
+                <option value="F5">F5</option>
+                <option value="F6">F6</option>
+                <option value="F7">F7</option>
+                <option value="F8">F8</option>
+              </select>
+            </form>
+            <div style="margin: auto;"></div>
+            <form action="#">
+
+              <label for="lang" class="ziti">截图</label>
+              <select name="languages" id="lang" style="width: 200px;" value="F4">
+                <option value="F1">F1</option>
+                <option value="F2">F2</option>
+                <option value="F3">F3</option>
+                <option value="F4">F4</option>
+                <option value="F5">F5</option>
+                <option value="F6">F6</option>
+                <option value="F7">F7</option>
+                <option value="F8">F8</option>
+              </select>
+            </form>
+          </div>
+          <div>
+          </div>
         </div>
+      </div>
+      <div>
+        <!-- 添加日志输出文本框 -->
 
+      </div>
+      <div style="background-color: rgb(230, 227, 227);">
+        <div style="border: 2px solid white; margin: 5px; padding: 10px;">
 
-
-        <!-- <input type="file" id="docpicker" accept=".txt" /> -->
-    
-        <div style="display: flex; ">
-          <form action="#">
-            <label for="lang" class="ziti">开始/暂停执行</label>
-            <select name="languages" id="lang" style="width: 200px;" value = "F1">
-              <option value="F1">F1</option>
-              <option value="F2">F2</option>
-              <option value="F3">F3</option>
-              <option value="F4">F4</option>
-              <option value="F5">F5</option>
-              <option value="F6">F6</option>
-              <option value="F7">F7</option>
-              <option value="F8">F8</option>
-            </select>
-
-          </form>
-     
-          <div style="margin: auto;"></div>
-          <form action="#">
-            <label for="lang" class="ziti">开始/暂停录制</label>
-            <select name="languages" id="lang" style="width: 200px;" value = "F2">
-              <option value="F1">F1</option>
-              <option value="F2">F2</option>
-              <option value="F3">F3</option>
-              <option value="F4">F4</option>
-              <option value="F5">F5</option>
-              <option value="F6">F6</option>
-              <option value="F7">F7</option>
-              <option value="F8">F8</option>
-            </select>
-          </form>
-        </div>
-        <div style="display: flex; ">
-          <form action="#">
-            <label for="lang" class="ziti">终止录制</label>
-            <select name="languages" id="lang" style="width: 200px;" value = "F3">
-              <option value="F1">F1</option>
-              <option value="F2">F2</option>
-              <option value="F3">F3</option>
-              <option value="F4">F4</option>
-              <option value="F5">F5</option>
-              <option value="F6">F6</option>
-              <option value="F7">F7</option>
-              <option value="F8">F8</option>
-            </select>
-          </form>
-          <div style="margin: auto;"></div>
-          <form action="#">
-
-            <label for="lang" class="ziti">截图</label>
-            <select name="languages" id="lang" style="width: 200px;" value = "F4">
-              <option value="F1">F1</option>
-              <option value="F2">F2</option>
-              <option value="F3">F3</option>
-              <option value="F4">F4</option>
-              <option value="F5">F5</option>
-              <option value="F6">F6</option>
-              <option value="F7">F7</option>
-              <option value="F8">F8</option>
-            </select>
-          </form>
-        </div>
-        <div>
+          <div class="buttons-container">
+            <!-- 添加按钮组 -->
+            <button @click="toggleRecording" :disabled="screenshotting" class="button-font">
+              {{ recording ? '终止录制 ' : '开始录制 ' }}
+            </button>
+            <button @click="pauseRecording" :disabled="!recording" class="button-font">启动</button>
+            <button @click="stopRecording" :disabled="!recording" class="button-font">暂停录制</button>
+            <button @click="startScreenshot" :disabled="screenshotting" class="button-font">截图</button>
+          </div>
         </div>
       </div>
     </div>
-    <div>
-      <!-- 添加日志输出文本框 -->
+    <div style="border: 2px solid white; margin: 5px; padding: 10px;">
+      <div class="log-container">
+        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142); ">键盘鼠标轨迹</div>
+        <div style="margin: 0 153px;"></div>
+        <div class="log_log" style="font-size: 13px; color:rgb(168, 163, 163);">可能有问题的脚本</div>
+      </div>
 
+      <div style="display: flex;">
+        <textarea v-model="log" rows="16" readonly class="log" ></textarea>
+        <div style="margin: 0 5px;"></div>
+        <textarea v-model="log" rows="16" readonly class="log"></textarea>
+      </div>
+      <!-- 其他内容保持不变 -->
     </div>
-    <div style="background-color: rgb(230, 227, 227);">
-    <div style="border: 2px solid white; margin: 10px; padding: 10px;">
-    
-    <div class="buttons-container">
-      <!-- 添加按钮组 -->
-      <button @click="toggleRecording" :disabled="screenshotting">
-        {{ recording ? '终止录制 ' : '开始录制 ' }}
-      </button>
-      <button @click="pauseRecording" :disabled="!recording">启动</button>
-      <button @click="stopRecording" :disabled="!recording">暂停录制</button>
-      <button @click="startScreenshot" :disabled="screenshotting">截图</button>
-</div>
-</div>
-    </div>
-  </div>
-  <div class="log-container">
-    <div class="log_log" style="font-size: 13px; color:rgb(168, 163, 163);">键盘鼠标轨迹</div>
-    <div style="margin: 0 160px;"></div>
-    <div class="log_log" style="font-size: 13px; color:rgb(168, 163, 163);">出问题</div>
-  </div>
-  <div style="display: flex;">
-    <textarea v-model="log" rows="15" readonly></textarea>
-    <div style="margin: 0 5px;"></div>
-    <textarea v-model="log" rows="5" readonly></textarea>
-  </div>
-  <!-- 其他内容保持不变 -->
   </div>
 </template>
 
@@ -189,13 +194,13 @@ button {
   margin: 5px;
   padding: 10px;
   cursor: pointer;
-  background-color: #c1cac2;
+  background-color: rgb(230, 227, 227);
   width: 170px;
-  color: crimson;
-  border: 1.5px ;
-  border-radius: 1px;
-  border-style: solid; 
-  border-color: crimson; 
+  color: red;
+  border: 1.5px;
+  border-radius: 10px;
+  border-style: solid;
+  border-color: red;
   font-size: large;
 }
 
@@ -204,21 +209,33 @@ select {
   margin-top: 10px;
   font-family: cursive, sans-serif;
   outline: 0;
-  background: #cccecd;
-  color: crimson;
-  border: 1px solid crimson;
+  background: #ffffff;
+  color: red;
+  border: 1px solid red;
   padding: 4px;
   border-radius: 9px;
 }
-.ziti{
+
+.ziti {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   color: rgb(47, 51, 50);
   font-size: smaller;
 }
-.log_log {
-  font-size: x-small;
-  color: rgb(110, 39, 39);
 
+.log_log {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  color: rgb(47, 51, 50);
+  font-size: smaller;
+  color: rgb(255, 0, 0);
+
+}
+
+.button-font {
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  color: rgb(236, 8, 20);
+  font-size: large;
+  font-weight: 600;
+  background-color: rgb(230, 227, 227);
 }
 
 .log-container {
@@ -227,10 +244,21 @@ select {
   /* 这里使用 baseline 对齐文字的基线，你也可以使用其他值如 center，flex-start 等 */
 }
 
+.log {
+  display: flex;
+  align-items: baseline;
+  color: rgb(68, 61, 61);
+  border: 2px solid rgb(255, 0, 0);
+  padding: 4px;
+  border-radius: 9px;
+  /* 这里使用 baseline 对齐文字的基线，你也可以使用其他值如 center，flex-start 等 */
+}
+
 button:disabled {
   background-color: #c2baba;
   cursor: not-allowed;
 }
+
 
 body {
   display: flex;

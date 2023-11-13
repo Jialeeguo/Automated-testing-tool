@@ -8,16 +8,17 @@ pub mod playback_main {
         time::Duration,
     };
 
-    use crate::playback::mouse_action::mouse;
     use crate::playback::keyboard_action::keyboard;
+    use crate::playback::mouse_action::mouse;
     use crate::playback::screen_shot_action::screen;
 
     use crate::LAST_ACTION_TIME;
     use crate::SCREEN_PRESS;
 
-
     pub fn playback_main() {
-        let file = File::open("./result/record.txt").expect("指令不存在！");
+        let mut now_dir = String::from("2023-11-13 16-55-25");
+
+        let file = File::open(format!("./result/{}/record.txt", now_dir)).expect("指令不存在！");
         let read_script = BufReader::new(file);
         for line in read_script.lines() {
             let instruct = line.unwrap();
@@ -92,7 +93,7 @@ pub mod playback_main {
                         let x = arr[3].parse::<f64>().unwrap();
                         let y = arr[4].parse::<f64>().unwrap();
                         let wait_duration = Duration::from_millis(wait_time.try_into().unwrap());
-                        screen::screenshot(b_x, b_y, x, y);
+                        screen::screenshot(b_x, b_y, x, y, time, now_dir.clone());
                         thread::sleep(wait_duration);
                     }
                     _ => {}

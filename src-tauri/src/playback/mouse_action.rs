@@ -14,7 +14,7 @@ pub mod mouse {
         match simulate(event_type) {
             Ok(()) => (),
             Err(SimulateError) => {
-                println!("We could not send {:?}", event_type);
+                println!("复现鼠标操作 {:?}出错", event_type);
             }
         }
         //每次暂停的间隔，本次时间减去上次时间
@@ -25,7 +25,7 @@ pub mod mouse {
         match simulate(event_type) {
             Ok(()) => (),
             Err(SimulateError) => {
-                println!("We could not send {:?}", event_type);
+                println!("复现鼠标操作 {:?}出错", event_type);
             }
         }
         //每次暂停的间隔，本次时间减去上次时间
