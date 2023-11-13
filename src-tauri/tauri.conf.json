@@ -36,10 +36,16 @@
     "windows": [
       {
         "fullscreen": false,
-        "resizable": true,
-        "title": "automated-testing-tools",
+        "resizable": false,
+        "title": "马睿",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "center":true,
+        "maximizable": false,
+        "minHeight": 800,
+        "maxHeight": 600
+    
+      
       }
     ]
   }

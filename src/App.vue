@@ -1,69 +1,258 @@
-<script setup>
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import Greet from "./components/Greet.vue";
-</script>
-
 <template>
   <div>
-    <div>
-      配置
-    </div>
-    <div>
-      脚本
-    </div>
-    <div>
-      执行次数
-    </div>
-  </div>
-  <div class="container">
-    <h1>Welcome to Tauri!</h1>
+    <div style="background-color: rgb(230, 227, 227);">
+    <div style="background-color: rgb(230, 227, 227);">
+      <div style="border: 2px solid white; margin: 10px; padding: 10px;">
+        <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);">配置</label>
+        <div style="display: flex; align-items: center;">
+
+         
+          
+            <label for="lang" class="ziti">脚本</label>
+            <select name="languages" id="lang" style="width: 140px;" value = "F1">
+              <option value="F1">F1</option>
+              <option value="F2">F2</option>
+              <option value="F3">F3</option>
+              <option value="F4">F4</option>
+              <option value="F5">F5</option>
+              <option value="F6">F6</option>
+              <option value="F7">F7</option>
+              <option value="F8">F8</option>
+            </select>
+            <button onclick="chooseFile()" style="margin-left: 7px; height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: crimson; ">...</button>
+            
+          <div style="margin: auto;"></div>
+          
+          <form action="#">
+            <label for="lang" class="ziti">执行次数</label>
+            <select name="languages" id="lang" style="width: 200px; " value = "1" >
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+
+          </form>
+     
+        </div>
+
+
+
+        <!-- <input type="file" id="docpicker" accept=".txt" /> -->
     
-    <div class="row">
-      <a href="https://vitejs.dev" target="_blank">
-        
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-       
-      </a>
+        <div style="display: flex; ">
+          <form action="#">
+            <label for="lang" class="ziti">开始/暂停执行</label>
+            <select name="languages" id="lang" style="width: 200px;" value = "F1">
+              <option value="F1">F1</option>
+              <option value="F2">F2</option>
+              <option value="F3">F3</option>
+              <option value="F4">F4</option>
+              <option value="F5">F5</option>
+              <option value="F6">F6</option>
+              <option value="F7">F7</option>
+              <option value="F8">F8</option>
+            </select>
+
+          </form>
+     
+          <div style="margin: auto;"></div>
+          <form action="#">
+            <label for="lang" class="ziti">开始/暂停录制</label>
+            <select name="languages" id="lang" style="width: 200px;" value = "F2">
+              <option value="F1">F1</option>
+              <option value="F2">F2</option>
+              <option value="F3">F3</option>
+              <option value="F4">F4</option>
+              <option value="F5">F5</option>
+              <option value="F6">F6</option>
+              <option value="F7">F7</option>
+              <option value="F8">F8</option>
+            </select>
+          </form>
+        </div>
+        <div style="display: flex; ">
+          <form action="#">
+            <label for="lang" class="ziti">终止录制</label>
+            <select name="languages" id="lang" style="width: 200px;" value = "F3">
+              <option value="F1">F1</option>
+              <option value="F2">F2</option>
+              <option value="F3">F3</option>
+              <option value="F4">F4</option>
+              <option value="F5">F5</option>
+              <option value="F6">F6</option>
+              <option value="F7">F7</option>
+              <option value="F8">F8</option>
+            </select>
+          </form>
+          <div style="margin: auto;"></div>
+          <form action="#">
+
+            <label for="lang" class="ziti">截图</label>
+            <select name="languages" id="lang" style="width: 200px;" value = "F4">
+              <option value="F1">F1</option>
+              <option value="F2">F2</option>
+              <option value="F3">F3</option>
+              <option value="F4">F4</option>
+              <option value="F5">F5</option>
+              <option value="F6">F6</option>
+              <option value="F7">F7</option>
+              <option value="F8">F8</option>
+            </select>
+          </form>
+        </div>
+        <div>
+        </div>
+      </div>
     </div>
+    <div>
+      <!-- 添加日志输出文本框 -->
 
-    <p>Click on the Tauri, Vite, and Vue logos to learn more.</p>
-
-    <p>
-      Recommended IDE setup:
-      <a href="https://code.visualstudio.com/" target="_blank">VS Code</a>
-      +
-      <a href="https://github.com/johnsoncodehk/volar" target="_blank">Volar</a>
-      +
-      <a href="https://github.com/tauri-apps/tauri-vscode" target="_blank"
-        >Tauri</a
-      >
-      +
-      <a href="https://github.com/rust-lang/rust-analyzer" target="_blank"
-        >rust-analyzer</a
-      >
-    </p>
-
-    <Greet />
+    </div>
+    <div style="background-color: rgb(230, 227, 227);">
+    <div style="border: 2px solid white; margin: 10px; padding: 10px;">
+    
+    <div class="buttons-container">
+      <!-- 添加按钮组 -->
+      <button @click="toggleRecording" :disabled="screenshotting">
+        {{ recording ? '终止录制 ' : '开始录制 ' }}
+      </button>
+      <button @click="pauseRecording" :disabled="!recording">启动</button>
+      <button @click="stopRecording" :disabled="!recording">暂停录制</button>
+      <button @click="startScreenshot" :disabled="screenshotting">截图</button>
+</div>
+</div>
+    </div>
   </div>
-  <div>
-    <button>开始录制</button>
-    <button>启动</button>
-    <button>截图</button>
-    <button>暂停录制</button>
+  <div class="log-container">
+    <div class="log_log" style="font-size: 13px; color:rgb(168, 163, 163);">键盘鼠标轨迹</div>
+    <div style="margin: 0 160px;"></div>
+    <div class="log_log" style="font-size: 13px; color:rgb(168, 163, 163);">出问题</div>
+  </div>
+  <div style="display: flex;">
+    <textarea v-model="log" rows="15" readonly></textarea>
+    <div style="margin: 0 5px;"></div>
+    <textarea v-model="log" rows="5" readonly></textarea>
+  </div>
+  <!-- 其他内容保持不变 -->
   </div>
 </template>
 
+<script setup>
+import Greet from "./components/Greet.vue";
+
+// 添加数据
+let recording = false;
+let screenshotting = false;
+let selectedFile = '';
+let log = '';
+let files = ['file1.txt', 'file2.txt']; // 替换为你实际的文件列表
+
+// 添加方法
+
+const startRecording = () => {
+  recording = true;
+  log += '开始录制\n';
+};
+
+const stopRecording = () => {
+  recording = false;
+  log += '停止录制\n';
+};
+
+const startScreenshot = () => {
+  screenshotting = true;
+  log += '启动截图\n';
+};
+
+const pauseRecording = () => {
+  recording = false;
+  log += '暂停录制\n';
+};
+</script>
+
 <style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
+/* 添加一些基本样式，你可以根据需要进行修改 */
+textarea {
+  width: 50%;
+  margin-top: 10px;
+  background-color: #e6e2e2;
 }
 
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
+button {
+  margin: 5px;
+  padding: 10px;
+  cursor: pointer;
+  background-color: #c1cac2;
+  width: 170px;
+  color: crimson;
+  border: 1.5px ;
+  border-radius: 1px;
+  border-style: solid; 
+  border-color: crimson; 
+  font-size: large;
+}
+
+select {
+  margin-bottom: 10px;
+  margin-top: 10px;
+  font-family: cursive, sans-serif;
+  outline: 0;
+  background: #cccecd;
+  color: crimson;
+  border: 1px solid crimson;
+  padding: 4px;
+  border-radius: 9px;
+}
+.ziti{
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  color: rgb(47, 51, 50);
+  font-size: smaller;
+}
+.log_log {
+  font-size: x-small;
+  color: rgb(110, 39, 39);
+
+}
+
+.log-container {
+  display: flex;
+  align-items: baseline;
+  /* 这里使用 baseline 对齐文字的基线，你也可以使用其他值如 center，flex-start 等 */
+}
+
+button:disabled {
+  background-color: #c2baba;
+  cursor: not-allowed;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  height: 100vh;
+  background-color: #f1f1f1;
+}
+
+input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+
+
+label {
+  width: 150px;
+  text-align: left;
+  display: inline-block;
 }
 </style>
