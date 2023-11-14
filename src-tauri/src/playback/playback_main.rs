@@ -7,7 +7,7 @@ pub mod playback_main {
         thread,
         time::Duration,
     };
-
+    use tauri::command;
     use crate::playback::keyboard_action::keyboard;
     use crate::playback::mouse_action::mouse;
     use crate::playback::screen_shot_action::screen;
@@ -16,8 +16,8 @@ pub mod playback_main {
     use crate::SCREEN_PRESS;
 
     pub fn playback_main() {
-        let mut now_dir = String::from("2023-11-13 16-55-25");
-
+        let mut now_dir = String::from("2023-11-14 16-06-54");
+        *LAST_ACTION_TIME.lock().unwrap() = 0;
         let file = File::open(format!("./result/{}/record.txt", now_dir)).expect("指令不存在！");
         let read_script = BufReader::new(file);
         for line in read_script.lines() {

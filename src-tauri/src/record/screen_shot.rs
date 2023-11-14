@@ -1,6 +1,7 @@
 pub mod screen {
-
+    use tauri::command;
     use screenshots::Screen;
+    use crate::TEXTSHOT_ACTION_TIME;
 
     //截图
     pub fn screenshot(b_x: f64, b_y: f64, x: f64, y: f64, time: u128, now_dir: String) {
@@ -21,5 +22,6 @@ pub mod screen {
         image
             .save(format!("./result/{}/{}.png", now_dir, time.to_string()))
             .unwrap();
+        *TEXTSHOT_ACTION_TIME.lock().unwrap() =time;
     }
 }

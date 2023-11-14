@@ -1,8 +1,8 @@
 <template>
-  <div style="background-color: rgb(230, 227, 227);">
+  <div style="background-color: rgb(245, 242, 242);">
     <div>
 
-      <div style="background-color: rgb(230, 227, 227);">
+      <div style="background-color: rgb(245, 242, 242);">
         <div style="border: 2px solid white; margin: 5px; padding: 10px;">
           <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);">配置</label>
           <div style="display: flex; align-items: center;">
@@ -11,7 +11,7 @@
 
             <label for="lang" class="ziti">脚本</label>
             <select name="languages" id="lang" style="width: 140px;" value="F1">
-              <option value="F1">F1</option>
+              <option value="F1">1113_2139.txt</option>
               <option value="F2">F2</option>
               <option value="F3">F3</option>
               <option value="F4">F4</option>
@@ -21,7 +21,7 @@
               <option value="F8">F8</option>
             </select>
             <button onclick="chooseFile()"
-              style="margin-left: 7px; height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: red; ">...</button>
+              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: #409EFF; ">...</button>
 
             <div style="margin: auto;"></div>
 
@@ -117,7 +117,7 @@
         <!-- 添加日志输出文本框 -->
 
       </div>
-      <div style="background-color: rgb(230, 227, 227);">
+      <div style="background-color: rgb(245, 242, 242);">
         <div style="border: 2px solid white; margin: 5px; padding: 10px;">
 
           <div class="buttons-container">
@@ -125,24 +125,27 @@
             <button @click="toggleRecording" :disabled="screenshotting" class="button-font">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
-            <button @click="pauseRecording" :disabled="!recording" class="button-font">启动</button>
-            <button @click="stopRecording" :disabled="!recording" class="button-font">暂停录制</button>
-            <button @click="startScreenshot" :disabled="screenshotting" class="button-font">截图</button>
+            <button @click="pauseRecording" :disabled="recording" class="button-font"
+              style="margin-left: 12px;">启动</button>
+            <button @click="stopRecording" :disabled="!recording" class="button-font"
+              style="margin-left: 12px;">暂停录制</button>
+            <button @click="startScreenshot" :disabled="!screenshotting" class="button-font"
+              style="margin-left: 12px;">截图</button>
           </div>
         </div>
       </div>
     </div>
     <div style="border: 2px solid white; margin: 5px; padding: 10px;">
       <div class="log-container">
-        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142); ">键盘鼠标轨迹</div>
-        <div style="margin: 0 153px;"></div>
-        <div class="log_log" style="font-size: 13px; color:rgb(168, 163, 163);">可能有问题的脚本</div>
+        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142); ">操作步骤及结果</div>
+        <div style="margin: 0 146px;"></div>
+        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142);">可能出错的脚本</div>
       </div>
 
       <div style="display: flex;">
-        <textarea v-model="log" rows="16" readonly class="log" ></textarea>
+        <textarea v-model="log" rows="15" readonly class="log"></textarea>
         <div style="margin: 0 5px;"></div>
-        <textarea v-model="log" rows="16" readonly class="log"></textarea>
+        <textarea v-model="log" rows="15" readonly class="log"></textarea>
       </div>
       <!-- 其他内容保持不变 -->
     </div>
@@ -195,12 +198,12 @@ button {
   padding: 10px;
   cursor: pointer;
   background-color: rgb(230, 227, 227);
-  width: 170px;
-  color: red;
+  width: 172px;
+  color: #409EFF;
   border: 1.5px;
   border-radius: 10px;
   border-style: solid;
-  border-color: red;
+  border-color: #409EFF;
   font-size: large;
 }
 
@@ -210,8 +213,8 @@ select {
   font-family: cursive, sans-serif;
   outline: 0;
   background: #ffffff;
-  color: red;
-  border: 1px solid red;
+  color: #409EFF;
+  border: 1px solid #409EFF;
   padding: 4px;
   border-radius: 9px;
 }
@@ -226,31 +229,34 @@ select {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   color: rgb(47, 51, 50);
   font-size: smaller;
-  color: rgb(255, 0, 0);
+  color: #409EFF;
 
 }
 
 .button-font {
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  color: rgb(236, 8, 20);
+  color: #409EFF;
   font-size: large;
-  font-weight: 600;
-  background-color: rgb(230, 227, 227);
+  font-weight: 700;
+  background-color: rgb(245, 242, 242);
 }
 
 .log-container {
   display: flex;
   align-items: baseline;
+
   /* 这里使用 baseline 对齐文字的基线，你也可以使用其他值如 center，flex-start 等 */
 }
 
 .log {
   display: flex;
   align-items: baseline;
-  color: rgb(68, 61, 61);
-  border: 2px solid rgb(255, 0, 0);
+  color: rgb(245, 242, 242);
+  background-color: rgb(245, 242, 242);
+  border: 7px solid rgb(255, 255, 255);
   padding: 4px;
   border-radius: 9px;
+  box-shadow: 0 0 0 2px #409EFF;
   /* 这里使用 baseline 对齐文字的基线，你也可以使用其他值如 center，flex-start 等 */
 }
 
@@ -282,5 +288,4 @@ label {
   width: 150px;
   text-align: left;
   display: inline-block;
-}
-</style>
+}</style>

@@ -4,7 +4,7 @@ pub mod mouse {
         thread,
         time::Duration,
     };
-
+    use tauri::command;
     /// 根据帧数计算间隔时间
     const INTERVAL: Duration = Duration::from_millis(10);
 

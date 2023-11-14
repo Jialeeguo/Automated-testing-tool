@@ -1,19 +1,20 @@
 pub mod record_main {
     use chrono::prelude::*;
+    use clipboard::ClipboardContext;
+    use clipboard::ClipboardProvider;
     use device_query::{DeviceQuery, DeviceState, Keycode};
     use rdev::listen;
-    use std::io::prelude::*;
-    use std::io::BufReader;
     use std::process::{Command, Stdio};
     use std::sync::{Arc, Mutex};
     use std::time::Instant;
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
-
+    use tauri::command;
     use crate::record::mouse_monitor;
     use crate::MOUSE_MOVE_TIME;
     use crate::MOUSE_THREAD_FLAG;
     use crate::SCREEN_SHOT_FLAG;
     use crate::START_TIME;
+    use crate::TEXTSHOT_ACTION_TIME;
 
     pub fn start_record() {
         let mut status = "init";
@@ -28,11 +29,8 @@ pub mod record_main {
                 continue;
             } else {
                 sleep(Duration::from_millis(200));
-                // let duration = START_TIME.lock().unwrap().elapsed().as_millis();
                 println!("程序开始");
                 println!("F2启动截图功能");
-
-                //记录启动准备
 
                 //获取系统时间，创建当前项目文件夹
                 let local: DateTime<Local> = Local::now();
@@ -90,21 +88,41 @@ pub mod record_main {
                     .output()
                     .expect("无法启动 textshot 命令");
 
-                    if output.status.success() {
-        
-                        let mut file = OpenOptions::new()
-                            .write(true)
-                            .create(true)
-                            .append(true)
-                            .open(format!("./result/{}/textshot.txt",now_dir))
-                            .expect("无法打开文件");
-                        
-                        file.write_all(&output.stdout).expect("提取文字命令写入文件失败");
-                        println!("提取文字执行成功！请继续操作。");
+                if output.status.success() {
+                    let textshot_time = *TEXTSHOT_ACTION_TIME.lock().unwrap();
+
+                    let mut file = OpenOptions::new()
+                        .write(true)
+                        .create(true)
+                        .append(true)
+                        .open(format!(
+                            "./result/{}/textshot_{}.txt",
+                            now_dir,
+                            textshot_time.to_string()
+                        ))
+                        .expect("无法打开文件");
+
+                    let output_confirm = String::from_utf8_lossy(&output.stdout);
+                    //判断是否没有文字，如果是就不写入了
+                    if output_confirm
+                        .contains("ERROR: Unable to read text from image, did not copy")
+                    {
                     } else {
-                        let error = String::from_utf8_lossy(&output.stderr);
-                        println!("提取文字命令执行失败: {}", error);
+                        // let output_bytes = &output.stdout;
+                        // let output_without_info = &output_bytes[14..output_bytes.len() - 20];
+                        let mut output_without_info: ClipboardContext =
+                            ClipboardProvider::new().unwrap();
+                        let mut clipboard_content = output_without_info.get_contents().unwrap();
+                        clipboard_content.push('\n');
+                        file.write_all(clipboard_content.as_bytes())
+                            .expect("提取文字命令写入文件失败");
                     }
+
+                    println!("提取文字执行成功！请继续操作。");
+                } else {
+                    let error = String::from_utf8_lossy(&output.stderr);
+                    println!("提取文字命令执行失败: {}", error);
+                }
 
                 continue;
             } else if keys.len() != 0 && keys[0] != Keycode::F1 {
@@ -114,7 +132,6 @@ pub mod record_main {
                 save_file.write_all(output.as_bytes()).unwrap();
                 sleep(Duration::from_millis(175));
                 continue;
-            // }else if keys.len() == 0 || keys[0] != Keycode::F1 {
             } else if keys.len() == 0 {
                 continue;
             }

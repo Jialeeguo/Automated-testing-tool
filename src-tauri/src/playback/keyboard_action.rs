@@ -1,7 +1,7 @@
 pub mod keyboard {
     use enigo::Key;
     use std::collections::HashMap;
-
+    use tauri::command;
     //键盘按键哈希表查找
     pub fn get_key(content: &str) -> Option<Key> {
         let mut key_map: HashMap<String, Key> = HashMap::new();
