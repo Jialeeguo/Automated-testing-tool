@@ -21,7 +21,7 @@
               <option value="F8">F8</option>
             </select>
             <button onclick="chooseFile()"
-              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: #409EFF; ">...</button>
+              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: red; ">...</button>
 
             <div style="margin: auto;"></div>
 
@@ -199,11 +199,11 @@ button {
   cursor: pointer;
   background-color: rgb(230, 227, 227);
   width: 172px;
-  color: #409EFF;
+  color: red;
   border: 1.5px;
   border-radius: 10px;
   border-style: solid;
-  border-color: #409EFF;
+  border-color: red;
   font-size: large;
 }
 
@@ -213,8 +213,8 @@ select {
   font-family: cursive, sans-serif;
   outline: 0;
   background: #ffffff;
-  color: #409EFF;
-  border: 1px solid #409EFF;
+  color: red;
+  border: 1px solid red;
   padding: 4px;
   border-radius: 9px;
 }
@@ -229,13 +229,13 @@ select {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   color: rgb(47, 51, 50);
   font-size: smaller;
-  color: #409EFF;
+  color: rgb(255, 0, 0);
 
 }
 
 .button-font {
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  color: #409EFF;
+  color: rgb(236, 8, 20);
   font-size: large;
   font-weight: 700;
   background-color: rgb(245, 242, 242);
@@ -256,7 +256,7 @@ select {
   border: 7px solid rgb(255, 255, 255);
   padding: 4px;
   border-radius: 9px;
-  box-shadow: 0 0 0 2px #409EFF;
+  box-shadow: 0 0 0 2px rgb(255, 0, 0);
   /* 这里使用 baseline 对齐文字的基线，你也可以使用其他值如 center，flex-start 等 */
 }
 
