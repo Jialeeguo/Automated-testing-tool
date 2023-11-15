@@ -181,7 +181,7 @@ const startScreenshot = () => {
 
 const pauseRecording = () => {
   recording = false;
-  log += '暂停录制\n';
+  log += '暂停录制s\n';
 };
 </script>
 
