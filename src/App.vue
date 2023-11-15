@@ -171,12 +171,12 @@ const startRecording = () => {
 
 const stopRecording = () => {
   recording = false;
-  log += '停止录制s\n';
+  log += '停止录制\n';
 };
 
 const startScreenshot = () => {
   screenshotting = true;
-  log += '启动截图s\n';
+  log += '启动截图\n';
 };
 
 const pauseRecording = () => {
