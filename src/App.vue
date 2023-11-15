@@ -176,7 +176,7 @@ const stopRecording = () => {
 
 const startScreenshot = () => {
   screenshotting = true;
-  log += '启动截图s\n';
+  log += '启动截图\n';
 };
 
 const pauseRecording = () => {
