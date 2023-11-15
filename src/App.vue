@@ -166,7 +166,7 @@ let files = ['file1.txt', 'file2.txt']; // 替换为你实际的文件列表
 
 const startRecording = () => {
   recording = true;
-  log += '开始录制s\n';
+  log += '开始录制\n';
 };
 
 const stopRecording = () => {
