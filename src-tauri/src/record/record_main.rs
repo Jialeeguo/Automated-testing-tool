@@ -39,7 +39,7 @@ pub mod record_main {
                 //获取系统时间，创建当前项目文件夹
                 let local: DateTime<Local> = Local::now();
                 now_dir = local.format("%Y-%m-%d %H-%M-%S").to_string();
-                std::fs::create_dir_all(format!("./result/{}", now_dir)).unwrap();
+                std::fs::create_dir_all(format!("../Automated-testing/result/{}", now_dir)).unwrap();
 
                 //开启计时
                 status = "started";
@@ -60,7 +60,7 @@ pub mod record_main {
             .write(true)
             .create(true)
             .append(true)
-            .open(format!("./result/{}/record.txt", now_dir))
+            .open(format!("../Automated-testing/result/{}/record.txt", now_dir))
             .unwrap();
 
         let mouse_record_dir = Arc::new(Mutex::new(now_dir.clone()));
@@ -100,7 +100,7 @@ pub mod record_main {
                         .create(true)
                         .append(true)
                         .open(format!(
-                            "./result/{}/textshot_{}.txt",
+                            "../Automated-testing/result/{}/textshot_{}.txt",
                             now_dir,
                             textshot_time.to_string()
                         ))

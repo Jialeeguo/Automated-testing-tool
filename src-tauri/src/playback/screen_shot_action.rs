@@ -23,7 +23,7 @@ pub mod screen {
             .unwrap();
         image
             .save(format!(
-                "./result/{}/{}_playback.png",
+                "../Automated-testing/result/{}/{}_playback.png",
                 now_dir,
                 time.to_string()
             ))
@@ -36,12 +36,12 @@ pub mod screen {
     //图像对比
     pub fn screen_shot_compare(path: String, time: u128) {
         // 打开图像文件
-        let img1 = image::open(format!("./result/{}/{}.png", path, time.to_string())).unwrap();
-        let img2_path = format!("./result/{}/{}_playback.png", path, time.to_string());
+        let img1 = image::open(format!("../Automated-testing/result/{}/{}.png", path, time.to_string())).unwrap();
+        let img2_path = format!("../Automated-testing/result/{}/{}_playback.png", path, time.to_string());
         let img2 = image::open(img2_path.clone()).unwrap();
 
         Command::new("tesseract")
-            .current_dir(format!("./result/{}", path))
+            .current_dir(format!("../Automated-testing/result/{}", path))
             .arg(format!("{}_playback.png", time.to_string()))
             .arg(format!(
                 "textshot_{}_playback",
@@ -73,14 +73,14 @@ pub mod screen {
         // 打开提取文字文件
 
         let text1 = std::fs::read_to_string(&format!(
-            "./result/{}/textshot_{}.txt",
+            "../Automated-testing/result/{}/textshot_{}.txt",
             path,
             time.to_string()
         ))
         .expect("无法读取文件1的内容");
 
         let text2 = std::fs::read_to_string(&format!(
-            "./result/{}/textshot_{}_playback.txt",
+            "../Automated-testing/result/{}/textshot_{}_playback.txt",
             path,
             time.to_string()
         ))

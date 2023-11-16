@@ -20,7 +20,7 @@ pub mod screen {
             )
             .unwrap();
         image
-            .save(format!("./result/{}/{}.png", now_dir, time.to_string()))
+            .save(format!("../Automated-testing/result/{}/{}.png", now_dir, time.to_string()))
             .unwrap();
         *TEXTSHOT_ACTION_TIME.lock().unwrap() =time;
     }

@@ -29,7 +29,7 @@ pub mod mouse {
             .write(true)
             .create(true)
             .append(true)
-            .open(format!("./result/{}/record.txt", now_dir))
+            .open(format!("../Automated-testing/result/{}/record.txt", now_dir))
             .unwrap();
         //判断是否有截图需求
         let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
