@@ -1,3 +1,6 @@
+
+
+
 pub mod record_main {
     use chrono::prelude::*;
     use clipboard::ClipboardContext;
@@ -16,6 +19,7 @@ pub mod record_main {
     use crate::START_TIME;
     use crate::TEXTSHOT_ACTION_TIME;
 
+    #[tauri::command]
     pub fn start_record() {
         let mut status = "init";
         let device_state = DeviceState::new();

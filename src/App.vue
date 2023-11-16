@@ -122,7 +122,7 @@
 
           <div class="buttons-container">
             <!-- 添加按钮组 -->
-            <button @click="toggleRecording" :disabled="screenshotting" class="button-font">
+            <button @click="startRecord" :disabled="screenshotting" class="button-font">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
             <button @click="pauseRecording" :disabled="recording" class="button-font"
@@ -152,8 +152,15 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { ref, reactive, onBeforeMount } from "vue";
+import { invoke } from "@tauri-apps/api/tauri";
+import { appWindow } from "@tauri-apps/api/window"
 import Greet from "./components/Greet.vue";
+
+const startRecord = () => {
+  invoke('start_record');
+};
 
 // 添加数据
 let recording = false;

@@ -14,7 +14,7 @@ pub mod playback_main {
 
     use crate::LAST_ACTION_TIME;
     use crate::SCREEN_PRESS;
-
+    #[tauri::command]
     pub fn playback_main() {
         let mut now_dir = String::from("2023-11-14 16-06-54");
         *LAST_ACTION_TIME.lock().unwrap() = 0;

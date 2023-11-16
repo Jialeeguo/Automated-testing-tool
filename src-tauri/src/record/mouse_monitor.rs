@@ -71,7 +71,7 @@ pub mod mouse {
             }
         }
     }
-
+    //下边的函数都是记录文件
     //记录用户鼠标移动
     pub fn record_move(time: u128, x: String, y: String, mut file: File) {
         let mut val = String::new();
