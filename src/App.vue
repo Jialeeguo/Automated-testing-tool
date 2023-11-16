@@ -171,7 +171,7 @@ const startRecording = () => {
 
 const stopRecording = () => {
   recording = false;
-  log += '停止录制\n';
+  log += '停止录制s\n';
 };
 
 const startScreenshot = () => {
