@@ -4,6 +4,7 @@ pub mod screen {
     use crate::TEXTSHOT_ACTION_TIME;
 
     //截图
+    #[tauri::command]
     pub fn screenshot(b_x: f64, b_y: f64, x: f64, y: f64, time: u128, now_dir: String) {
         // 获取点所在屏幕
         let screen = Screen::from_point(100, 100).unwrap();

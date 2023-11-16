@@ -122,15 +122,15 @@
 
           <div class="buttons-container">
             <!-- 添加按钮组 -->
-            <button @click="startRecord" :disabled="screenshotting" class="button-font">
+            <button @click="startRecord" :disabled="screenshotting" class="button-font" id="startrecord" onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
-            <button @click="pauseRecording" :disabled="recording" class="button-font"
-              style="margin-left: 12px;">启动</button>
-            <button @click="stopRecording" :disabled="!recording" class="button-font"
-              style="margin-left: 12px;">暂停录制</button>
-            <button @click="startScreenshot" :disabled="!screenshotting" class="button-font"
-              style="margin-left: 12px;">截图</button>
+            <button @click="playBack" :disabled="recording" class="button-font"
+              style="margin-left: 12px;"  onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">启动</button>
+            <button @click="stopRecording" :disabled="recording" class="button-font"
+              style="margin-left: 12px;"  >暂停录制</button>
+            <button @click="startScreenshot" :disabled="screenshotting" class="button-font"
+              style="margin-left: 12px;"  onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">截图</button>
           </div>
         </div>
       </div>
@@ -159,9 +159,21 @@ import { appWindow } from "@tauri-apps/api/window"
 import Greet from "./components/Greet.vue";
 
 const startRecord = () => {
+  const button = document.getElementById('startrecord');
+   // 替换 'your-button-id' 为你按钮的实际 ID
+  if (button) {
+    button.classList.add('clicked');
+    button.innerText = '终止录制';
+  }
   invoke('start_record');
 };
 
+const startScreenshot = () => {
+  invoke('screenshot');
+};
+const playBack = () => {
+  invoke('playback_main');
+};
 // 添加数据
 let recording = false;
 let screenshotting = false;
@@ -171,20 +183,14 @@ let files = ['file1.txt', 'file2.txt']; // 替换为你实际的文件列表
 
 // 添加方法
 
-const startRecording = () => {
-  recording = true;
-  log += '开始录制\n';
-};
+
 
 const stopRecording = () => {
   recording = false;
   log += '停止录制s\n';
 };
 
-const startScreenshot = () => {
-  screenshotting = true;
-  log += '启动截图\n';
-};
+
 
 const pauseRecording = () => {
   recording = false;
@@ -246,6 +252,7 @@ select {
   font-size: large;
   font-weight: 700;
   background-color: rgb(245, 242, 242);
+  
 }
 
 .log-container {
@@ -295,4 +302,6 @@ label {
   width: 150px;
   text-align: left;
   display: inline-block;
-}</style>
+}
+
+</style>

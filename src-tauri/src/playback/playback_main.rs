@@ -16,7 +16,7 @@ pub mod playback_main {
     use crate::SCREEN_PRESS;
     #[tauri::command]
     pub fn playback_main() {
-        let mut now_dir = String::from("2023-11-14 16-06-54");
+        let mut now_dir = String::from("2023-11-16 23-00-57");
         *LAST_ACTION_TIME.lock().unwrap() = 0;
         let file = File::open(format!("../Automated-testing/result/{}/record.txt", now_dir)).expect("指令不存在！");
         let read_script = BufReader::new(file);

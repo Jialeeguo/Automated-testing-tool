@@ -14,7 +14,7 @@ mod record;
 
 use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::start_record;
-
+use record::screen_shot::screen::screenshot;
 #[macro_use]
 extern crate lazy_static;
 //定义静态全局变量
@@ -39,7 +39,11 @@ lazy_static! {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![start_record, playback_main])
+        .invoke_handler(tauri::generate_handler![
+            start_record,
+            playback_main,
+            screenshot
+            ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
