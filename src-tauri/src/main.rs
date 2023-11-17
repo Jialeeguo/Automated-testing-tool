@@ -12,10 +12,11 @@ use std::{
 mod playback;
 mod record;
 use std::process;
-
+use std::sync::Arc;
 use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::start_record;
 use record::screen_shot::screen::screenshot;
+use record::record_main::record_main::stop_record;
 #[macro_use]
 extern crate lazy_static;
 //定义静态全局变量
@@ -36,6 +37,8 @@ lazy_static! {
     static ref MOUSE_THREAD_FLAG: Mutex<bool> = Mutex::new(false);
     //截图时间记录
     static ref TEXTSHOT_ACTION_TIME: Mutex<u128> = Mutex::new(0);
+    // 是否停止录制的标志
+    static ref SHOULD_STOP: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
 }
 // #[tauri::command]
 // pub fn stop_record() {
@@ -48,7 +51,7 @@ fn main() {
             start_record,
             playback_main,
             screenshot,
-            // stop_record
+            stop_record
             ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

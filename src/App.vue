@@ -152,28 +152,64 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script>
 import { ref, reactive, onBeforeMount } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 import { appWindow } from "@tauri-apps/api/window"
-import Greet from "./components/Greet.vue";
 
-const startRecord = () => {
-  
-  const button = document.getElementById('startrecord');
-   // 替换 'your-button-id' 为你按钮的实际 ID
-  if (button) {
-    button.classList.add('clicked');
-    button.innerText = '终止录制';
-  }
-  invoke('start_record');
-  const timestamp = new Date().toLocaleString();
-  
+
+export default{
+  data(){
+    return {
+      recording: false,
+      log: '',
+    };
+  },
+  methods: {
+    startRecord() {
+      // 切换 recording 状态
+      
+      this.recording = !this.recording;
+      invoke('start_record');
+      // 获取当前时间
+      const currentTime = new Date().toLocaleTimeString();
+      this.log += `${this.recording ? '录制已开始' : '录制结束'} - ${'['+currentTime+']'}\n`;
+      // 更新 log 数据
+      this.$nextTick(() => {
+        const textarea = document.getElementById('steps');
+        textarea.scrollTop = textarea.scrollHeight;
+        console.log('startRecord called')
+      });
+    },
+    stopRecord() {
+      // 切换 recording 状态
+      this.recording = !this.recording;
+
+      // 获取当前时间
+      const currentTime = new Date().toLocaleTimeString();
+      this.log += `${this.recording ? '录制已开始' : '录制结束'} - ${'['+currentTime+']'}\n`;
+      // 更新 log 数据
+      this.$nextTick(() => {
+        const textarea = document.getElementById('steps');
+        textarea.scrollTop = textarea.scrollHeight;
+        console.log('startRecord called')
+      });
+    },
+  },
 };
+// const startRecord = () => {
+  
+//   const button = document.getElementById('startrecord');
+//    // 替换 'your-button-id' 为你按钮的实际 ID
+//   if (button) {
+//     button.classList.add('clicked');
+//     button.innerText = '终止录制';
+//   }
+//   invoke('start_record');
+//   const timestamp = new Date().toLocaleString();
+  
+// };
 
-const stopRecord = () =>{
-  invoke('stop_record')
-}
 const startScreenshot = () => {
   invoke('screenshot');
 };
@@ -190,11 +226,6 @@ let files = ['file1.txt', 'file2.txt']; // 替换为你实际的文件列表
 // 添加方法
 
 
-
-const stopRecording = () => {
-  recording = false;
-  log += '停止录制s\n';
-};
 
 
 
@@ -272,8 +303,8 @@ select {
 .log {
   display: flex;
   align-items: baseline;
-  color: rgb(245, 242, 242);
-  background-color: rgb(245, 242, 242);
+  color: rgb(0, 0, 0);
+  background-color: rgb(255, 255, 255);;
   border: 7px solid rgb(255, 255, 255);
   padding: 4px;
   border-radius: 9px;

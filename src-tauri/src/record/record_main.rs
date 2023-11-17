@@ -1,17 +1,14 @@
-
-
-
 pub mod record_main {
     use chrono::prelude::*;
     use clipboard::ClipboardContext;
     use clipboard::ClipboardProvider;
     use device_query::{DeviceQuery, DeviceState, Keycode};
     use rdev::listen;
-    use std::process::{Command};
+    use std::process::Command;
     use std::sync::{Arc, Mutex};
     use std::time::Instant;
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
-
+    use crate::SHOULD_STOP;
     use crate::record::mouse_monitor;
     use crate::MOUSE_MOVE_TIME;
     use crate::MOUSE_THREAD_FLAG;
@@ -20,7 +17,7 @@ pub mod record_main {
     use crate::TEXTSHOT_ACTION_TIME;
 
     #[tauri::command]
-    pub fn start_record() {
+    pub async fn start_record() {
         let mut status = "init";
         let device_state = DeviceState::new();
         //存储工作目录文件夹名
@@ -28,10 +25,21 @@ pub mod record_main {
         println!("请按下F1开始");
         //设定开始按键
         loop {
+           
             let start_keys: Vec<Keycode> = device_state.get_keys();
             if start_keys.is_empty() || start_keys[0] != Keycode::F1 {
                 continue;
             } else {
+                //还没想好逻辑
+                let should_stop = {
+                    let stop_flag = SHOULD_STOP.lock().unwrap();
+                    *stop_flag
+                };
+    
+                if should_stop {
+                    println!("录制被终止");
+                    return;
+                }
                 sleep(Duration::from_millis(200));
                 println!("程序开始");
                 println!("F2启动截图功能");
@@ -39,7 +47,8 @@ pub mod record_main {
                 //获取系统时间，创建当前项目文件夹
                 let local: DateTime<Local> = Local::now();
                 now_dir = local.format("%Y-%m-%d %H-%M-%S").to_string();
-                std::fs::create_dir_all(format!("../Automated-testing/result/{}", now_dir)).unwrap();
+                std::fs::create_dir_all(format!("../Automated-testing/result/{}", now_dir))
+                    .unwrap();
 
                 //开启计时
                 status = "started";
@@ -60,7 +69,10 @@ pub mod record_main {
             .write(true)
             .create(true)
             .append(true)
-            .open(format!("../Automated-testing/result/{}/record.txt", now_dir))
+            .open(format!(
+                "../Automated-testing/result/{}/record.txt",
+                now_dir
+            ))
             .unwrap();
 
         let mouse_record_dir = Arc::new(Mutex::new(now_dir.clone()));
@@ -149,5 +161,12 @@ pub mod record_main {
                 return;
             }
         }
+    }
+//点击终止录制后函数
+    #[tauri::command]
+    pub fn stop_record() {
+        *SHOULD_STOP.lock().unwrap() = true;
+        
+        println!("停止录制");
     }
 }
