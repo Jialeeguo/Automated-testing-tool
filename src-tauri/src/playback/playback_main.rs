@@ -7,7 +7,7 @@ pub mod playback_main {
         thread,
         time::Duration,
     };
-    use tauri::command;
+  
     use crate::playback::keyboard_action::keyboard;
     use crate::playback::mouse_action::mouse;
     use crate::playback::screen_shot_action::screen;

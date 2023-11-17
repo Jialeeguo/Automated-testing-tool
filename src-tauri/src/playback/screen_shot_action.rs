@@ -4,7 +4,7 @@ pub mod screen {
     use image_compare::Algorithm;
     use screenshots::Screen;
     use std::process::Command;
-    use tauri::command;
+
     //截图
     pub fn screenshot(b_x: f64, b_y: f64, x: f64, y: f64, time: u128, now_dir: String) {
         // 获取点所在屏幕

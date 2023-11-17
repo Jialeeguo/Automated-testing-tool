@@ -4,7 +4,7 @@ pub mod mouse {
         thread,
         time::Duration,
     };
-    use tauri::command;
+   
     /// 根据帧数计算间隔时间
     const INTERVAL: Duration = Duration::from_millis(10);
 
@@ -13,7 +13,7 @@ pub mod mouse {
         let wait_duration = Duration::from_millis(wait_time.try_into().unwrap());
         match simulate(event_type) {
             Ok(()) => (),
-            Err(SimulateError) => {
+            Err(_simulate_error) => {
                 println!("复现鼠标操作 {:?}出错", event_type);
             }
         }
@@ -24,7 +24,7 @@ pub mod mouse {
     pub fn send(event_type: &EventType) {
         match simulate(event_type) {
             Ok(()) => (),
-            Err(SimulateError) => {
+            Err(_simulate_error) => {
                 println!("复现鼠标操作 {:?}出错", event_type);
             }
         }

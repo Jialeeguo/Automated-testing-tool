@@ -1,5 +1,5 @@
 pub mod screen {
-    use tauri::command;
+
     use screenshots::Screen;
     use crate::TEXTSHOT_ACTION_TIME;
 

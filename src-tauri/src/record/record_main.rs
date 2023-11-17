@@ -7,11 +7,11 @@ pub mod record_main {
     use clipboard::ClipboardProvider;
     use device_query::{DeviceQuery, DeviceState, Keycode};
     use rdev::listen;
-    use std::process::{Command, Stdio};
+    use std::process::{Command};
     use std::sync::{Arc, Mutex};
     use std::time::Instant;
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
-    use tauri::command;
+
     use crate::record::mouse_monitor;
     use crate::MOUSE_MOVE_TIME;
     use crate::MOUSE_THREAD_FLAG;

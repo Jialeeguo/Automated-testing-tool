@@ -127,7 +127,7 @@
             </button>
             <button @click="playBack" :disabled="recording" class="button-font"
               style="margin-left: 12px;"  onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">启动</button>
-            <button @click="stopRecording" :disabled="recording" class="button-font"
+            <button @click="stopRecord" :disabled="!recording" class="button-font"
               style="margin-left: 12px;"  >暂停录制</button>
             <button @click="startScreenshot" :disabled="screenshotting" class="button-font"
               style="margin-left: 12px;"  onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">截图</button>
@@ -143,7 +143,7 @@
       </div>
 
       <div style="display: flex;">
-        <textarea v-model="log" rows="15" readonly class="log"></textarea>
+        <textarea v-model="log" rows="15" readonly class="log" id ="steps"></textarea>
         <div style="margin: 0 5px;"></div>
         <textarea v-model="log" rows="15" readonly class="log"></textarea>
       </div>
@@ -159,6 +159,7 @@ import { appWindow } from "@tauri-apps/api/window"
 import Greet from "./components/Greet.vue";
 
 const startRecord = () => {
+  
   const button = document.getElementById('startrecord');
    // 替换 'your-button-id' 为你按钮的实际 ID
   if (button) {
@@ -166,8 +167,13 @@ const startRecord = () => {
     button.innerText = '终止录制';
   }
   invoke('start_record');
+  const timestamp = new Date().toLocaleString();
+  
 };
 
+const stopRecord = () =>{
+  invoke('stop_record')
+}
 const startScreenshot = () => {
   invoke('screenshot');
 };
@@ -196,6 +202,7 @@ const pauseRecording = () => {
   recording = false;
   log += '暂停录制\n';
 };
+
 </script>
 
 <style scoped>

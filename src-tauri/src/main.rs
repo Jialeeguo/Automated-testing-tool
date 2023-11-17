@@ -4,13 +4,14 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
 use std::{
-    io::{self, BufRead},
+    
     sync::Mutex,
     time::Instant,
 };
 
 mod playback;
 mod record;
+use std::process;
 
 use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::start_record;
@@ -36,13 +37,18 @@ lazy_static! {
     //截图时间记录
     static ref TEXTSHOT_ACTION_TIME: Mutex<u128> = Mutex::new(0);
 }
+// #[tauri::command]
+// pub fn stop_record() {
+//     process::exit(0);
+// }
 
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             start_record,
             playback_main,
-            screenshot
+            screenshot,
+            // stop_record
             ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -65,12 +71,3 @@ fn main() {
 //         };
 //     }
 // }
-
-fn read_user_input(prompt: &str) -> String {
-    print!("{}", prompt);
-
-    let stdin = io::stdin();
-    let input = stdin.lock().lines().next().unwrap().unwrap();
-
-    input
-}
