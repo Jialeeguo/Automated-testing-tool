@@ -22,7 +22,7 @@ pub mod record_main {
         let device_state = DeviceState::new();
         //存储工作目录文件夹名
         let mut now_dir = String::new();
-        println!("请按下F1开始");
+        println!("请按下F1s开始");
         //设定开始按键
         loop {
            
