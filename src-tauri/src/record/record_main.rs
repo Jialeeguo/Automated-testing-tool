@@ -18,7 +18,7 @@ pub mod record_main {
 
     #[tauri::command]
     pub async fn start_record() {
-        let mut status = "init";
+        let mut status = "inits";
         let device_state = DeviceState::new();
         //存储工作目录文件夹名
         let mut now_dir = String::new();
