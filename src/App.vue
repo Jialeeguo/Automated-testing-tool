@@ -66,7 +66,7 @@
 
             <div style="margin: auto;"></div>
             <form action="#">
-              <label for="lang" class="ziti">开始/暂停录制</label>
+              <label for="action" class="ziti">开始/暂停录制</label>
               <select name="languages" id="lang" style="width: 200px;" value="F2">
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
@@ -317,7 +317,7 @@ select {
   color: rgb(0, 0, 0);
   background-color: rgb(255, 255, 255);
   ;
-  border: 7px solid rgb(255, 255, 255);
+  border: 7px solid rgb(241, 240, 240);
   padding: 4px;
   border-radius: 9px;
   box-shadow: 0 0 0 2px rgb(255, 0, 0);

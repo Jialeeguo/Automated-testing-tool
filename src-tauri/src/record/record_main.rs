@@ -18,6 +18,7 @@ pub mod record_main {
 
     #[tauri::command]
     pub async fn start_record() {
+        
         let mut status = "init";
         let device_state = DeviceState::new();
         //存储工作目录文件夹名
@@ -63,8 +64,10 @@ pub mod record_main {
                 break;
             }
         }
-
+        
         //键盘监听文件
+        
+            
         let mut save_file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -74,21 +77,36 @@ pub mod record_main {
                 now_dir
             ))
             .unwrap();
-
-        let mouse_record_dir = Arc::new(Mutex::new(now_dir.clone()));
-        // 鼠标监听线程
-        thread::spawn(move || {
-            if let Err(error) = listen(move |event| {
-                mouse_monitor::mouse::callback(
-                    event,
-                    Arc::clone(&mouse_record_dir).lock().unwrap().clone(),
-                )
-            }) {
-                println!("Error: {:?}", error);
-            }
-        });
-
+        let should_stop;
+        {
+            let stop_flag1 = SHOULD_STOP.lock().unwrap();
+            should_stop = *stop_flag1;
+        }
+        println!("{}", !should_stop);
+        if !should_stop {
+            let mouse_record_dir = Arc::new(Mutex::new(now_dir.clone()));
+            // 鼠标监听线程
+            thread::spawn(move || {
+                if let Err(error) = listen(move |event| {
+                    mouse_monitor::mouse::callback(
+                        event,
+                        Arc::clone(&mouse_record_dir).lock().unwrap().clone(),
+                    )
+                }) {
+                    println!("Error: {:?}", error);
+                }
+            });
+        }
         loop {
+            let should_stop = {
+                let stop_flag = SHOULD_STOP.lock().unwrap();
+                *stop_flag
+            };
+
+            if should_stop {
+                println!("录制被终止");
+                break;
+            }
             let keys: Vec<Keycode> = device_state.get_keys();
             if keys.len() != 0 && keys[0] == Keycode::F2 {
                 sleep(Duration::from_millis(300));
@@ -160,8 +178,9 @@ pub mod record_main {
                 );
                 return;
             }
-        }
+        
     }
+}
 //点击终止录制后函数
     #[tauri::command]
     pub fn stop_record() {
