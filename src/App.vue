@@ -179,8 +179,7 @@ export default {
         await invoke('start_record');
     
       }
-      // this.recording = !this.recording;
-      // 获取当前时间
+  
       const currentTime = new Date().toLocaleTimeString();
       this.log += `${this.recording ? '录制已开始' : '录制结束'} - [${currentTime}]\n`;
       // 更新 log 数据
@@ -193,27 +192,30 @@ export default {
         console.log('点击了终止录制按钮');
         
       }
-      //  if (this.recording) {
-      //   // 调用 Tauri 的 stop_record 命令
-      //   await invoke('stop_record');
-      //   console.log('点击了停止录制按钮');
-      // }
+    
     },
-
+    
+    handleKeyDown(event) {
+      // 检查是否按下 F1 键
+      if (event.key === "F1") {
+        // 阻止默认事件，以避免浏览器刷新页面
+        event.preventDefault();
+        // 执行开始/停止录制逻辑
+        this.startRecord();
+      }
+    },
   },
+  mounted() {
+    // 监听键盘按下事件
+    window.addEventListener("keydown", this.handleKeyDown);
+  },
+  beforeDestroy() {
+    // 在组件销毁前移除事件监听
+    window.removeEventListener("keydown", this.handleKeyDown);
+  },
+  
 };
-// const startRecord = () => {
 
-//   const button = document.getElementById('startrecord');
-//    // 替换 'your-button-id' 为你按钮的实际 ID
-//   if (button) {
-//     button.classList.add('clicked');
-//     button.innerText = '终止录制';
-//   }
-//   invoke('start_record');
-//   const timestamp = new Date().toLocaleString();
-
-// };
 
 const startScreenshot = () => {
   invoke('screenshot');
