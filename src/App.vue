@@ -191,7 +191,7 @@ export default {
       });
       if (!this.recording) {
         console.log('点击了终止录制按钮');
-        await invoke('stop_record');
+        
       }
       //  if (this.recording) {
       //   // 调用 Tauri 的 stop_record 命令
@@ -199,13 +199,7 @@ export default {
       //   console.log('点击了停止录制按钮');
       // }
     },
-    // async stopRecord() {
-    //   if (this.recording) {
-    //     // 调用 Tauri 的 stop_record 命令
-    //     await invoke('stop_record');
-    //     console.log('点击了停止录制按钮');
-    //   }
-    // },
+
   },
 };
 // const startRecord = () => {
