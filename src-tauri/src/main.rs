@@ -48,10 +48,11 @@ lazy_static! {
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            stop_record,
             start_record,
             playback_main,
             screenshot,
-            stop_record
+            
             ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -122,15 +122,18 @@
 
           <div class="buttons-container">
             <!-- 添加按钮组 -->
-            <button @click="startRecord" :disabled="screenshotting" class="button-font" id="startrecord" onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">
+            <button @click="startRecord" :disabled="screenshotting" class="button-font" id="startrecord"
+              onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
-            <button @click="playBack" :disabled="recording" class="button-font"
-              style="margin-left: 12px;"  onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">启动</button>
+            <button @click="playBack" :disabled="recording" class="button-font" style="margin-left: 12px;"
+              onmouseover="this.style.backgroundColor='#199991';"
+              onmouseout="this.style.backgroundColor='#FFFFFF';">启动</button>
             <button @click="stopRecord" :disabled="!recording" class="button-font"
-              style="margin-left: 12px;"  >暂停录制</button>
-            <button @click="startScreenshot" :disabled="screenshotting" class="button-font"
-              style="margin-left: 12px;"  onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">截图</button>
+              style="margin-left: 12px;">暂停录制</button>
+            <button @click="startScreenshot" :disabled="screenshotting" class="button-font" style="margin-left: 12px;"
+              onmouseover="this.style.backgroundColor='#199991';"
+              onmouseout="this.style.backgroundColor='#FFFFFF';">截图</button>
           </div>
         </div>
       </div>
@@ -143,7 +146,7 @@
       </div>
 
       <div style="display: flex;">
-        <textarea v-model="log" rows="15" readonly class="log" id ="steps"></textarea>
+        <textarea v-model="log" rows="15" readonly class="log" id="steps"></textarea>
         <div style="margin: 0 5px;"></div>
         <textarea v-model="log" rows="15" readonly class="log"></textarea>
       </div>
@@ -158,47 +161,55 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { appWindow } from "@tauri-apps/api/window"
 
 
-export default{
-  data(){
+export default {
+  data() {
     return {
       recording: false,
       log: '',
     };
   },
   methods: {
-    startRecord() {
+    async startRecord() {
       // 切换 recording 状态
-      
-      this.recording = !this.recording;
-      invoke('start_record');
+   
+      this.recording = !this.recording; 
+      console.log("s"+!recording);//strue
+      if (this.recording) {
+        console.log('点击了开始录制按钮');
+        await invoke('start_record');
+    
+      }
+      // this.recording = !this.recording;
       // 获取当前时间
       const currentTime = new Date().toLocaleTimeString();
-      this.log += `${this.recording ? '录制已开始' : '录制结束'} - ${'['+currentTime+']'}\n`;
+      this.log += `${this.recording ? '录制已开始' : '录制结束'} - [${currentTime}]\n`;
       // 更新 log 数据
       this.$nextTick(() => {
         const textarea = document.getElementById('steps');
         textarea.scrollTop = textarea.scrollHeight;
-        console.log('startRecord called')
+        console.log('startRecord called');
       });
+      if (!this.recording) {
+        console.log('点击了终止录制按钮');
+        await invoke('stop_record');
+      }
+      //  if (this.recording) {
+      //   // 调用 Tauri 的 stop_record 命令
+      //   await invoke('stop_record');
+      //   console.log('点击了停止录制按钮');
+      // }
     },
-    stopRecord() {
-      // 切换 recording 状态
-      this.recording = !this.recording;
-
-      // 获取当前时间
-      const currentTime = new Date().toLocaleTimeString();
-      this.log += `${this.recording ? '录制已开始' : '录制结束'} - ${'['+currentTime+']'}\n`;
-      // 更新 log 数据
-      this.$nextTick(() => {
-        const textarea = document.getElementById('steps');
-        textarea.scrollTop = textarea.scrollHeight;
-        console.log('startRecord called')
-      });
-    },
+    // async stopRecord() {
+    //   if (this.recording) {
+    //     // 调用 Tauri 的 stop_record 命令
+    //     await invoke('stop_record');
+    //     console.log('点击了停止录制按钮');
+    //   }
+    // },
   },
 };
 // const startRecord = () => {
-  
+
 //   const button = document.getElementById('startrecord');
 //    // 替换 'your-button-id' 为你按钮的实际 ID
 //   if (button) {
@@ -207,7 +218,7 @@ export default{
 //   }
 //   invoke('start_record');
 //   const timestamp = new Date().toLocaleString();
-  
+
 // };
 
 const startScreenshot = () => {
@@ -290,7 +301,7 @@ select {
   font-size: large;
   font-weight: 700;
   background-color: rgb(245, 242, 242);
-  
+
 }
 
 .log-container {
@@ -304,7 +315,8 @@ select {
   display: flex;
   align-items: baseline;
   color: rgb(0, 0, 0);
-  background-color: rgb(255, 255, 255);;
+  background-color: rgb(255, 255, 255);
+  ;
   border: 7px solid rgb(255, 255, 255);
   padding: 4px;
   border-radius: 9px;
@@ -340,6 +352,4 @@ label {
   width: 150px;
   text-align: left;
   display: inline-block;
-}
-
-</style>
+}</style>

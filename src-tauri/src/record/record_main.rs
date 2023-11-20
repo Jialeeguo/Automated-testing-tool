@@ -38,7 +38,7 @@ pub mod record_main {
     
                 if should_stop {
                     println!("录制被终止");
-                    return;
+                    break;
                 }
                 sleep(Duration::from_millis(200));
                 println!("程序开始");
@@ -165,8 +165,11 @@ pub mod record_main {
 //点击终止录制后函数
     #[tauri::command]
     pub fn stop_record() {
-        *SHOULD_STOP.lock().unwrap() = true;
-        
+        println!("调用了 stop_record 函数");
+        let mut should_stop = SHOULD_STOP.lock().unwrap();
+        println!("停止录制之前，SHOULD_STOP 的值为: {}", *should_stop);
+        *should_stop = true;
+        println!("停止录制之后，SHOULD_STOP 的值为: {}", *should_stop);
         println!("停止录制");
     }
 }
