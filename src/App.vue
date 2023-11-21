@@ -166,33 +166,35 @@ export default {
     return {
       recording: false,
       log: '',
+      screenshotting: false,
     };
   },
   methods: {
     async startRecord() {
       // 切换 recording 状态
-   
-      this.recording = !this.recording; 
-      console.log("s"+!recording);//strue
+      this.recording = !this.recording;
+      
+
       if (this.recording) {
         console.log('点击了开始录制按钮');
+        console.log('点击开始按钮的recording是'+this.recording);
         await invoke('start_record');
-    
       }
-  
+
       const currentTime = new Date().toLocaleTimeString();
       this.log += `${this.recording ? '录制已开始' : '录制结束'} - [${currentTime}]\n`;
+
       // 更新 log 数据
       this.$nextTick(() => {
         const textarea = document.getElementById('steps');
         textarea.scrollTop = textarea.scrollHeight;
         console.log('startRecord called');
       });
+
       if (!this.recording) {
         console.log('点击了终止录制按钮');
-        
+        console.log('点击终止按钮的recording是'+this.recording);
       }
-    
     },
     
     handleKeyDown(event) {
@@ -213,7 +215,7 @@ export default {
     // 在组件销毁前移除事件监听
     window.removeEventListener("keydown", this.handleKeyDown);
   },
-  
+
 };
 
 
@@ -348,4 +350,5 @@ label {
   width: 150px;
   text-align: left;
   display: inline-block;
-}</style>
+}
+</style>

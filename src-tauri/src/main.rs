@@ -11,7 +11,9 @@ use std::{
 
 mod playback;
 mod record;
+use std::thread;
 use std::process;
+use std::time::Duration;
 use std::sync::Arc;
 use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::start_record;
@@ -39,6 +41,7 @@ lazy_static! {
     static ref TEXTSHOT_ACTION_TIME: Mutex<u128> = Mutex::new(0);
     // 是否停止录制的标志
     static ref SHOULD_STOP: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
+        
 }
 // #[tauri::command]
 // pub fn stop_record() {

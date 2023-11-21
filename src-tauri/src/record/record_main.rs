@@ -15,7 +15,7 @@ pub mod record_main {
     use crate::SCREEN_SHOT_FLAG;
     use crate::START_TIME;
     use crate::TEXTSHOT_ACTION_TIME;
-
+  
     #[tauri::command]
     pub async fn start_record() {
         
@@ -23,14 +23,12 @@ pub mod record_main {
         let device_state = DeviceState::new();
         //存储工作目录文件夹名
         let mut now_dir = String::new();
-        println!("请按下F1开始");
+        
         //设定开始按键
         loop {
            
             let start_keys: Vec<Keycode> = device_state.get_keys();
-            if start_keys.is_empty() || start_keys[0] != Keycode::F1 {
-                continue;
-            } else {
+            
                 //还没想好逻辑
                 let should_stop = {
                     let stop_flag = SHOULD_STOP.lock().unwrap();
@@ -62,7 +60,7 @@ pub mod record_main {
                 let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
                 *mouse_flag = false;
                 break;
-            }
+            
         }
         
         //键盘监听文件
@@ -159,7 +157,7 @@ pub mod record_main {
                 }
 
                 continue;
-            } else if keys.len() != 0 && keys[0] != Keycode::F1 {
+            } else if (keys.len() != 0 && keys[0] != Keycode::F1) {
                 let duration_key = START_TIME.lock().unwrap().elapsed().as_millis();
                 println!("{}ms,捕捉到键盘输入{:?}", duration_key, keys[0]);
                 let output = format!("{},key,{:?}\n", duration_key, keys[0]);
