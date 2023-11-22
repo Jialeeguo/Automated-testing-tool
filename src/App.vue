@@ -180,7 +180,7 @@ export default {
         console.log('点击开始按钮的recording是'+this.recording);
         await invoke('start_record');
       }
-
+     
       const currentTime = new Date().toLocaleTimeString();
       this.log += `${this.recording ? '录制已开始' : '录制结束'} - [${currentTime}]\n`;
 
@@ -193,7 +193,7 @@ export default {
 
       if (!this.recording) {
         console.log('点击了终止录制按钮');
-        console.log('点击终止按钮的recording是'+this.recording);
+        console.log('点击终止按钮的record'+this.recording);
       }
     },
     
