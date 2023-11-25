@@ -192,7 +192,7 @@ export default {
       });
 
       if (!this.recording) {
-        console.log('点击了终止录制按钮');
+        console.log('点击了s终止录制按钮');
         console.log('点击终止按钮的record'+this.recording);
       }
     },
