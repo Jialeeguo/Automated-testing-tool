@@ -148,7 +148,7 @@
       <div style="display: flex;">
         <textarea v-model="log" rows="15" readonly class="log" id="steps"></textarea>
         <div style="margin: 0 5px;"></div>
-        <textarea v-model="log" rows="15" readonly class="log"></textarea>
+        <textarea v-model="logs" rows="15" readonly class="log"></textarea>
       </div>
       <!-- 其他内容保持不变 -->
     </div>
@@ -171,9 +171,11 @@ export default {
   },
   methods: {
     async startRecord() {
+      console.log('startRecord 被调用了');
       // 切换 recording 状态
+      console.log('切换 recording 状态:', this.recording);
       this.recording = !this.recording;
-      
+
 
       if (this.recording) {
         console.log('点击了开始录制按钮');
@@ -181,20 +183,7 @@ export default {
         await invoke('start_record');
       }
      
-      const currentTime = new Date().toLocaleTimeString();
-      this.log += `${this.recording ? '录制已开始' : '录制结束'} - [${currentTime}]\n`;
-
-      // 更新 log 数据
-      this.$nextTick(() => {
-        const textarea = document.getElementById('steps');
-        textarea.scrollTop = textarea.scrollHeight;
-        console.log('startRecord- called');
-      });
-
-      if (!this.recording) {
-        console.log('点击了终止录制按钮');
-        console.log('点击终止按钮的record'+this.recording);
-      }
+   
     },
     
     handleKeyDown(event) {
@@ -204,8 +193,35 @@ export default {
         event.preventDefault();
         // 执行开始/停止录制逻辑
         this.startRecord();
+        
+      // 更新 log 数据
+     
+
+      if (!this.recording) {
+        console.log('点击了终止录s制按钮');
+        console.log('点击终止按钮的record'+this.recording);
+      }
+      this.$nextTick(() => {
+        const textarea = document.getElementById('steps');
+        const currentTime = new Date().toLocaleTimeString();
+      this.log += `${this.recording ? '录制已开始' : '录制结束'} - [${currentTime}]\n`;
+      
+        textarea.scrollTop = textarea.scrollHeight;
+        console.log('startRecord- called');
+      });
+      }
+      if (event.key === "F2") {
+        this.$nextTick(() => {
+        const textarea = document.getElementById('steps');
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${"正在截图~"} - [${currentTime}]\n`;
+      
+        textarea.scrollTop = textarea.scrollHeight;
+       
+      });
       }
     },
+    
   },
   mounted() {
     // 监听键盘按下事件
