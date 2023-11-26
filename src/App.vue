@@ -188,7 +188,7 @@ export default {
       this.$nextTick(() => {
         const textarea = document.getElementById('steps');
         textarea.scrollTop = textarea.scrollHeight;
-        console.log('startRecord called');
+        console.log('startRecord- called');
       });
 
       if (!this.recording) {
