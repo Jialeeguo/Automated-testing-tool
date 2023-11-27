@@ -10,7 +10,7 @@
 
 
             <label for="lang" class="ziti">脚本</label>
-            <select name="languages" id="lang" style="width: 140px;" value="F1">
+            <select name="languages" id="lang" style="width: 140px;" value="请选择回放文件夹">
               <option value="F1">{{ selectedFileName }}</option>
             </select>
             <button @click="selectPlaybackFile"
