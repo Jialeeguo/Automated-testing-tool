@@ -11,16 +11,9 @@
 
             <label for="lang" class="ziti">脚本</label>
             <select name="languages" id="lang" style="width: 140px;" value="F1">
-              <option value="F1">1113_2139.txt</option>
-              <option value="F2">F2</option>
-              <option value="F3">F3</option>
-              <option value="F4">F4</option>
-              <option value="F5">F5</option>
-              <option value="F6">F6</option>
-              <option value="F7">F7</option>
-              <option value="F8">F8</option>
+              <option value="F1">{{ selectedFileName }}</option>
             </select>
-            <button onclick="chooseFile()"
+            <button @click="selectPlaybackFile"
               style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: red; ">...</button>
 
             <div style="margin: auto;"></div>
@@ -160,7 +153,7 @@ import { ref, reactive, onBeforeMount } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 import { appWindow } from "@tauri-apps/api/window"
 import { open } from '@tauri-apps/api/dialog';
-import { appDir } from '@tauri-apps/api/path';
+import { appConfigDir } from '@tauri-apps/api/path';
 // Open a selection dialog for directories
 
 export default {
@@ -169,7 +162,7 @@ export default {
       recording: false,
       log: '',
       screenshotting: false,
-
+      selectedFileName: '请选择回放文件夹',
     };
   },
   methods: {
@@ -183,6 +176,28 @@ export default {
             setTimeout(() => {
         this.log = '';},1000)
       }
+    },
+
+    //选择回放文件夹
+    async selectPlaybackFile() {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        defaultPath: await appConfigDir(),
+      });
+      if (Array.isArray(selected)) {
+        // user selected multiple directories
+      } else if (selected === null) {
+        // user cancelled the selection
+      } else {
+        // user selected a single directory
+      }
+      console.log(selected);
+      this.selectedFileName = selected;
+    },
+    playBack(){
+      const filePath = this.selectedFileName;
+      invoke('playback_main', {filePath});
     },
 
     handleKeyDown(event) {
@@ -238,9 +253,7 @@ export default {
 const startScreenshot = () => {
   invoke('screenshot');
 };
-const playBack = () => {
-  invoke('playback_main');
-};
+
 // 添加数据
 let recording = false;
 let screenshotting = false;

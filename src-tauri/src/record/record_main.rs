@@ -115,7 +115,7 @@ pub mod record_main {
                     let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
                     *screen_flag = true;
                 }
-                let output = Command::new("C:/Users/trookie/venv/Scripts/textshot")
+                let output = Command::new("textshot")
                     .arg("eng+chi_sim")
                     .output()
                     .expect("无法启动 textshot 命令");
