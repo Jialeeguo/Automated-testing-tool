@@ -15,10 +15,10 @@ pub mod playback_main {
     use crate::LAST_ACTION_TIME;
     use crate::SCREEN_PRESS;
     #[tauri::command]
-    pub fn playback_main() {
-        let mut now_dir = String::from("2023-11-16 23-00-57");
+    pub fn playback_main(file_path:String) {
+        let mut now_dir = String::from(file_path);
         *LAST_ACTION_TIME.lock().unwrap() = 0;
-        let file = File::open(format!("../Automated-testing/result/{}/record.txt", now_dir)).expect("指令不存在！");
+        let file = File::open(format!("{}/record.txt", now_dir)).expect("指令不存在！");
         let read_script = BufReader::new(file);
         for line in read_script.lines() {
             let instruct = line.unwrap();

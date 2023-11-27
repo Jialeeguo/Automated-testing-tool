@@ -159,7 +159,9 @@
 import { ref, reactive, onBeforeMount } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 import { appWindow } from "@tauri-apps/api/window"
-
+import { open } from '@tauri-apps/api/dialog';
+import { appDir } from '@tauri-apps/api/path';
+// Open a selection dialog for directories
 
 export default {
   data() {
@@ -167,25 +169,22 @@ export default {
       recording: false,
       log: '',
       screenshotting: false,
+
     };
   },
   methods: {
     async startRecord() {
-      console.log('startRecord 被调用了');
-      // 切换 recording 状态
-      console.log('切换 recording 状态:', this.recording);
       this.recording = !this.recording;
-
-
       if (this.recording) {
-        console.log('点击了开始录制按钮');
-        console.log('点击开始按钮的recording是'+this.recording);
         await invoke('start_record');
+      }else{
+        const currentTime = new Date().toLocaleTimeString();
+            this.log += `${'录制结束,已保存到log文件夹下，日志被清空！'} - [${currentTime}]\n`;
+            setTimeout(() => {
+        this.log = '';},1000)
       }
-     
-   
     },
-    
+
     handleKeyDown(event) {
       // 检查是否按下 F1 键
       if (event.key === "F1") {
@@ -193,35 +192,38 @@ export default {
         event.preventDefault();
         // 执行开始/停止录制逻辑
         this.startRecord();
-        
-      // 更新 log 数据
-     
 
-      if (!this.recording) {
-        console.log('点击了终止录s制按钮');
-        console.log('点击终止按钮的record'+this.recording);
-      }
-      this.$nextTick(() => {
-        const textarea = document.getElementById('steps');
-        const currentTime = new Date().toLocaleTimeString();
-      this.log += `${this.recording ? '录制已开始' : '录制结束'} - [${currentTime}]\n`;
-      
-        textarea.scrollTop = textarea.scrollHeight;
-        console.log('startRecord- called');
-      });
+        // 更新 log 数据
+        this.$nextTick(() => {
+          const textarea = document.getElementById('steps');
+          const currentTime = new Date().toLocaleTimeString();
+
+          // 添加特殊的日志，但仅当还没有添加过时
+          if (!this.recording && !this.hasRefreshLog) {
+
+  
+          } else {
+            this.log += `${this.recording ? '录制已开始' : '录制结束,下次录制将刷新日志！'} - [${currentTime}]\n`;
+           
+          }
+
+          textarea.scrollTop = textarea.scrollHeight;
+        });
       }
       if (event.key === "F2") {
         this.$nextTick(() => {
-        const textarea = document.getElementById('steps');
-        const currentTime = new Date().toLocaleTimeString();
-        this.log += `${"正在截图~"} - [${currentTime}]\n`;
-      
-        textarea.scrollTop = textarea.scrollHeight;
-       
-      });
+          const textarea = document.getElementById('steps');
+          const currentTime = new Date().toLocaleTimeString();
+          this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
+          setTimeout(() => {
+            const currentTime = new Date().toLocaleTimeString();
+            this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
+          }, 10000)
+          textarea.scrollTop = textarea.scrollHeight;
+         
+        });
       }
     },
-    
   },
   mounted() {
     // 监听键盘按下事件
@@ -231,9 +233,7 @@ export default {
     // 在组件销毁前移除事件监听
     window.removeEventListener("keydown", this.handleKeyDown);
   },
-
 };
-
 
 const startScreenshot = () => {
   invoke('screenshot');
