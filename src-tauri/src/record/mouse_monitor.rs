@@ -13,13 +13,17 @@ pub mod mouse {
     use crate::SCREEN_PRESS;
     use crate::SCREEN_SHOT_FLAG;
     use crate::START_TIME;
+    use crate::MOUSE_PATH;
 
     //鼠标监听回调
-    pub fn callback(event: Event, now_dir: String) {
+    pub fn callback(event: Event) {
         let mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
         if *mouse_flag == true {
             return;
         }
+
+        let mouse_path = MOUSE_PATH.lock().unwrap();
+        let now_dir = mouse_path.clone();
 
         //记录最后移动时间
         let last_move_time = *MOUSE_MOVE_TIME.lock().unwrap();

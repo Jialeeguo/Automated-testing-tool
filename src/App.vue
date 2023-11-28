@@ -11,7 +11,7 @@
 
             <label for="lang" class="ziti">脚本</label>
             <select name="languages" id="lang" style="width: 140px;" value="请选择回放文件夹">
-              <option value="F1">{{ selectedFileName }}</option>
+              <option value="请选择回放文件夹">{{ selectedFileName }}</option>
             </select>
             <button @click="selectPlaybackFile"
               style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: red; ">...</button>
@@ -169,12 +169,15 @@ export default {
     async startRecord() {
       this.recording = !this.recording;
       if (this.recording) {
-        await invoke('start_record');
-      }else{
         const currentTime = new Date().toLocaleTimeString();
-            this.log += `${'录制结束,已保存到log文件夹下，日志被清空！'} - [${currentTime}]\n`;
-            setTimeout(() => {
-        this.log = '';},1000)
+        this.log += `${'录制已开始'} - [${currentTime}]\n`;
+        await invoke('start_record');
+      } else {
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${'录制结束,已保存到log文件夹下，日志被清空！'} - [${currentTime}]\n`;
+        setTimeout(() => {
+          this.log = '';
+        }, 1000)
       }
     },
 
@@ -195,9 +198,9 @@ export default {
       console.log(selected);
       this.selectedFileName = selected;
     },
-    playBack(){
+    playBack() {
       const filePath = this.selectedFileName;
-      invoke('playback_main', {filePath});
+      invoke('playback_main', { filePath });
     },
 
     handleKeyDown(event) {
@@ -216,10 +219,10 @@ export default {
           // 添加特殊的日志，但仅当还没有添加过时
           if (!this.recording && !this.hasRefreshLog) {
 
-  
-          } else {
-            this.log += `${this.recording ? '录制已开始' : '录制结束,下次录制将刷新日志！'} - [${currentTime}]\n`;
-           
+
+          } else if (this.recording == false){
+            this.log += `${'录制结束,下次录制将刷新日志！'} - [${currentTime}]\n`;
+
           }
 
           textarea.scrollTop = textarea.scrollHeight;
@@ -235,7 +238,7 @@ export default {
             this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
           }, 10000)
           textarea.scrollTop = textarea.scrollHeight;
-         
+
         });
       }
     },

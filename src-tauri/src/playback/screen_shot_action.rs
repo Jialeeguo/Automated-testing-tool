@@ -86,10 +86,26 @@ pub mod screen {
         ))
         .expect("无法读取文件2的内容");
 
-        println!("{}", text1);
-        println!("{}", text2);
+        if !text2.is_empty() {
+            let modified_text2 = &text2[..text2.len() - 1];
+            std::fs::write(
+                &format!("{}/textshot_{}_playback.txt", path, time.to_string()),
+                modified_text2,
+            )
+            .expect("无法写入文件");
+        }
+
+        let text2_new = std::fs::read_to_string(&format!(
+            "{}/textshot_{}_playback.txt",
+            path,
+            time.to_string()
+        ))
+        .expect("无法读取文件2的内容");
+
+        println!("文字提取结果1:\n{}", text1);
+        println!("文字提取结果2:\n{}", text2_new);
         
-        if text1 == text2 {
+        if text1 == text2_new {
             println!("{}时刻文字提取对比验证通过！", time.to_string());
         } else {
             println!("{}文字提取对比结果不相同！", time.to_string());
