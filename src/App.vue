@@ -11,7 +11,7 @@
 
             <label for="lang" class="ziti">脚本</label>
             <select name="languages" id="lang" style="width: 140px;" value="请选择回放文件夹">
-              <option value="F1">{{ selectedFileName }}</option>
+              <option value="请选择回放文件夹">{{ selectedFileName }}</option>
             </select>
             <button @click="selectPlaybackFile"
               style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: red; ">...</button>
@@ -20,7 +20,7 @@
 
             <form action="#">
               <label for="lang" class="ziti">执行次数</label>
-              <select name="languages" id="lang" style="width: 200px; " value="1">
+              <select name="languages" id="lang" style="width: 200px; " value="5">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -90,7 +90,7 @@
             <form action="#">
 
               <label for="lang" class="ziti">截图</label>
-              <select name="languages" id="lang" style="width: 200px;" value="F4">
+              <select name="languages" id="lang" style="width: 200px;" value="F5">
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
                 <option value="F3">F3</option>
@@ -120,13 +120,13 @@
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
             <button @click="playBack" :disabled="recording" class="button-font" style="margin-left: 12px;"
-              onmouseover="this.style.backgroundColor='#199991';"
-              onmouseout="this.style.backgroundColor='#FFFFFF';">启动</button>
+
+            onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';"
+           >启动</button>
             <button @click="stopRecord" :disabled="!recording" class="button-font"
               style="margin-left: 12px;">暂停录制</button>
-            <button @click="startScreenshot" :disabled="screenshotting" class="button-font" style="margin-left: 12px;"
-              onmouseover="this.style.backgroundColor='#199991';"
-              onmouseout="this.style.backgroundColor='#FFFFFF';">截图</button>
+            <button @click="startScreenshot" :disabled="!recording" class="button-font" style="margin-left: 12px;"
+              >截图</button>
           </div>
         </div>
       </div>
