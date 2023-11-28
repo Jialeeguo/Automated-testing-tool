@@ -44,8 +44,8 @@
           <div style="display: flex; ">
             <form action="#">
               <label for="lang" class="ziti">开始/暂停执行</label>
-              <select name="languages" id="lang" style="width: 200px;" value="F1">
-                <option value="F1">F1</option>
+              <select name="languages" id="lang" style="width: 200px;" >
+                <option value="F1" selected>F1</option>
                 <option value="F2">F2</option>
                 <option value="F3">F3</option>
                 <option value="F4">F4</option>
@@ -60,9 +60,9 @@
             <div style="margin: auto;"></div>
             <form action="#">
               <label for="action" class="ziti">开始/暂停录制</label>
-              <select name="languages" id="lang" style="width: 200px;" value="F2">
+              <select name="languages" id="lang" style="width: 200px;" >
                 <option value="F1">F1</option>
-                <option value="F2">F2</option>
+                <option value="F2" selected>F2</option>
                 <option value="F3">F3</option>
                 <option value="F4">F4</option>
                 <option value="F5">F5</option>
@@ -75,10 +75,10 @@
           <div style="display: flex; ">
             <form action="#">
               <label for="lang" class="ziti">终止录制</label>
-              <select name="languages" id="lang" style="width: 200px;" value="F3">
+              <select name="languages" id="lang" style="width: 200px;">
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
-                <option value="F3">F3</option>
+                <option value="F3" selected>F3</option>
                 <option value="F4">F4</option>
                 <option value="F5">F5</option>
                 <option value="F6">F6</option>
@@ -90,11 +90,11 @@
             <form action="#">
 
               <label for="lang" class="ziti">截图</label>
-              <select name="languages" id="lang" style="width: 200px;" value="F5">
+              <select name="languages" id="lang" style="width: 200px;">
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
                 <option value="F3">F3</option>
-                <option value="F4">F4</option>
+                <option value="F4" selected>F4</option>
                 <option value="F5">F5</option>
                 <option value="F6">F6</option>
                 <option value="F7">F7</option>
