@@ -11,14 +11,14 @@ use std::{
 
 mod playback;
 mod record;
-use std::thread;
-use std::process;
-use std::time::Duration;
+// use std::thread;
+// use std::process;
+// use std::time::Duration;
 use std::sync::Arc;
 use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::start_record;
 use record::screen_shot::screen::screenshot;
-use record::record_main::record_main::stop_record;
+// use record::record_main::record_main::stop_record;
 #[macro_use]
 extern crate lazy_static;
 //定义静态全局变量
@@ -41,6 +41,10 @@ lazy_static! {
     static ref TEXTSHOT_ACTION_TIME: Mutex<u128> = Mutex::new(0);
     // 是否停止录制的标志
     static ref SHOULD_STOP: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
+    //鼠标线程是否开启的标志
+    static ref MOUSE_THREAD_START: Mutex<bool> = Mutex::new(false);
+    //鼠标记录文件夹的位置
+    static ref MOUSE_PATH: Mutex<String> = Mutex::new(String::new());
         
 }
 // #[tauri::command]
