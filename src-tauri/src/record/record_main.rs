@@ -17,7 +17,7 @@ pub mod record_main {
     // use std::sync::{Arc, Mutex};
     use std::time::Instant;
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
-
+    
     #[tauri::command]
     pub async fn start_record() {
         let mut status = "init";
@@ -60,6 +60,7 @@ pub mod record_main {
             let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
             *mouse_flag = false;
             break;
+            
         }
 
         //键盘监听文件

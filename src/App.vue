@@ -44,7 +44,7 @@
           <div style="display: flex; ">
             <form action="#">
               <label for="lang" class="ziti">开始/暂停执行</label>
-              <select name="languages" id="lang" style="width: 200px;" >
+              <select name="languages" id="lang" style="width: 200px;">
                 <option value="F1" selected>F1</option>
                 <option value="F2">F2</option>
                 <option value="F3">F3</option>
@@ -60,7 +60,7 @@
             <div style="margin: auto;"></div>
             <form action="#">
               <label for="action" class="ziti">开始/暂停录制</label>
-              <select name="languages" id="lang" style="width: 200px;" >
+              <select name="languages" id="lang" style="width: 200px;">
                 <option value="F1">F1</option>
                 <option value="F2" selected>F2</option>
                 <option value="F3">F3</option>
@@ -120,13 +120,12 @@
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
             <button @click="playBack" :disabled="recording" class="button-font" style="margin-left: 12px;"
-
-            onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';"
-           >启动</button>
+              onmouseover="this.style.backgroundColor='#199991';"
+              onmouseout="this.style.backgroundColor='#FFFFFF';">启动</button>
             <button @click="stopRecord" :disabled="!recording" class="button-font"
               style="margin-left: 12px;">暂停录制</button>
-            <button @click="startScreenshot" :disabled="!recording" class="button-font" style="margin-left: 12px;"
-              >截图</button>
+            <button @click="startScreenshot" :disabled="!recording" class="button-font"
+              style="margin-left: 12px;">截图</button>
           </div>
         </div>
       </div>
@@ -139,7 +138,7 @@
       </div>
 
       <div style="display: flex;">
-        <textarea v-model="log" rows="15" readonly class="log" id="steps"></textarea>
+        <textarea v-model="log" rows="15" readonly class="log" id="steps" ></textarea>
         <div style="margin: 0 5px;"></div>
         <textarea v-model="logs" rows="15" readonly class="log"></textarea>
       </div>
@@ -163,6 +162,7 @@ export default {
       log: '',
       screenshotting: false,
       selectedFileName: '请选择回放文件夹',
+      textData: '', // 初始化文本数据
     };
   },
   methods: {
@@ -175,6 +175,7 @@ export default {
       } else {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制结束,已保存到log文件夹下，日志被清空！'} - [${currentTime}]\n`;
+        console.group("录制结束,已保存到log文件夹下，日志被清空！")
         setTimeout(() => {
           this.log = '';
         }, 1000)
@@ -220,7 +221,7 @@ export default {
           if (!this.recording && !this.hasRefreshLog) {
 
 
-          } else if (this.recording == false){
+          } else if (this.recording == false) {
             this.log += `${'录制结束,下次录制将刷新日志！'} - [${currentTime}]\n`;
 
           }
@@ -242,10 +243,37 @@ export default {
         });
       }
     },
+    getData() {
+      //  更新数据market_id.txt文件接口
+      let xhr = new XMLHttpRequest(),
+        okStatus = document.location.protocol === "file:" ? 0 : 200;
+      xhr.open("GET", "../Automated-testing/result/2023-11-29 22-38-31/record.txt", false);
+      xhr.overrideMimeType("text/html;charset=utf-8"); //默认为utf-8
+      xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4 && xhr.status === okStatus) {
+        // 每隔一秒处理一行文本
+        let lines = xhr.responseText.split('\n');
+        let currentIndex = 0;
+        
+        let intervalId = setInterval(() => {
+          if (currentIndex < lines.length) {
+            this.log += `${lines[currentIndex]}\n`;
+            currentIndex++;
+          } else {
+            clearInterval(intervalId); // 所有行处理完毕，清除定时器
+          }
+        }, 500);
+      }
+    };
+
+    xhr.send(null);
+      //文本的内容
+    },
   },
   mounted() {
     // 监听键盘按下事件
     window.addEventListener("keydown", this.handleKeyDown);
+    this.getData();
   },
   beforeDestroy() {
     // 在组件销毁前移除事件监听
@@ -262,7 +290,7 @@ let recording = false;
 let screenshotting = false;
 let selectedFile = '';
 let log = '';
-let files = ['file1.txt', 'file2.txt']; // 替换为你实际的文件列表
+let files = ['file1.txts', 'file2.txt']; // 替换为你实际的文件列表
 
 // 添加方法
 
@@ -344,13 +372,14 @@ select {
 .log {
   display: flex;
   align-items: baseline;
-  color: rgb(0, 0, 0);
+  color: rgb(255, 0, 0);
   background-color: rgb(255, 255, 255);
   ;
   border: 7px solid rgb(241, 240, 240);
   padding: 4px;
   border-radius: 9px;
   box-shadow: 0 0 0 2px rgb(255, 0, 0);
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   /* 这里使用 baseline 对齐文字的基线，你也可以使用其他值如 center，flex-start 等 */
 }
 

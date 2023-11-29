@@ -3,21 +3,17 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
-use std::{
-    
-    sync::Mutex,
-    time::Instant,
-};
+use std::{sync::Mutex, time::Instant};
 
 mod playback;
 mod record;
 // use std::thread;
 // use std::process;
 // use std::time::Duration;
-use std::sync::Arc;
 use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::start_record;
 use record::screen_shot::screen::screenshot;
+use std::sync::Arc;
 // use record::record_main::record_main::stop_record;
 #[macro_use]
 extern crate lazy_static;
@@ -45,7 +41,7 @@ lazy_static! {
     static ref MOUSE_THREAD_START: Mutex<bool> = Mutex::new(false);
     //鼠标记录文件夹的位置
     static ref MOUSE_PATH: Mutex<String> = Mutex::new(String::new());
-        
+
 }
 // #[tauri::command]
 // pub fn stop_record() {
@@ -53,14 +49,12 @@ lazy_static! {
 // }
 
 fn main() {
-    tauri::Builder::default()
+    tauri::Builder::default()  
         .invoke_handler(tauri::generate_handler![
-            
             start_record,
             playback_main,
             screenshot,
-            
-            ])
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
