@@ -154,7 +154,9 @@ import { appWindow } from "@tauri-apps/api/window"
 import { open } from '@tauri-apps/api/dialog';
 import { appConfigDir } from '@tauri-apps/api/path';
 // Open a selection dialog for directories
-
+import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs';
+// Read the text file in the `$APPCONFIG/app.conf` path
+// const contents = await readTextFile('record.txt', { dir: BaseDirectory.AppConfig });
 export default {
   data() {
     return {
@@ -163,10 +165,14 @@ export default {
       screenshotting: false,
       selectedFileName: '请选择回放文件夹',
       textData: '', // 初始化文本数据
+      filename: '',
     };
   },
   methods: {
     async startRecord() {
+      if(!this.recording){
+      this.log = '';
+    }
       this.recording = !this.recording;
       if (this.recording) {
         const currentTime = new Date().toLocaleTimeString();
@@ -196,10 +202,43 @@ export default {
       } else {
         // user selected a single directory
       }
-      console.log(selected);
       this.selectedFileName = selected;
+      //获取文件路径的最后一个文件名，用来xhr.open(点击哪个就放哪个)
+      const fullPath = selected;
+      this.filename = fullPath.replace(/^.*[\\\/]/, '');
+
+      
     },
     playBack() {
+      
+
+          this.log = '';
+
+      //  更新数据market_id.txt文件接口
+      let xhr = new XMLHttpRequest(),
+        okStatus = document.location.protocol === "file:" ? 0 : 200;
+       
+      xhr.open("GET", `../Automated-testing/result/${this.filename}/record.txt`, false);
+      xhr.overrideMimeType("text/html;charset=utf-8"); //默认为utf-8
+      xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4 && xhr.status === okStatus) {
+        // 每隔一秒处理一行文本
+        let lines = xhr.responseText.split('\n');
+        let currentIndex = 0;
+        
+        let intervalId = setInterval(() => {
+          if (currentIndex < lines.length) {
+            this.log += `${lines[currentIndex]}\n`;
+            currentIndex++;
+          } else {
+            clearInterval(intervalId); // 所有行处理完毕，清除定时器
+          }
+        }, 500);
+      }
+    };
+
+    xhr.send(null);
+      //文本的内容
       const filePath = this.selectedFileName;
       invoke('playback_main', { filePath });
     },
@@ -243,37 +282,11 @@ export default {
         });
       }
     },
-    getData() {
-      //  更新数据market_id.txt文件接口
-      let xhr = new XMLHttpRequest(),
-        okStatus = document.location.protocol === "file:" ? 0 : 200;
-      xhr.open("GET", "../Automated-testing/result/2023-11-29 22-38-31/record.txt", false);
-      xhr.overrideMimeType("text/html;charset=utf-8"); //默认为utf-8
-      xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4 && xhr.status === okStatus) {
-        // 每隔一秒处理一行文本
-        let lines = xhr.responseText.split('\n');
-        let currentIndex = 0;
-        
-        let intervalId = setInterval(() => {
-          if (currentIndex < lines.length) {
-            this.log += `${lines[currentIndex]}\n`;
-            currentIndex++;
-          } else {
-            clearInterval(intervalId); // 所有行处理完毕，清除定时器
-          }
-        }, 500);
-      }
-    };
 
-    xhr.send(null);
-      //文本的内容
-    },
   },
   mounted() {
     // 监听键盘按下事件
     window.addEventListener("keydown", this.handleKeyDown);
-    this.getData();
   },
   beforeDestroy() {
     // 在组件销毁前移除事件监听
