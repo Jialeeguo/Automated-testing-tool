@@ -18,7 +18,14 @@ pub mod playback_main {
     pub fn playback_main(file_path:String) {
         let mut now_dir = String::from(file_path);
         *LAST_ACTION_TIME.lock().unwrap() = 0;
-        let file = File::open(format!("{}/record.txt", now_dir)).expect("指令不存在！");
+        let file = match File::open(format!("{}/record.txt", now_dir)) {
+            Ok(f) => f,
+            Err(e) => {
+                // 打印错误信息并返回
+                eprintln!("Error opening file: {}", e);
+                return;
+            }
+        };
         let read_script = BufReader::new(file);
         for line in read_script.lines() {
             let instruct = line.unwrap();

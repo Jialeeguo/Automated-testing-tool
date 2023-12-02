@@ -138,7 +138,7 @@
       </div>
 
       <div style="display: flex;">
-        <textarea v-model="log" rows="15" readonly class="log" id="steps" ></textarea>
+        <textarea v-model="log" rows="15" readonly class="log" id="steps"></textarea>
         <div style="margin: 0 5px;"></div>
         <textarea v-model="logs" rows="15" readonly class="log"></textarea>
       </div>
@@ -170,9 +170,9 @@ export default {
   },
   methods: {
     async startRecord() {
-      if(!this.recording){
-      this.log = '';
-    }
+      if (!this.recording) {
+        this.log = '';
+      }
       this.recording = !this.recording;
       if (this.recording) {
         const currentTime = new Date().toLocaleTimeString();
@@ -207,41 +207,46 @@ export default {
       const fullPath = selected;
       this.filename = fullPath.replace(/^.*[\\\/]/, '');
 
-      
+
     },
     playBack() {
-      
+      this.log = '';
 
-          this.log = '';
-
-      //  更新数据market_id.txt文件接口
+      // 更新数据 market_id.txt 文件接口
       let xhr = new XMLHttpRequest(),
         okStatus = document.location.protocol === "file:" ? 0 : 200;
-       
-      xhr.open("GET", `../Automated-testing/result/${this.filename}/record.txt`, false);
-      xhr.overrideMimeType("text/html;charset=utf-8"); //默认为utf-8
-      xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4 && xhr.status === okStatus) {
-        // 每隔一秒处理一行文本
-        let lines = xhr.responseText.split('\n');
-        let currentIndex = 0;
-        
-        let intervalId = setInterval(() => {
-          if (currentIndex < lines.length) {
-            this.log += `${lines[currentIndex]}\n`;
-            currentIndex++;
-          } else {
-            clearInterval(intervalId); // 所有行处理完毕，清除定时器
-          }
-        }, 500);
-      }
-    };
 
-    xhr.send(null);
-      //文本的内容
+      xhr.open("GET", `../Automated-testing/result/${this.filename}/record.txt`, false);
+      xhr.overrideMimeType("text/html;charset=utf-8"); // 默认为 utf-8
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === okStatus) {
+            // 每隔一秒处理一行文本
+            let lines = xhr.responseText.split('\n');
+            let currentIndex = 0;
+
+            let intervalId = setInterval(() => {
+              if (currentIndex < lines.length) {
+                this.log += `${lines[currentIndex]}\n`;
+                currentIndex++;
+              } else {
+                clearInterval(intervalId); // 所有行处理完毕，清除定时器
+              }
+            }, 500);
+          } else {
+            // 如果请求失败，将错误消息添加到日志中
+            this.log += "文件夹选择错误，找不到record.txt文件，请重新选择\n";
+          }
+        }
+      };
+
+      xhr.send(null);
+
+      // 文本的内容
       const filePath = this.selectedFileName;
       invoke('playback_main', { filePath });
     },
+
 
     handleKeyDown(event) {
       // 检查是否按下 F1 键
@@ -298,23 +303,6 @@ const startScreenshot = () => {
   invoke('screenshot');
 };
 
-// 添加数据
-let recording = false;
-let screenshotting = false;
-let selectedFile = '';
-let log = '';
-let files = ['file1.txts', 'file2.txt']; // 替换为你实际的文件列表
-
-// 添加方法
-
-
-
-
-
-const pauseRecording = () => {
-  recording = false;
-  log += '暂停录制\n';
-};
 
 </script>
 

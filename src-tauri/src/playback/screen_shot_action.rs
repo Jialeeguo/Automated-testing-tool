@@ -1,5 +1,10 @@
-pub mod screen {
+use std::fs::OpenOptions;
 
+pub mod screen {
+    use std::{
+        fs::{File, OpenOptions},
+        io::Write,
+    };
     use image;
     use image_compare::Algorithm;
     use screenshots::Screen;
@@ -22,11 +27,7 @@ pub mod screen {
             )
             .unwrap();
         image
-            .save(format!(
-                "{}/{}_playback.png",
-                now_dir,
-                time.to_string()
-            ))
+            .save(format!("{}/{}_playback.png", now_dir, time.to_string()))
             .unwrap();
         //对比图像是否一样
         screen_shot_compare(now_dir.clone(), time);
@@ -43,10 +44,7 @@ pub mod screen {
         Command::new("tesseract")
             .current_dir(format!("{}", path))
             .arg(format!("{}_playback.png", time.to_string()))
-            .arg(format!(
-                "textshot_{}_playback",
-                time.to_string()
-            ))
+            .arg(format!("textshot_{}_playback", time.to_string()))
             .arg("-l")
             .arg("eng+chi_sim")
             .output()
@@ -72,12 +70,8 @@ pub mod screen {
     pub fn text_shot_compare(path: String, time: u128) {
         // 打开提取文字文件
 
-        let text1 = std::fs::read_to_string(&format!(
-            "{}/textshot_{}.txt",
-            path,
-            time.to_string()
-        ))
-        .expect("无法读取文件1的内容");
+        let text1 = std::fs::read_to_string(&format!("{}/textshot_{}.txt", path, time.to_string()))
+            .expect("无法读取文件1的内容");
 
         let text2 = std::fs::read_to_string(&format!(
             "{}/textshot_{}_playback.txt",
@@ -102,13 +96,23 @@ pub mod screen {
         ))
         .expect("无法读取文件2的内容");
 
-        println!("文字提取结果1:\n{}", text1);
-        println!("文字提取结果2:\n{}", text2_new);
-        
+        let mut save_file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(true)
+            .open(format!(
+                "../Automated-testing/result/{}/record.txt",
+                now_dir
+            ))
+            .unwrap();
+
+        writeln!(save_file, "文字提取结果1:\n{}", text1).expect("写入失败");
+        writeln!(save_file, "文字提取结果2:\n{}", text2_new).expect("写入失败");
+
         if text1 == text2_new {
-            println!("{}时刻文字提取对比验证通过！", time.to_string());
+            writeln!(save_file, "{}时刻文字提取对比验证通过！", time).expect("写入失败");
         } else {
-            println!("{}文字提取对比结果不相同！", time.to_string());
+            writeln!(save_file, "{}文字提取对比结果不相同！", time).expect("写入失败");
         }
     }
 }
