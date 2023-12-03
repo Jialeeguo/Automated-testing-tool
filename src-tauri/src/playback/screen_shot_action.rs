@@ -13,6 +13,7 @@ pub mod screen {
     //截图
     pub fn screenshot(b_x: f64, b_y: f64, x: f64, y: f64, time: u128, now_dir: String) {
         // 获取点所在屏幕
+        // let mut log_path = String::from(file_path);
         let screen = Screen::from_point(100, 100).unwrap();
         // println!("点所在屏幕： {screen:?}");
         let width = x - b_x - 2.0;
@@ -69,7 +70,6 @@ pub mod screen {
     //文字对比
     pub fn text_shot_compare(path: String, time: u128) {
         // 打开提取文字文件
-
         let text1 = std::fs::read_to_string(&format!("{}/textshot_{}.txt", path, time.to_string()))
             .expect("无法读取文件1的内容");
 
@@ -101,11 +101,11 @@ pub mod screen {
             .create(true)
             .append(true)
             .open(format!(
-                "../Automated-testing/result/{}/record.txt",
-                now_dir
+                "{}/record_result.txt",
+                path
             ))
             .unwrap();
-
+        println!("高可儿{}\\record.txt_result", path);
         writeln!(save_file, "文字提取结果1:\n{}", text1).expect("写入失败");
         writeln!(save_file, "文字提取结果2:\n{}", text2_new).expect("写入失败");
 

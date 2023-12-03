@@ -30,7 +30,7 @@ pub mod playback_main {
         for line in read_script.lines() {
             let instruct = line.unwrap();
             let arr: Vec<&str> = instruct.split(",").collect();
-            let time = arr[0].parse().unwrap();
+            let time: u128 = arr[0].parse().unwrap();
             let wait_time = time - *LAST_ACTION_TIME.lock().unwrap();
             *LAST_ACTION_TIME.lock().unwrap() = time;
             let action = arr[1];

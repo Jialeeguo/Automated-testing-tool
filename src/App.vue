@@ -245,6 +245,7 @@ export default {
       // 文本的内容
       const filePath = this.selectedFileName;
       invoke('playback_main', { filePath });
+
     },
 
 
@@ -300,7 +301,8 @@ export default {
 };
 
 const startScreenshot = () => {
-  invoke('screenshot');
+  const filePath = this.selectedFileName;
+  invoke('screenshot',{ filePath });
 };
 
 
