@@ -17,9 +17,11 @@ pub mod record_main {
     // use std::sync::{Arc, Mutex};
     use std::time::Instant;
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
-    
+    use std::sync::Mutex;
     #[tauri::command]
     pub async fn start_record(mut recordstart:bool) {
+        
+        println!("{}牛逼双射手是",recordstart);
         let mut status = "init";
         let device_state = DeviceState::new();
         //存储工作目录文件夹名
@@ -59,7 +61,7 @@ pub mod record_main {
             //鼠标监听标志
             let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
             *mouse_flag = false;
-            
+            recordstart = true;
             break;
             
         }
@@ -90,7 +92,6 @@ pub mod record_main {
         let mut mouse_flag = MOUSE_THREAD_START.lock().unwrap();
         if *mouse_flag == false || recordstart == true{
             *mouse_flag = true;
-            recordstart == false;
             thread::spawn(move || {
                 if let Err(error) = listen(move |event| {
                     // let mouse_flag = *mouse_stop_flag.lock().unwrap();
@@ -100,8 +101,8 @@ pub mod record_main {
                     //     return;
                     // }
                     mouse_monitor::mouse::callback(
-                        event,
-                        // Arc::clone(&mouse_record_dir).lock().unwrap().clone(),
+                        event,recordstart
+                    
                     )
                 }) {
                     println!("Error: {:?}", error);
@@ -183,8 +184,8 @@ pub mod record_main {
             }
             let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
             *mouse_flag = true;
-            recordstart == false;
-            if status == "started" {
+          
+            if status == "started"{
                 println!(
                     "\n经过了：{}毫秒",
                     START_TIME.lock().unwrap().elapsed().as_millis()
@@ -199,13 +200,5 @@ pub mod record_main {
         }
     }
     //点击终止录制后函数
-    #[tauri::command]
-    pub fn stop_record() {
-        println!("调用了 stop_record 函数");
-        let mut should_stop = SHOULD_STOP.lock().unwrap();
-        println!("停止录制之前，SHOULD_STOP 的值为: {}", *should_stop);
-        *should_stop = true;
-        println!("停止录制之后，SHOULD_STOP 的值为: {}", *should_stop);
-        println!("停止录制");
-    }
+   
 }

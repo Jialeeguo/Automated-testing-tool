@@ -15,13 +15,12 @@ pub mod mouse {
     use crate::START_TIME;
     use crate::MOUSE_PATH;
 
-    //鼠标监听回调
-    pub fn callback(event: Event) {
+    //鼠标监听回调 recordstart = true的时候不会记录，还没想好
+    pub fn callback(event: Event,recordstart: bool) {
         let mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
-        if *mouse_flag == true {
+        if *mouse_flag == true{
             return;
         }
-
         let mouse_path = MOUSE_PATH.lock().unwrap();
         let now_dir = mouse_path.clone();
 

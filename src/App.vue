@@ -178,13 +178,13 @@ export default {
     async startRecord() {
       if (!this.recording) {
         this.log = '';
-        this.recordstart = true;//终止的话他就是true，然后传给后端
+        this.recordstart = false;//终止的话他就是true，然后传给后端
       }
       this.recording = !this.recording;
       if (this.recording) {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
-        await invoke('start_record',{ recordstart: true });
+        await invoke('start_record',{ recordstart: false });
       } else {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制结束,已保存到log文件夹下，日志被清空！'} - [${currentTime}]\n`;
