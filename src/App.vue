@@ -90,11 +90,11 @@
             <form action="#">
 
               <label for="lang" class="ziti">截图</label>
-              <select name="languages" id="lang" style="width: 200px;">
+              <select v-model="selectedFunctionKey" name="languages" id="lang" style="width: 200px;">
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
                 <option value="F3">F3</option>
-                <option value="F4" selected>F4</option>
+                <option value="F4">F4</option>
                 <option value="F5">F5</option>
                 <option value="F6">F6</option>
                 <option value="F7">F7</option>
@@ -120,8 +120,9 @@
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
             <button @click="playBack" :disabled="recording" class="button-font" style="margin-left: 12px;"
-              onmouseover="this.style.backgroundColor='#199991';"
-              onmouseout="this.style.backgroundColor='#FFFFFF';">启动</button>
+              >启动</button>
+
+              
             <button @click="stopRecord" :disabled="!recording" class="button-font"
               style="margin-left: 12px;">暂停录制</button>
             <button @click="startScreenshot" :disabled="!recording" class="button-font"
@@ -132,9 +133,9 @@
     </div>
     <div style="border: 2px solid white; margin: 5px; padding: 10px;">
       <div class="log-container">
-        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142); ">操作步骤及结果</div>
-        <div style="margin: 0 146px;"></div>
-        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142);">可能出错的脚本</div>
+        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142); ">操作步骤</div>
+        <div style="margin: 0 167px;"></div>
+        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142);">对比脚本结果</div>
       </div>
 
       <div style="display: flex;">
@@ -167,6 +168,7 @@ export default {
       selectedFileName: '请选择回放文件夹',
       textData: '', // 初始化文本数据
       filename: '',
+      selectedFunctionKey:'F6'//下拉框选择按钮回放按键
     };
   },
   methods: {
@@ -250,7 +252,7 @@ export default {
       invoke('playback_main', { filePath });
 
     },
-
+   
     loadRecordResult() {
       this.log_playback = '';
       // 加载 record_result.txt 文件内容
@@ -269,7 +271,7 @@ export default {
            
           }
       };
-
+    
       resultXhr.send(null);
     },
     handleKeyDown(event) {
@@ -309,6 +311,13 @@ export default {
           textarea.scrollTop = textarea.scrollHeight;
 
         });
+      }
+      if (event.key === "F6") {
+        console.log('你好');
+        // 阻止默认事件，以避免浏览器刷新页面
+        event.preventDefault();
+        // 调用 playback_main 方法
+        this.playBack();
       }
     },
 
