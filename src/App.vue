@@ -140,7 +140,7 @@
       <div style="display: flex;">
         <textarea v-model="log" rows="15" readonly class="log" id="steps"></textarea>
         <div style="margin: 0 5px;"></div>
-        <textarea v-model="logs" rows="15" readonly class="log"></textarea>
+        <textarea v-model="logs" rows="15" readonly class="log" id="steps1"></textarea>
       </div>
       <!-- 其他内容保持不变 -->
     </div>
@@ -162,6 +162,7 @@ export default {
     return {
       recording: false,
       log: '',
+      log_playback:'',
       screenshotting: false,
       selectedFileName: '请选择回放文件夹',
       textData: '', // 初始化文本数据
@@ -231,6 +232,8 @@ export default {
                 currentIndex++;
               } else {
                 clearInterval(intervalId); // 所有行处理完毕，清除定时器
+
+                this.loadRecordResult();
               }
             }, 500);
           } else {
@@ -248,7 +251,27 @@ export default {
 
     },
 
+    loadRecordResult() {
+      this.log_playback = '';
+      // 加载 record_result.txt 文件内容
+      let resultXhr = new XMLHttpRequest(),
+        resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
 
+      resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
+      resultXhr.overrideMimeType("text/html;charset=utf-8");
+
+      resultXhr.onreadystatechange = () => {
+        if (resultXhr.readyState === 4 && resultXhr.status === resultOkStatus) {
+          // 将 record_result.txt 的内容设置到 textarea
+          document.getElementById("steps1").value = resultXhr.responseText;
+        }else {
+            // 如果请求失败，将错误消息添加到日志中
+           
+          }
+      };
+
+      resultXhr.send(null);
+    },
     handleKeyDown(event) {
       // 检查是否按下 F1 键
       if (event.key === "F1") {
@@ -302,7 +325,7 @@ export default {
 
 const startScreenshot = () => {
   const filePath = this.selectedFileName;
-  invoke('screenshot',{ filePath });
+  invoke('screenshot', { filePath });
 };
 
 

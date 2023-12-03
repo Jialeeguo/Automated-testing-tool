@@ -59,6 +59,7 @@ pub mod record_main {
             //鼠标监听标志
             let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
             *mouse_flag = false;
+            
             break;
             
         }
