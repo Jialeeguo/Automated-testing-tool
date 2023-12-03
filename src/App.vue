@@ -44,8 +44,9 @@
           <div style="display: flex; ">
             <form action="#">
               <label for="lang" class="ziti">开始/暂停执行</label>
-              <select name="languages" id="lang" style="width: 200px;">
-                <option value="F1" selected>F1</option>
+              <select name="languages" id="lang" v-model="selectedFunctionKey" style="width: 200px;">
+                <option :value="null" disabled>请选择功能键</option>
+                <option value="F1">F1</option>
                 <option value="F2">F2</option>
                 <option value="F3">F3</option>
                 <option value="F4">F4</option>
@@ -90,7 +91,7 @@
             <form action="#">
 
               <label for="lang" class="ziti">截图</label>
-              <select v-model="selectedFunctionKey" name="languages" id="lang" style="width: 200px;">
+              <select v-model="selectedFunctionKey4" name="languages" id="lang" style="width: 200px;">
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
                 <option value="F3">F3</option>
@@ -168,19 +169,22 @@ export default {
       selectedFileName: '请选择回放文件夹',
       textData: '', // 初始化文本数据
       filename: '',
-      selectedFunctionKey:'F6'//下拉框选择按钮回放按键
+      selectedFunctionKey:'F5',//下拉框选择按钮回放按键,
+      selectedFunctionKey4:'F7',
+      recordstart:false
     };
   },
   methods: {
     async startRecord() {
       if (!this.recording) {
         this.log = '';
+        this.recordstart = true;//终止的话他就是true，然后传给后端
       }
       this.recording = !this.recording;
       if (this.recording) {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
-        await invoke('start_record');
+        await invoke('start_record',{ recordstart: true });
       } else {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制结束,已保存到log文件夹下，日志被清空！'} - [${currentTime}]\n`;
@@ -249,7 +253,7 @@ export default {
 
       // 文本的内容
       const filePath = this.selectedFileName;
-      invoke('playback_main', { filePath });
+      invoke('playback_main', { filePath,selectedFunctionKey: this.selectedFunctionKey });
 
     },
    

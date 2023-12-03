@@ -19,7 +19,7 @@ pub mod record_main {
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
     
     #[tauri::command]
-    pub async fn start_record() {
+    pub async fn start_record(mut recordstart:bool) {
         let mut status = "init";
         let device_state = DeviceState::new();
         //存储工作目录文件夹名
@@ -88,8 +88,9 @@ pub mod record_main {
         // let mouse_record_dir = Arc::new(Mutex::new(now_dir.clone()));
         // 鼠标监听线程
         let mut mouse_flag = MOUSE_THREAD_START.lock().unwrap();
-        if *mouse_flag == false {
+        if *mouse_flag == false || recordstart == true{
             *mouse_flag = true;
+            recordstart == false;
             thread::spawn(move || {
                 if let Err(error) = listen(move |event| {
                     // let mouse_flag = *mouse_stop_flag.lock().unwrap();
@@ -182,6 +183,7 @@ pub mod record_main {
             }
             let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
             *mouse_flag = true;
+            recordstart == false;
             if status == "started" {
                 println!(
                     "\n经过了：{}毫秒",
