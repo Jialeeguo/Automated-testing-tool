@@ -127,7 +127,9 @@
             <button @click="stopRecord" :disabled="!recording" class="button-font"
               style="margin-left: 12px;">暂停录制</button>
             <button @click="startScreenshot" :disabled="!recording" class="button-font"
-              style="margin-left: 12px;">截图</button>
+              style="margin-left: 12px;">截图
+            
+            </button>
           </div>
         </div>
       </div>
@@ -171,20 +173,24 @@ export default {
       filename: '',
       selectedFunctionKey:'F5',//下拉框选择按钮回放按键,
       selectedFunctionKey4:'F7',
-      recordstart:false
+      recordstart:true,//开始录制的状态，还没改好
     };
   },
   methods: {
     async startRecord() {
       if (!this.recording) {
         this.log = '';
-        this.recordstart = false;//终止的话他就是true，然后传给后端
+        //终止的话他就是true，然后传给后端
       }
+      this.recordstart = !this.recordstart;
+      console.log(this.recordstart);
       this.recording = !this.recording;
       if (this.recording) {
+        console.log(this.recording+'高可儿');
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
-        await invoke('start_record',{ recordstart: false });
+        await invoke('start_record',{recordstart:this.recordstart});
+        
       } else {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制结束,已保存到log文件夹下，日志被清空！'} - [${currentTime}]\n`;
@@ -313,6 +319,7 @@ loadRecordResult() {
         });
       }
       if (event.key === "F2") {
+        if (this.recording) {
         this.$nextTick(() => {
           const textarea = document.getElementById('steps');
           const currentTime = new Date().toLocaleTimeString();
@@ -324,6 +331,11 @@ loadRecordResult() {
           textarea.scrollTop = textarea.scrollHeight;
 
         });
+      }else {
+    // 如果没有在录制，输出“没有录制”
+    const currentTime = new Date().toLocaleTimeString();
+    this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+  }
       }
       if (event.key === "F6") {
         console.log('你好');

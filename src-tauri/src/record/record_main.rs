@@ -26,7 +26,9 @@ pub mod record_main {
         let device_state = DeviceState::new();
         //存储工作目录文件夹名
         let mut now_dir = String::new();
-
+        if(recordstart == true){
+            return;
+        }
         //设定开始按键
         loop {
             // let start_keys: Vec<Keycode> = device_state.get_keys();
@@ -60,8 +62,9 @@ pub mod record_main {
             *MOUSE_MOVE_TIME.lock().unwrap() = Some(start_time.elapsed().as_millis());
             //鼠标监听标志
             let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
+            
             *mouse_flag = false;
-            recordstart = true;
+            
             break;
             
         }
@@ -90,8 +93,9 @@ pub mod record_main {
         // let mouse_record_dir = Arc::new(Mutex::new(now_dir.clone()));
         // 鼠标监听线程
         let mut mouse_flag = MOUSE_THREAD_START.lock().unwrap();
-        if *mouse_flag == false || recordstart == true{
+        if *mouse_flag == false{
             *mouse_flag = true;
+            
             thread::spawn(move || {
                 if let Err(error) = listen(move |event| {
                     // let mouse_flag = *mouse_stop_flag.lock().unwrap();
@@ -121,7 +125,7 @@ pub mod record_main {
             //     break;
             // }
             let keys: Vec<Keycode> = device_state.get_keys();
-            if keys.len() != 0 && keys[0] == Keycode::F2 {
+            if keys.len() != 0{
                 sleep(Duration::from_millis(300));
                 //截图事件F2触发
                 println!("进入截图功能");
@@ -183,8 +187,9 @@ pub mod record_main {
                 continue;
             }
             let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
+         
             *mouse_flag = true;
-          
+            
             if status == "started"{
                 println!(
                     "\n经过了：{}毫秒",

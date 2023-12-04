@@ -5,7 +5,7 @@ pub mod mouse {
         io::Write,
     };
 
-    use crate::record::screen_shot;
+    use crate::record::{screen_shot, self};
 
     use crate::MOUSE_BEFORE_PRESS;
     use crate::MOUSE_MOVE_TIME;
@@ -18,7 +18,7 @@ pub mod mouse {
     //鼠标监听回调 recordstart = true的时候不会记录，还没想好
     pub fn callback(event: Event,recordstart: bool) {
         let mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
-        if *mouse_flag == true{
+        if *mouse_flag == true || recordstart == true{
             return;
         }
         let mouse_path = MOUSE_PATH.lock().unwrap();
