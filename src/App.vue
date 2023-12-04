@@ -217,67 +217,76 @@ export default {
 
     },
     playBack() {
-      this.log = '';
+  this.log = '';
 
-      // 更新数据 market_id.txt 文件接口
-      let xhr = new XMLHttpRequest(),
-        okStatus = document.location.protocol === "file:" ? 0 : 200;
+  // 更新数据 market_id.txt 文件接口
+  let xhr = new XMLHttpRequest(),
+    okStatus = document.location.protocol === "file:" ? 0 : 200;
 
-      xhr.open("GET", `../Automated-testing/result/${this.filename}/record.txt`, false);
-      xhr.overrideMimeType("text/html;charset=utf-8"); // 默认为 utf-8
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState === 4) {
-          if (xhr.status === okStatus) {
-            // 每隔一秒处理一行文本
-            let lines = xhr.responseText.split('\n');
-            let currentIndex = 0;
+  xhr.open("GET", `../Automated-testing/result/${this.filename}/record.txt`, false);
+  xhr.overrideMimeType("text/html;charset=utf-8"); // 默认为 utf-8
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 4) {
+      if (xhr.status === okStatus) {
+        // 每隔一秒处理一行文本
+        let lines = xhr.responseText.split('\n');
+        let currentIndex = 0;
 
-            let intervalId = setInterval(() => {
-              if (currentIndex < lines.length) {
-                this.log += `${lines[currentIndex]}\n`;
-                currentIndex++;
-              } else {
-                clearInterval(intervalId); // 所有行处理完毕，清除定时器
+       
+          let intervalId = setInterval(() => {
+            if (currentIndex < lines.length) {
+              this.log += `${lines[currentIndex]}\n`;
+              currentIndex++;
+            } else {
+              clearInterval(intervalId); // 所有行处理完毕，清除定时器
 
-                this.loadRecordResult();
-              }
-            }, 500);
-          } else {
-            // 如果请求失败，将错误消息添加到日志中
-            this.log += "文件夹选择错误，找不到record.txt文件，请重新选择\n";
-          }
-        }
-      };
+              this.loadRecordResult();
+            }
+          }, 500);
+        
+      } else {
+        // 如果请求失败，将错误消息添加到日志中
+        this.log += "文件夹选择错误，找不到record.txt文件，请重新选择\n";
+      }
+    }
+  };
 
-      xhr.send(null);
+  xhr.send(null);
 
-      // 文本的内容
-      const filePath = this.selectedFileName;
-      invoke('playback_main', { filePath,selectedFunctionKey: this.selectedFunctionKey });
+  // 文本的内容
+  const filePath = this.selectedFileName;
+  invoke('playback_main', { filePath, selectedFunctionKey: this.selectedFunctionKey });
+},
 
-    },
    
-    loadRecordResult() {
-      this.log_playback = '';
-      // 加载 record_result.txt 文件内容
-      let resultXhr = new XMLHttpRequest(),
-        resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
+loadRecordResult() {
+  this.log_playback = '';
 
-      resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
-      resultXhr.overrideMimeType("text/html;charset=utf-8");
+  // 加载 record_result.txt 文件内容
+  let resultXhr = new XMLHttpRequest(),
+    resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
 
-      resultXhr.onreadystatechange = () => {
-        if (resultXhr.readyState === 4 && resultXhr.status === resultOkStatus) {
+  resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
+  resultXhr.overrideMimeType("text/html;charset=utf-8");
+
+  resultXhr.onreadystatechange = () => {
+    if (resultXhr.readyState === 4) {
+      if (resultXhr.status === resultOkStatus) {
+        // 如果 record_result.txt 的内容为空，输出日志
+        
           // 将 record_result.txt 的内容设置到 textarea
           document.getElementById("steps1").value = resultXhr.responseText;
-        }else {
-            // 如果请求失败，将错误消息添加到日志中
-           
-          }
-      };
-    
-      resultXhr.send(null);
-    },
+        
+      } else {
+        // 如果请求失败，将错误消息添加到日志中
+        this.log = "没有检测到任何移动轨迹，请查看record.txt是否为空\n";
+      }
+    }
+  };
+
+  resultXhr.send(null);
+},
+
     handleKeyDown(event) {
       // 检查是否按下 F1 键
       if (event.key === "F1") {
