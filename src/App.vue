@@ -120,15 +120,13 @@
               onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
-            <button @click="playBack" :disabled="recording" class="button-font" style="margin-left: 12px;"
-              >启动</button>
+            <button @click="playBack" :disabled="recording" class="button-font" style="margin-left: 12px;">启动</button>
 
-              
+
             <button @click="stopRecord" :disabled="!recording" class="button-font"
               style="margin-left: 12px;">暂停录制</button>
-            <button @click="startScreenshot" :disabled="!recording" class="button-font"
-              style="margin-left: 12px;">截图
-            
+            <button @click="startScreenshot" :disabled="!recording" class="button-font"  id="startScreenshot" style="margin-left: 12px;">截图
+             
             </button>
           </div>
         </div>
@@ -166,14 +164,15 @@ export default {
     return {
       recording: false,
       log: '',
-      log_playback:'',
+      log_playback: '',
       screenshotting: false,
       selectedFileName: '请选择回放文件夹',
       textData: '', // 初始化文本数据
       filename: '',
-      selectedFunctionKey:'F5',//下拉框选择按钮回放按键,
-      selectedFunctionKey4:'F7',
-      recordstart:true,//开始录制的状态，还没改好
+      selectedFunctionKey: 'F5',//下拉框选择按钮回放按键,
+      selectedFunctionKey4: 'F7',
+      recordstart: true,//开始录制的状态，还没改好
+      clickButton: false,
     };
   },
   methods: {
@@ -186,11 +185,11 @@ export default {
       console.log(this.recordstart);
       this.recording = !this.recording;
       if (this.recording) {
-        console.log(this.recording+'高可儿');
+        console.log(this.recording + '高可儿');
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
-        await invoke('start_record',{recordstart:this.recordstart});
-        
+        await invoke('start_record', { recordstart: this.recordstart });
+
       } else {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制结束,已保存到log文件夹下，日志被清空！'} - [${currentTime}]\n`;
@@ -200,7 +199,17 @@ export default {
         }, 1000)
       }
     },
-
+    
+    async startScreenshot() {
+      console.log("点击了");
+      this.clickButton = !this.clickButton
+      if(this.clickButton) {
+      await invoke('start_screen',{clickButton:this.clickButton});
+      setTimeout(() => {
+        this.buttonClicked = false;
+      }, 1000);
+      }
+  },
     //选择回放文件夹
     async selectPlaybackFile() {
       const selected = await open({
@@ -223,75 +232,77 @@ export default {
 
     },
     playBack() {
-  this.log = '';
+      this.log = '';
 
-  // 更新数据 market_id.txt 文件接口
-  let xhr = new XMLHttpRequest(),
-    okStatus = document.location.protocol === "file:" ? 0 : 200;
+      // 更新数据 market_id.txt 文件接口
+      let xhr = new XMLHttpRequest(),
+        okStatus = document.location.protocol === "file:" ? 0 : 200;
 
-  xhr.open("GET", `../Automated-testing/result/${this.filename}/record.txt`, false);
-  xhr.overrideMimeType("text/html;charset=utf-8"); // 默认为 utf-8
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4) {
-      if (xhr.status === okStatus) {
-        // 每隔一秒处理一行文本
-        let lines = xhr.responseText.split('\n');
-        let currentIndex = 0;
+      xhr.open("GET", `../Automated-testing/result/${this.filename}/record.txt`, false);
+      xhr.overrideMimeType("text/html;charset=utf-8"); // 默认为 utf-8
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === okStatus) {
+            // 每隔一秒处理一行文本
+            let lines = xhr.responseText.split('\n');
+            let currentIndex = 0;
 
-       
-          let intervalId = setInterval(() => {
-            if (currentIndex < lines.length) {
-              this.log += `${lines[currentIndex]}\n`;
-              currentIndex++;
-            } else {
-              clearInterval(intervalId); // 所有行处理完毕，清除定时器
 
-              this.loadRecordResult();
-            }
-          }, 500);
-        
-      } else {
-        // 如果请求失败，将错误消息添加到日志中
-        this.log += "文件夹选择错误，找不到record.txt文件，请重新选择\n";
-      }
-    }
-  };
+            let intervalId = setInterval(() => {
+              if (currentIndex < lines.length) {
+                this.log += `${lines[currentIndex]}\n`;
+                currentIndex++;
+              } else {
+                clearInterval(intervalId); // 所有行处理完毕，清除定时器
 
-  xhr.send(null);
+                this.loadRecordResult();
+              }
+            }, 500);
 
-  // 文本的内容
-  const filePath = this.selectedFileName;
-  invoke('playback_main', { filePath, selectedFunctionKey: this.selectedFunctionKey });
-},
+          } else {
+            // 如果请求失败，将错误消息添加到日志中
+            this.log += "文件夹选择错误，找不到record.txt文件，请重新选择\n";
+          }
+        }
+      };
 
+      xhr.send(null);
+
+      // 文本的内容
+      const filePath = this.selectedFileName;
+      invoke('playback_main', { filePath, selectedFunctionKey: this.selectedFunctionKey });
+    },
+
+
+    loadRecordResult() {
+      this.log_playback = '';
+
+      // 加载 record_result.txt 文件内容
+      let resultXhr = new XMLHttpRequest(),
+        resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
+
+      resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
+      resultXhr.overrideMimeType("text/html;charset=utf-8");
+
+      resultXhr.onreadystatechange = () => {
+        if (resultXhr.readyState === 4) {
+          if (resultXhr.status === resultOkStatus) {
+            // 如果 record_result.txt 的内容为空，输出日志
+
+            // 将 record_result.txt 的内容设置到 textarea
+            document.getElementById("steps1").value = resultXhr.responseText;
+
+          } else {
+            // 如果请求失败，将错误消息添加到日志中
+            this.log = "没有检测到任何移动轨迹，请查看record.txt是否为空\n";
+          }
+        }
+      };
+
+      resultXhr.send(null);
+    },
    
-loadRecordResult() {
-  this.log_playback = '';
 
-  // 加载 record_result.txt 文件内容
-  let resultXhr = new XMLHttpRequest(),
-    resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
-
-  resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
-  resultXhr.overrideMimeType("text/html;charset=utf-8");
-
-  resultXhr.onreadystatechange = () => {
-    if (resultXhr.readyState === 4) {
-      if (resultXhr.status === resultOkStatus) {
-        // 如果 record_result.txt 的内容为空，输出日志
-        
-          // 将 record_result.txt 的内容设置到 textarea
-          document.getElementById("steps1").value = resultXhr.responseText;
-        
-      } else {
-        // 如果请求失败，将错误消息添加到日志中
-        this.log = "没有检测到任何移动轨迹，请查看record.txt是否为空\n";
-      }
-    }
-  };
-
-  resultXhr.send(null);
-},
 
     handleKeyDown(event) {
       // 检查是否按下 F1 键
@@ -319,23 +330,28 @@ loadRecordResult() {
         });
       }
       if (event.key === "F2") {
-        if (this.recording) {
-        this.$nextTick(() => {
-          const textarea = document.getElementById('steps');
-          const currentTime = new Date().toLocaleTimeString();
-          this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
-          setTimeout(() => {
-            const currentTime = new Date().toLocaleTimeString();
-            this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
-          }, 10000)
-          textarea.scrollTop = textarea.scrollHeight;
 
-        });
-      }else {
-    // 如果没有在录制，输出“没有录制”
-    const currentTime = new Date().toLocaleTimeString();
-    this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
-  }
+        if (this.recording) {
+          event.preventDefault();
+        // 执行开始/停止录制逻辑
+        this.startScreenshot()
+          this.$nextTick(() => {
+            const textarea = document.getElementById('steps');
+            const currentTime = new Date().toLocaleTimeString();
+            this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
+            setTimeout(() => {
+              const currentTime = new Date().toLocaleTimeString();
+              this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
+            }, 10000)
+            textarea.scrollTop = textarea.scrollHeight;
+
+          });
+        } else {
+          // 如果没有在录制，输出“没有录制”
+          const currentTime = new Date().toLocaleTimeString();
+          this.log = '';
+          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+        }
       }
       if (event.key === "F6") {
         console.log('你好');
@@ -350,6 +366,7 @@ loadRecordResult() {
   mounted() {
     // 监听键盘按下事件
     window.addEventListener("keydown", this.handleKeyDown);
+   
   },
   beforeDestroy() {
     // 在组件销毁前移除事件监听
@@ -357,10 +374,6 @@ loadRecordResult() {
   },
 };
 
-const startScreenshot = () => {
-  const filePath = this.selectedFileName;
-  invoke('screenshot', { filePath });
-};
 
 
 </script>

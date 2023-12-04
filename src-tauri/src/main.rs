@@ -13,6 +13,7 @@ mod record;
 use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::start_record;
 use record::screen_shot::screen::screenshot;
+use record::record_main::record_main::start_screen;
 use std::sync::Arc;
 // use record::record_main::record_main::stop_record;
 #[macro_use]
@@ -54,6 +55,7 @@ fn main() {
             start_record,
             playback_main,
             screenshot,
+            start_screen
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
