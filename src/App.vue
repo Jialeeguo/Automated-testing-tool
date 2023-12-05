@@ -203,12 +203,33 @@ export default {
     async startScreenshot() {
       console.log("点击了");
       this.clickButton = !this.clickButton
-      if(this.clickButton) {
+      
+        this.$nextTick(() => {
+            const textarea = document.getElementById('steps');
+            const currentTime = new Date().toLocaleTimeString();
+            this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
+            setTimeout(() => {
+              const currentTime = new Date().toLocaleTimeString();
+              this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
+            }, 10000)
+            textarea.scrollTop = textarea.scrollHeight;
+
+          });
+          if(!this.recording){
+          // 如果没有在录制，输出“没有录制”
+          const currentTime = new Date().toLocaleTimeString();
+          this.log = '';
+          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+        }
+        if(this.clickButton ) {
       await invoke('start_screen',{clickButton:this.clickButton});
+    
+          
       setTimeout(() => {
         this.buttonClicked = false;
       }, 1000);
       }
+       
   },
     //选择回放文件夹
     async selectPlaybackFile() {
@@ -335,22 +356,22 @@ export default {
           event.preventDefault();
         // 执行开始/停止录制逻辑
         this.startScreenshot()
-          this.$nextTick(() => {
-            const textarea = document.getElementById('steps');
-            const currentTime = new Date().toLocaleTimeString();
-            this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
-            setTimeout(() => {
-              const currentTime = new Date().toLocaleTimeString();
-              this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
-            }, 10000)
-            textarea.scrollTop = textarea.scrollHeight;
+          // this.$nextTick(() => {
+          //   const textarea = document.getElementById('steps');
+          //   const currentTime = new Date().toLocaleTimeString();
+          //   this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
+          //   setTimeout(() => {
+          //     const currentTime = new Date().toLocaleTimeString();
+          //     this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
+          //   }, 10000)
+          //   textarea.scrollTop = textarea.scrollHeight;
 
-          });
+          // });
         } else {
           // 如果没有在录制，输出“没有录制”
-          const currentTime = new Date().toLocaleTimeString();
-          this.log = '';
-          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+          // const currentTime = new Date().toLocaleTimeString();
+          // this.log = '';
+          // this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
         }
       }
       if (event.key === "F6") {
