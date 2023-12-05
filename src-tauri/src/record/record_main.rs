@@ -4,11 +4,12 @@ pub mod record_main {
     use crate::MOUSE_PATH;
     use crate::MOUSE_THREAD_FLAG;
     use crate::MOUSE_THREAD_START;
+    use crate::NOW_DIR;
     use crate::SCREEN_SHOT_FLAG;
     use crate::SHOULD_STOP;
+    use crate::SHOULD_STOP_KEYBOARD;
     use crate::START_TIME;
     use crate::TEXTSHOT_ACTION_TIME;
-    use crate::NOW_DIR;
     use chrono::prelude::*;
     use clipboard::ClipboardContext;
     use clipboard::ClipboardProvider;
@@ -16,7 +17,7 @@ pub mod record_main {
     use rdev::listen;
     use std::process::Command;
     // use std::sync::{Arc, Mutex};
-    use std::sync::{Mutex,Arc};
+    use std::sync::{Arc, Mutex,atomic::{AtomicBool,Ordering}};
     use std::time::Instant;
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
     #[tauri::command]
@@ -50,13 +51,13 @@ pub mod record_main {
             let local: DateTime<Local> = Local::now();
             now_dir = local.format("%Y-%m-%d %H-%M-%S").to_string();
             std::fs::create_dir_all(format!("../Automated-testing/result/{}", now_dir)).unwrap();
-            
+
             let mut global_now_dir = NOW_DIR.lock().unwrap();
             *global_now_dir = now_dir.clone();
 
             let mut mouse_path = MOUSE_PATH.lock().unwrap();
             *mouse_path = now_dir.clone();
-          
+
             //开启计时
             status = "started";
             //重置计时时间
@@ -83,31 +84,18 @@ pub mod record_main {
                 now_dir
             ))
             .unwrap();
-        // let should_stop;
-        // {
-        //     let stop_flag1 = SHOULD_STOP.lock().unwrap();
-        //     should_stop = *stop_flag1;
-        // }
-        // println!("{}", !should_stop);
-        // let mut mouse_stop_flag = false;
-        // println!("flag当前是1：{}", mouse_stop_flag);
-
-        // let mouse_record_dir = Arc::new(Mutex::new(now_dir.clone()));
         // 鼠标监听线程
         let mut mouse_flag = MOUSE_THREAD_START.lock().unwrap();
         if *mouse_flag == false {
             *mouse_flag = true;
 
+            // 使用 Arc<AtomicBool> 共享键盘监听标志
+            let should_stop_keyboard = SHOULD_STOP_KEYBOARD.clone();
+
             thread::spawn(move || {
-                if let Err(error) = listen(move |event| {
-                    // let mouse_flag = *mouse_stop_flag.lock().unwrap();
-                    // println!("flag当前是2：{}", mouse_stop_flag);
-                    // if mouse_stop_flag {
-                    //     println!("这里应该退出线程了");
-                    //     return;
-                    // }
-                    mouse_monitor::mouse::callback(event, recordstart)
-                }) {
+                if let Err(error) =
+                    listen(move |event| mouse_monitor::mouse::callback(event, recordstart))
+                {
                     println!("Error: {:?}", error);
                 }
             });
@@ -124,7 +112,7 @@ pub mod record_main {
                 break;
             }
             let keys: Vec<Keycode> = device_state.get_keys();
-        if (keys.len() != 0 && keys[0] != Keycode::F1) {
+            if (keys.len() != 0 && keys[0] != Keycode::F1) {
                 let duration_key = START_TIME.lock().unwrap().elapsed().as_millis();
                 println!("{}ms,捕捉到键盘输入{:?}", duration_key, keys[0]);
                 let output = format!("{},key,{:?}\n", duration_key, keys[0]);
@@ -138,7 +126,7 @@ pub mod record_main {
 
             *mouse_flag = true;
 
-            if status == "started"{
+            if status == "started" {
                 println!(
                     "\n经过了：{}毫秒",
                     START_TIME.lock().unwrap().elapsed().as_millis()
@@ -162,6 +150,13 @@ pub mod record_main {
 
             let global_now_dir = NOW_DIR.lock().unwrap();
             now_dir = global_now_dir.clone();
+
+            let should_stop_keyboard = SHOULD_STOP_KEYBOARD.clone();
+
+            if should_stop_keyboard.load(Ordering::Relaxed) {
+                println!("键盘监听线程结束");
+                break;
+            }
             let mut save_file = OpenOptions::new()
                 .write(true)
                 .create(true)
@@ -224,10 +219,6 @@ pub mod record_main {
 
                 continue;
             } else if (keys.len() != 0 && keys[0] != Keycode::F1) {
-                let duration_key = START_TIME.lock().unwrap().elapsed().as_millis();
-                println!("{}ms,捕捉到键盘输入{:?}", duration_key, keys[0]);
-                let output = format!("{},key,{:?}\n", duration_key, keys[0]);
-                save_file.write_all(output.as_bytes()).unwrap();
                 sleep(Duration::from_millis(175));
                 continue;
             } else if keys.len() == 0 {

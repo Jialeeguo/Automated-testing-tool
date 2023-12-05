@@ -14,7 +14,7 @@ use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::start_record;
 use record::screen_shot::screen::screenshot;
 use record::record_main::record_main::start_screen;
-use std::sync::Arc;
+use std::sync::{Arc,atomic::{AtomicBool,Ordering}};
 // use record::record_main::record_main::stop_record;
 #[macro_use]
 extern crate lazy_static;
@@ -44,6 +44,8 @@ lazy_static! {
     static ref MOUSE_PATH: Mutex<String> = Mutex::new(String::new());
     //全局路径变量
     pub static ref NOW_DIR: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+    //键盘是否停止监听标志
+    pub static ref SHOULD_STOP_KEYBOARD: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
 }
 // #[tauri::command]
 // pub fn stop_record() {
