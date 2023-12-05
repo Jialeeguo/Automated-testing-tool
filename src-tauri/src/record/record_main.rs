@@ -8,6 +8,7 @@ pub mod record_main {
     use crate::SHOULD_STOP;
     use crate::START_TIME;
     use crate::TEXTSHOT_ACTION_TIME;
+    use crate::NOW_DIR;
     use chrono::prelude::*;
     use clipboard::ClipboardContext;
     use clipboard::ClipboardProvider;
@@ -15,12 +16,11 @@ pub mod record_main {
     use rdev::listen;
     use std::process::Command;
     // use std::sync::{Arc, Mutex};
-    use std::sync::Mutex;
+    use std::sync::{Mutex,Arc};
     use std::time::Instant;
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
     #[tauri::command]
     pub async fn start_record(mut recordstart: bool) {
-        println!("{}牛逼双射手是", recordstart);
         let mut status = "init";
         let device_state = DeviceState::new();
         //存储工作目录文件夹名
@@ -50,8 +50,13 @@ pub mod record_main {
             let local: DateTime<Local> = Local::now();
             now_dir = local.format("%Y-%m-%d %H-%M-%S").to_string();
             std::fs::create_dir_all(format!("../Automated-testing/result/{}", now_dir)).unwrap();
+            
+            let mut global_now_dir = NOW_DIR.lock().unwrap();
+            *global_now_dir = now_dir.clone();
+
             let mut mouse_path = MOUSE_PATH.lock().unwrap();
             *mouse_path = now_dir.clone();
+          
             //开启计时
             status = "started";
             //重置计时时间
@@ -155,6 +160,8 @@ pub mod record_main {
             let device_state = DeviceState::new();
             let keys: Vec<Keycode> = device_state.get_keys();
 
+            let global_now_dir = NOW_DIR.lock().unwrap();
+            now_dir = global_now_dir.clone();
             let mut save_file = OpenOptions::new()
                 .write(true)
                 .create(true)

@@ -42,7 +42,8 @@ lazy_static! {
     static ref MOUSE_THREAD_START: Mutex<bool> = Mutex::new(false);
     //鼠标记录文件夹的位置
     static ref MOUSE_PATH: Mutex<String> = Mutex::new(String::new());
-
+    //全局路径变量
+    pub static ref NOW_DIR: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
 }
 // #[tauri::command]
 // pub fn stop_record() {
