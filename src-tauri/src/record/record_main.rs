@@ -167,6 +167,7 @@ pub mod record_main {
                 ))
                 .unwrap();
             if (keys.len() != 0 && keys[0] == Keycode::F2) || clickButton == true {
+                println!("传进来第一次的clickButton是{}",clickButton);
                 clickButton = false;
                 sleep(Duration::from_millis(300));
                 //截图事件F2触发

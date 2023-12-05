@@ -125,8 +125,9 @@
 
             <button @click="stopRecord" :disabled="!recording" class="button-font"
               style="margin-left: 12px;">暂停录制</button>
-            <button @click="startScreenshot" :disabled="!recording" class="button-font"  id="startScreenshot" style="margin-left: 12px;">截图
-             
+            <button @click="startScreenshot" :disabled="!recording" class="button-font" id="startScreenshot"
+              style="margin-left: 12px;">截图
+
             </button>
           </div>
         </div>
@@ -192,45 +193,43 @@ export default {
 
       } else {
         const currentTime = new Date().toLocaleTimeString();
-        this.log += `${'录制结束,已保存到log文件夹下，日志被清空！'} - [${currentTime}]\n`;
-        console.group("录制结束,已保存到log文件夹下，日志被清空！")
-        setTimeout(() => {
-          this.log = '';
-        }, 1000)
+        this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
+        console.group("录制结束,已保存到log文件夹下，下次录制时日志将被清空！")
+      
       }
     },
-    
+
     async startScreenshot() {
       console.log("点击了");
       this.clickButton = !this.clickButton
-      
-        this.$nextTick(() => {
-            const textarea = document.getElementById('steps');
-            const currentTime = new Date().toLocaleTimeString();
-            this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
-            setTimeout(() => {
-              const currentTime = new Date().toLocaleTimeString();
-              this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
-            }, 10000)
-            textarea.scrollTop = textarea.scrollHeight;
-
-          });
-          if(!this.recording){
-          // 如果没有在录制，输出“没有录制”
+      console.log("按钮的值是"+this.clickButton)
+      this.$nextTick(() => {
+        const textarea = document.getElementById('steps');
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
+        setTimeout(() => {
           const currentTime = new Date().toLocaleTimeString();
-          this.log = '';
-          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
-        }
-        if(this.clickButton ) {
-      await invoke('start_screen',{clickButton:this.clickButton});
-    
-          
-      setTimeout(() => {
-        this.buttonClicked = false;
-      }, 1000);
+          this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
+        }, 10000)
+        textarea.scrollTop = textarea.scrollHeight;
+        if (!this.recording) {
+        // 如果没有在录制，输出“没有录制”
+        const currentTime = new Date().toLocaleTimeString();
+        this.log = '';
+        this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
       }
-       
-  },
+      });
+      
+      if (this.clickButton) {
+        await invoke('start_screen', { clickButton: this.clickButton });
+
+
+        setTimeout(() => {
+          this.clickButton = false;
+        }, 1000);
+      }
+
+    },
     //选择回放文件夹
     async selectPlaybackFile() {
       const selected = await open({
@@ -322,7 +321,7 @@ export default {
 
       resultXhr.send(null);
     },
-   
+
 
 
     handleKeyDown(event) {
@@ -354,24 +353,9 @@ export default {
 
         if (this.recording) {
           event.preventDefault();
-        // 执行开始/停止录制逻辑
-        this.startScreenshot()
-          // this.$nextTick(() => {
-          //   const textarea = document.getElementById('steps');
-          //   const currentTime = new Date().toLocaleTimeString();
-          //   this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
-          //   setTimeout(() => {
-          //     const currentTime = new Date().toLocaleTimeString();
-          //     this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
-          //   }, 10000)
-          //   textarea.scrollTop = textarea.scrollHeight;
+          // 执行开始/停止录制逻辑
+          this.startScreenshot()
 
-          // });
-        } else {
-          // 如果没有在录制，输出“没有录制”
-          // const currentTime = new Date().toLocaleTimeString();
-          // this.log = '';
-          // this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
         }
       }
       if (event.key === "F6") {
@@ -387,7 +371,7 @@ export default {
   mounted() {
     // 监听键盘按下事件
     window.addEventListener("keydown", this.handleKeyDown);
-   
+
   },
   beforeDestroy() {
     // 在组件销毁前移除事件监听

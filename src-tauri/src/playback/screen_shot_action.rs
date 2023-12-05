@@ -91,12 +91,14 @@ pub mod screen {
         let mut save_file = OpenOptions::new()
             .write(true)
             .create(true)
-            .append(false)
+            .append(true)
             .open(format!("{}/record_result.txt", path))
             .unwrap();
-        writeln!(save_file, "文字提取结果1:\n{}", text1).expect("写入失败");
-        writeln!(save_file, "文字提取结果2:\n{}", text2_new).expect("写入失败");
-    
+        writeln!(save_file, "文字提取录制结果:\n{}", text1).expect("写入失败");
+        writeln!(save_file, "文字提取回放结果:\n{}", text2_new).expect("写入失败");
+        
+
+
         if text1 == text2_new {
             writeln!(save_file, "{}时刻文字提取对比验证通过！", time).expect("写入失败");
         } else {
