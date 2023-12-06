@@ -264,31 +264,32 @@ export default {
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === okStatus) {
-            // 每隔一秒处理一行文本
-            let lines = xhr.responseText.split('\n');
-            let currentIndex = 0;
+            // 请求成功，但是文件内容为空
+            if (xhr.responseText.trim() === "") {
+              this.log += "没有选择文件夹或record.txt为空,请选择文件夹或检查record.txt是否为空\n";
+            } else {
+              // 每隔一秒处理一行文本
+              let lines = xhr.responseText.split('\n');
+              let currentIndex = 0;
 
-
-            let intervalId = setInterval(() => {
-              if (currentIndex < lines.length) {
-                this.log += `${lines[currentIndex]}\n`;
-                currentIndex++;
-              } else {
-                clearInterval(intervalId); // 所有行处理完毕，清除定时器
-
-                this.loadRecordResult();
-              }
-            }, 500);
-
+              let intervalId = setInterval(() => {
+                if (currentIndex < lines.length) {
+                  this.log += `${lines[currentIndex]}\n`;
+                  currentIndex++;
+                } else {
+                  clearInterval(intervalId); // 所有行处理完毕，清除定时器
+                }
+              }, 500);
+            }
           } else {
             // 如果请求失败，将错误消息添加到日志中
             if (!this.recording) {
-              this.log += "文件夹选择错误，找不到record.txt文件，请重新选择\n";
+              this.log += "文件夹选择错误，文件夹下没有包含record.txt,请重新选择\n";
             }
           }
         }
       };
-
+      // this.loadRecordResult();
       xhr.send(null);
 
       // 文本的内容
@@ -296,34 +297,6 @@ export default {
       invoke('playback_main', { filePath, selectedFunctionKey: this.selectedFunctionKey });
     },
 
-
-    loadRecordResult() {
-      this.log_playback = '';
-
-      // 加载 record_result.txt 文件内容
-      let resultXhr = new XMLHttpRequest(),
-        resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
-
-      resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
-      resultXhr.overrideMimeType("text/html;charset=utf-8");
-
-      resultXhr.onreadystatechange = () => {
-        if (resultXhr.readyState === 4) {
-          if (resultXhr.status === resultOkStatus) {
-            // 如果 record_result.txt 的内容为空，输出日志
-
-            // 将 record_result.txt 的内容设置到 textarea
-            document.getElementById("steps1").value = resultXhr.responseText;
-
-          } else {
-            // 如果请求失败，将错误消息添加到日志中
-            this.log = "没有检测到任何移动轨迹，请查看record.txt是否为空\n";
-          }
-        }
-      };
-
-      resultXhr.send(null);
-    },
 
 
 
@@ -354,14 +327,14 @@ export default {
       }
       if (event.key === "F2") {
 
-        if(this.recording){
+        if (this.recording) {
           event.preventDefault();
           // 执行开始/停止录制逻辑
           this.startScreenshot()
-        }else{
-          const currentTime = new Date().toLocaleTimeString();
+        } else {
 
-          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+
+          this.log += "不在录制过程中，无法截图\n";
         }
       }
       if (event.key === "F6") {
