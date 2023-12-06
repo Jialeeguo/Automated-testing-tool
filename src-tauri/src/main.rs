@@ -14,6 +14,7 @@ use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::start_record;
 use record::record_main::record_main::start_screen;
 use record::screen_shot::screen::screenshot;
+use record::record_main::record_main::record_end;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -58,7 +59,7 @@ fn main() {
             playback_main,
             screenshot,
             start_screen,
-            
+            record_end
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

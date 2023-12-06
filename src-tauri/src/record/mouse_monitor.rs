@@ -16,9 +16,9 @@ pub mod mouse {
     use crate::MOUSE_PATH;
 
     //鼠标监听回调 recordstart = true的时候不会记录，还没想好
-    pub fn callback(event: Event,recordstart: bool) {
+    pub fn callback(event: Event) {
         let mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
-        if *mouse_flag == true || recordstart == true{
+        if *mouse_flag == true{
             return;
         }
         let mouse_path = MOUSE_PATH.lock().unwrap();

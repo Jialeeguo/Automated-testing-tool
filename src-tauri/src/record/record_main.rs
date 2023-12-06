@@ -67,6 +67,10 @@ pub mod record_main {
 
             *mouse_flag = false;
 
+            //录制停止标志
+            let mut stop_flag = SHOULD_STOP.lock().unwrap();
+            *stop_flag = false;
+
             break;
         }
 
@@ -91,7 +95,7 @@ pub mod record_main {
 
             thread::spawn(move || {
                 if let Err(error) =
-                    listen(move |event| mouse_monitor::mouse::callback(event, recordstart))
+                    listen(move |event| mouse_monitor::mouse::callback(event))
                 {
                     println!("Error: {:?}", error);
                 }
@@ -105,8 +109,16 @@ pub mod record_main {
             };
 
             if should_stop {
-                println!("录制被终止");
-                break;
+                let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
+
+                *mouse_flag = true;
+                if status == "started" {
+                    println!(
+                        "\n经过了：{}毫秒",
+                        START_TIME.lock().unwrap().elapsed().as_millis()
+                    );
+                    return;
+                }
             }
             let keys: Vec<Keycode> = device_state.get_keys();
             if (keys.len() != 0 && keys[0] != Keycode::F1) {
@@ -166,7 +178,7 @@ pub mod record_main {
             if !clickButton {
                 continue;
             }
-        
+
             if clickButton == true {
                 println!("传进来第一次的clickButton是{}", clickButton);
                 clickButton = false;
@@ -220,7 +232,6 @@ pub mod record_main {
                         )
                         .unwrap();
                     println!("提取文字执行成功！请继续操作。");
-                    
                 } else {
                     let error = String::from_utf8_lossy(&output.stderr);
                     println!("提取文字命令执行失败: {}", error);
@@ -233,7 +244,12 @@ pub mod record_main {
             } else if keys.len() == 0 {
                 continue;
             }
-
         }
+    }
+
+    #[tauri::command]
+    pub fn record_end() {
+        let mut stop_flag = SHOULD_STOP.lock().unwrap();
+        *stop_flag = true;
     }
 }

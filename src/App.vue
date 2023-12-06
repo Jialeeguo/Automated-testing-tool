@@ -116,14 +116,14 @@
 
           <div class="buttons-container">
             <!-- 添加按钮组 -->
-            <button @click="startRecord" :disabled="screenshotting" class="button-font" id="startrecord"
+            <button @click="recording ? stopRecord() : startRecord()" :disabled="screenshotting" class="button-font" id="startrecord"
               onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
             <button @click="playBack" :disabled="recording" class="button-font" style="margin-left: 12px;">启动</button>
 
 
-            <button @click="stopRecord" :disabled="!recording" class="button-font"
+            <button @click="pauseRecording" :disabled="!recording" class="button-font"
               style="margin-left: 12px;">暂停录制</button>
             <button @click="startScreenshot" :disabled="!recording" class="button-font" id="startScreenshot"
               style="margin-left: 12px;">截图
@@ -187,13 +187,12 @@ export default {
       });
       if (!this.recording) {
         this.log = '';
-        //终止的话他就是true，然后传给后端
+      
       }
       this.recordstart = !this.recordstart;
       console.log(this.recordstart);
       this.recording = !this.recording;
       if (this.recording) {
-        console.log(this.recording + '高可儿');
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
         await invoke('start_record', { recordstart: this.recordstart });
@@ -204,6 +203,12 @@ export default {
         console.group("录制结束,已保存到log文件夹下，下次录制时日志将被清空！")
 
       }
+    },
+
+    async stopRecord() {
+      this.recording = false;
+      this.recordstart = !this.recordstart;
+       invoke('record_end');
     },
 
     async startScreenshot() {
@@ -251,6 +256,10 @@ export default {
       this.filename = fullPath.replace(/^.*[\\\/]/, '');
 
 
+    },
+    async pauseRecording() {
+        invoke('');
+        console.log("好好好");
     },
     playBack() {
       this.log = '';
