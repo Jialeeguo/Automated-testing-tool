@@ -129,7 +129,7 @@
               style="margin-left: 12px;">截图
 
             </button>
-  
+
           </div>
         </div>
       </div>
@@ -176,7 +176,7 @@ export default {
       selectedFunctionKey4: 'F7',
       recordstart: true,//开始录制的状态，还没改好
       clickButton: false,
-      logs:'',
+      logs: '',
     };
   },
   methods: {
@@ -207,9 +207,9 @@ export default {
     },
 
     async startScreenshot() {
-      if(this.clickButton == false){
-      this.clickButton = !this.clickButton
-    }
+      if (this.clickButton == false) {
+        this.clickButton = !this.clickButton
+      }
       this.$nextTick(() => {
         const textarea = document.getElementById('steps');
         const currentTime = new Date().toLocaleTimeString();
@@ -229,7 +229,7 @@ export default {
 
 
       await invoke('start_screen', { clickButton: this.clickButton });
-        
+
     },
     //选择回放文件夹
     async selectPlaybackFile() {
@@ -282,7 +282,9 @@ export default {
 
           } else {
             // 如果请求失败，将错误消息添加到日志中
-            this.log += "文件夹选择错误，找不到record.txt文件，请重新选择\n";
+            if (!this.recording) {
+              this.log += "文件夹选择错误，找不到record.txt文件，请重新选择\n";
+            }
           }
         }
       };
@@ -352,12 +354,15 @@ export default {
       }
       if (event.key === "F2") {
 
-      
+        if(this.recording){
           event.preventDefault();
           // 执行开始/停止录制逻辑
           this.startScreenshot()
+        }else{
+          const currentTime = new Date().toLocaleTimeString();
 
-        
+          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+        }
       }
       if (event.key === "F6") {
         // 阻止默认事件，以避免浏览器刷新页面
