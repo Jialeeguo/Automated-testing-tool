@@ -16,10 +16,19 @@ pub mod record_main {
     use device_query::{DeviceQuery, DeviceState, Keycode};
     use rdev::listen;
     use std::process::Command;
+    use tauri::window;
+    use tauri::{Manager, Window};
     // use std::sync::{Arc, Mutex};
-    use std::sync::{Arc, Mutex,atomic::{AtomicBool,Ordering}};
+    use std::sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    };
     use std::time::Instant;
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
+    #[derive(Clone, serde::Serialize)]
+    struct Payload {
+        message: String,
+    }
     #[tauri::command]
     pub async fn start_record(mut recordstart: bool) {
         let mut status = "init";
@@ -142,7 +151,7 @@ pub mod record_main {
     }
     //点击终止录制后函数
     #[tauri::command]
-    pub async fn start_screen(mut clickButton: bool) {
+    pub async fn start_screen(mut clickButton: bool, window: Window) {
         loop {
             let mut now_dir = String::new();
             let device_state = DeviceState::new();
@@ -167,7 +176,7 @@ pub mod record_main {
                 ))
                 .unwrap();
             if (keys.len() != 0 && keys[0] == Keycode::F2) || clickButton == true {
-                println!("传进来第一次的clickButton是{}",clickButton);
+                println!("传进来第一次的clickButton是{}", clickButton);
                 clickButton = false;
                 sleep(Duration::from_millis(300));
                 //截图事件F2触发
@@ -211,8 +220,16 @@ pub mod record_main {
                         file.write_all(clipboard_content.as_bytes())
                             .expect("提取文字命令写入文件失败");
                     }
-
+                    window
+                        .emit(
+                            "event-name",
+                            Payload {
+                                message: "Tauri is awesome!".into(),
+                            },
+                        )
+                        .unwrap();
                     println!("提取文字执行成功！请继续操作。");
+                    
                 } else {
                     let error = String::from_utf8_lossy(&output.stderr);
                     println!("提取文字命令执行失败: {}", error);

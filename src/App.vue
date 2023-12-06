@@ -129,6 +129,7 @@
               style="margin-left: 12px;">截图
 
             </button>
+  
           </div>
         </div>
       </div>
@@ -158,6 +159,7 @@ import { open } from '@tauri-apps/api/dialog';
 import { appConfigDir } from '@tauri-apps/api/path';
 // Open a selection dialog for directories
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs';
+import { listen } from '@tauri-apps/api/event';
 // Read the text file in the `$APPCONFIG/app.conf` path
 // const contents = await readTextFile('record.txt', { dir: BaseDirectory.AppConfig });
 export default {
@@ -174,10 +176,15 @@ export default {
       selectedFunctionKey4: 'F7',
       recordstart: true,//开始录制的状态，还没改好
       clickButton: false,
+      logs:'',
     };
   },
   methods: {
     async startRecord() {
+      listen('event-name', (event) => {
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${"提取文字执行成功！请继续操作。"} - [${currentTime}]\n`;
+      });
       if (!this.recording) {
         this.log = '';
         //终止的话他就是true，然后传给后端
@@ -195,39 +202,41 @@ export default {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
         console.group("录制结束,已保存到log文件夹下，下次录制时日志将被清空！")
-      
+
       }
     },
 
     async startScreenshot() {
       console.log("点击了");
       this.clickButton = !this.clickButton
-      console.log("按钮的值是"+this.clickButton)
+      console.log("按钮的值是" + this.clickButton)
       this.$nextTick(() => {
         const textarea = document.getElementById('steps');
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
-        setTimeout(() => {
-          const currentTime = new Date().toLocaleTimeString();
-          this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
-        }, 10000)
+        // setTimeout(() => {
+        //   const currentTime = new Date().toLocaleTimeString();
+        //   this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
+        // }, 10000)
         textarea.scrollTop = textarea.scrollHeight;
         if (!this.recording) {
-        // 如果没有在录制，输出“没有录制”
-        const currentTime = new Date().toLocaleTimeString();
-        this.log = '';
-        this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
-      }
+          // 如果没有在录制，输出“没有录制”
+          const currentTime = new Date().toLocaleTimeString();
+          this.log = '';
+          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+        }
       });
-      
-      if (this.clickButton) {
-        await invoke('start_screen', { clickButton: this.clickButton });
 
 
-        setTimeout(() => {
-          this.clickButton = false;
-        }, 1000);
-      }
+      await invoke('start_screen', { clickButton: this.clickButton });
+
+      listen < String > ('event-name', (event) => {
+        console.log(event);
+      });
+      setTimeout(() => {
+        this.clickButton = false;
+      }, 1000);
+
 
     },
     //选择回放文件夹

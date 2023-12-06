@@ -12,9 +12,12 @@ mod record;
 // use std::time::Duration;
 use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::start_record;
-use record::screen_shot::screen::screenshot;
 use record::record_main::record_main::start_screen;
-use std::sync::{Arc,atomic::{AtomicBool,Ordering}};
+use record::screen_shot::screen::screenshot;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
 // use record::record_main::record_main::stop_record;
 #[macro_use]
 extern crate lazy_static;
@@ -47,18 +50,15 @@ lazy_static! {
     //键盘是否停止监听标志
     pub static ref SHOULD_STOP_KEYBOARD: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
 }
-// #[tauri::command]
-// pub fn stop_record() {
-//     process::exit(0);
-// }
 
 fn main() {
-    tauri::Builder::default()  
+    tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             start_record,
             playback_main,
             screenshot,
-            start_screen
+            start_screen,
+            
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
