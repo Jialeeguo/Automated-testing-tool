@@ -207,9 +207,9 @@ export default {
     },
 
     async startScreenshot() {
-      console.log("点击了");
+      if(this.clickButton == false){
       this.clickButton = !this.clickButton
-      console.log("按钮的值是" + this.clickButton)
+    }
       this.$nextTick(() => {
         const textarea = document.getElementById('steps');
         const currentTime = new Date().toLocaleTimeString();
@@ -229,15 +229,7 @@ export default {
 
 
       await invoke('start_screen', { clickButton: this.clickButton });
-
-      listen < String > ('event-name', (event) => {
-        console.log(event);
-      });
-      setTimeout(() => {
-        this.clickButton = false;
-      }, 1000);
-
-
+        
     },
     //选择回放文件夹
     async selectPlaybackFile() {
@@ -360,15 +352,14 @@ export default {
       }
       if (event.key === "F2") {
 
-        if (this.recording) {
+      
           event.preventDefault();
           // 执行开始/停止录制逻辑
           this.startScreenshot()
 
-        }
+        
       }
       if (event.key === "F6") {
-        console.log('你好');
         // 阻止默认事件，以避免浏览器刷新页面
         event.preventDefault();
         // 调用 playback_main 方法

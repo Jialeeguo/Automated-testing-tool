@@ -40,18 +40,6 @@ pub mod record_main {
         }
         //设定开始按键
         loop {
-            // let start_keys: Vec<Keycode> = device_state.get_keys();
-
-            //还没想好逻辑
-            // let should_stop = {
-            //     let stop_flag = SHOULD_STOP.lock().unwrap();
-            //     *stop_flag
-            // };
-
-            // if should_stop {
-            //     println!("录制被终止");
-            //     break;
-            // }
             sleep(Duration::from_millis(200));
             println!("程序开始");
             println!("F2启动截图功能");
@@ -175,11 +163,14 @@ pub mod record_main {
                     now_dir
                 ))
                 .unwrap();
-            if (keys.len() != 0 && keys[0] == Keycode::F2) || clickButton == true {
+            if !clickButton {
+                continue;
+            }
+        
+            if clickButton == true {
                 println!("传进来第一次的clickButton是{}", clickButton);
                 clickButton = false;
                 sleep(Duration::from_millis(300));
-                //截图事件F2触发
                 println!("进入截图功能");
                 println!("请等待几秒，正在提取图片文字...");
                 {
@@ -243,9 +234,6 @@ pub mod record_main {
                 continue;
             }
 
-            let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
-
-            *mouse_flag = true;
         }
     }
 }
