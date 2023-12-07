@@ -116,21 +116,16 @@
 
           <div class="buttons-container">
             <!-- 添加按钮组 -->
-            <button @click="recording ? stopRecord() : startRecord()" :disabled="screenshotting" class="button-font"
-              id="startrecord" onmouseover="this.style.backgroundColor='#199991';"
-              onmouseout="this.style.backgroundColor='#FFFFFF';">
+            <button @click="recording ? stopRecord() : startRecord()" :disabled="screenshotting || isPlaybacking"
+              class="button-font" id="startrecord" @mouseover="handleButtonMouseOver" @mouseout="handleButtonMouseOut">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
-            <button @click="playBack" :disabled="recording" class="button-font" style="margin-left: 12px;">启动</button>
-
-
-            <button @click="pauseRecording" :disabled="!recording" class="button-font"
+            <button @click="playBack" :disabled="recording || isPlaybacking" class="button-font"
+              style="margin-left: 12px;">启动</button>
+            <button @click="pauseRecording" :disabled="!recording || isPlaybacking" class="button-font"
               style="margin-left: 12px;">暂停录制</button>
-            <button @click="startScreenshot" :disabled="!recording" class="button-font" id="startScreenshot"
-              style="margin-left: 12px;">截图
-
-            </button>
-
+            <button @click="startScreenshot" :disabled="!recording || isPlaybacking" class="button-font"
+              id="startScreenshot" style="margin-left: 12px;">截图</button>
           </div>
         </div>
       </div>
@@ -175,9 +170,10 @@ export default {
       filename: '',
       selectedFunctionKey: 'F5',//下拉框选择按钮回放按键,
       selectedFunctionKey4: 'F7',
-      recordstart: true,//开始录制的状态，还没改好
+      recordstart: true,
       clickButton: false,
       logs: '',
+      isPlaybacking: false,//是否正在执行回放
     };
   },
   methods: {
@@ -269,7 +265,6 @@ export default {
     playBack() {
       this.log = '';
 
-      // 更新数据 market_id.txt 文件接口
       let xhr = new XMLHttpRequest(),
         okStatus = document.location.protocol === "file:" ? 0 : 200;
 
@@ -282,6 +277,7 @@ export default {
             if (xhr.responseText.trim() === "") {
               this.log += "没有选择文件夹或record.txt为空,请选择文件夹或检查record.txt是否为空\n";
             } else {
+              this.isPlaybacking = true;
               // 每隔一秒处理一行文本
               let lines = xhr.responseText.split('\n');
               let currentIndex = 0;
@@ -292,6 +288,7 @@ export default {
                   currentIndex++;
                 } else {
                   clearInterval(intervalId); // 所有行处理完毕，清除定时器
+                  this.isPlaybacking = false; // 在处理完毕后设置为 false
                 }
               }, 500);
             }
@@ -300,10 +297,12 @@ export default {
             if (!this.recording) {
               this.log += "文件夹选择错误，文件夹下没有包含record.txt,请重新选择\n";
             }
+            this.isPlaybacking = false; // 在处理失败后也要设置为 false
           }
         }
       };
       // this.loadRecordResult();
+
       xhr.send(null);
 
       // 文本的内容
@@ -314,10 +313,15 @@ export default {
 
 
 
+
+
     handleKeyDown(event) {
-      // 检查是否按下 F1 键
+  
       if (event.key === "F1") {
-        // 阻止默认事件，以避免浏览器刷新页面
+        if(this.isPlaybacking) {
+        //正在回放就不能录制
+        this.log += "正在回放中，请等待回放完毕再进行录制\n";
+      }else{
         event.preventDefault();
         // 执行开始/停止录制逻辑
         this.startRecord();
@@ -339,6 +343,7 @@ export default {
           textarea.scrollTop = textarea.scrollHeight;
         });
       }
+    }
       if (event.key === "F2") {
 
         if (this.recording) {
@@ -348,7 +353,7 @@ export default {
         } else {
 
           this.log = '';
-          this.log += "不在录制过程中，无法截图\n";
+          this.log += "不在录制过程中，请在录制过程中截图\n";
         }
       }
       if (event.key === "F6") {
@@ -360,7 +365,7 @@ export default {
           // 调用 playback_main 方法
           this.playBack();
         } else {
-          this.log += "正在录制中，无法回放\n";
+          this.log += "正在录制中，请关闭录制并选择文件夹进行回放\n";
         }
       }
     },
