@@ -62,7 +62,9 @@ pub mod record_main {
             //重置计时时间
             let mut start_time = START_TIME.lock().unwrap();
             *start_time = Instant::now();
-
+            let mut pause_time = PAUSE_TIME.lock().unwrap();
+            *pause_time = 0;
+            
             *MOUSE_MOVE_TIME.lock().unwrap() = Some(start_time.elapsed().as_millis());
             //鼠标监听标志
             let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();

@@ -30,8 +30,8 @@ pub mod mouse {
 
         //暂停时间
         let pause_time = PAUSE_TIME.lock().unwrap();
-        let duration = START_TIME.lock().unwrap().elapsed().as_millis()-*pause_time;
-        
+        let duration = START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
+
         //打开文件，用于记录鼠标操作
         let file = OpenOptions::new()
             .write(true)
