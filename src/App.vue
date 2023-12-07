@@ -116,8 +116,9 @@
 
           <div class="buttons-container">
             <!-- 添加按钮组 -->
-            <button @click="recording ? stopRecord() : startRecord()" :disabled="screenshotting" class="button-font" id="startrecord"
-              onmouseover="this.style.backgroundColor='#199991';" onmouseout="this.style.backgroundColor='#FFFFFF';">
+            <button @click="recording ? stopRecord() : startRecord()" :disabled="screenshotting" class="button-font"
+              id="startrecord" onmouseover="this.style.backgroundColor='#199991';"
+              onmouseout="this.style.backgroundColor='#FFFFFF';">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
             <button @click="playBack" :disabled="recording" class="button-font" style="margin-left: 12px;">启动</button>
@@ -180,24 +181,24 @@ export default {
     };
   },
   methods: {
+
     async startRecord() {
-      listen('event-name', (event) => {
-        const currentTime = new Date().toLocaleTimeString();
-        this.log += `${"提取文字执行成功！请继续操作。"} - [${currentTime}]\n`;
-      });
+      // 添加新的事件监听器
+
       if (!this.recording) {
         this.log = '';
-      
+
       }
       this.recordstart = !this.recordstart;
-    
+
       this.recording = !this.recording;
       if (this.recording) {
+
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
         await invoke('start_record', { recordstart: this.recordstart });
       } else {
-        console.log(this.recording+'是');
+        console.log(this.recording + '是');
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
 
@@ -208,12 +209,14 @@ export default {
     async stopRecord() {
       this.recording = !this.recording;
       this.recordstart = !this.recordstart;
-       invoke('record_end');
-       const currentTime = new Date().toLocaleTimeString();
-        this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
+      invoke('record_end');
+      const currentTime = new Date().toLocaleTimeString();
+      this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
+
     },
 
     async startScreenshot() {
+
       if (this.clickButton == false) {
         this.clickButton = !this.clickButton
       }
@@ -260,8 +263,8 @@ export default {
 
     },
     async pauseRecording() {
-        invoke('');
-        console.log("好好好");
+      invoke('');
+      console.log("好好好");
     },
     playBack() {
       this.log = '';
@@ -344,15 +347,21 @@ export default {
           this.startScreenshot()
         } else {
 
-
+          this.log = '';
           this.log += "不在录制过程中，无法截图\n";
         }
       }
       if (event.key === "F6") {
-        // 阻止默认事件，以避免浏览器刷新页面
-        event.preventDefault();
-        // 调用 playback_main 方法
-        this.playBack();
+
+
+        if (!this.recording) {
+          // 阻止默认事件，以避免浏览器刷新页面
+          event.preventDefault();
+          // 调用 playback_main 方法
+          this.playBack();
+        } else {
+          this.log += "正在录制中，无法回放\n";
+        }
       }
     },
 
@@ -360,7 +369,10 @@ export default {
   mounted() {
     // 监听键盘按下事件
     window.addEventListener("keydown", this.handleKeyDown);
-
+    listen('event-name', (event) => {
+      const currentTime = new Date().toLocaleTimeString();
+      this.log += `${"提取文字执行成功！请继续操作。"} - [${currentTime}]\n`;
+    });
   },
   beforeDestroy() {
     // 在组件销毁前移除事件监听
