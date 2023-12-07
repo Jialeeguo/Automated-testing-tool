@@ -120,10 +120,14 @@
               class="button-font" id="startrecord" @mouseover="handleButtonMouseOver" @mouseout="handleButtonMouseOut">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
-            <button @click="playBack" :disabled="recording || isPlaybacking" class="button-font"
-              style="margin-left: 12px;">启动</button>
-            <button @click="pauseRecording" :disabled="!recording || isPlaybacking" class="button-font"
-              style="margin-left: 12px;">暂停录制</button>
+
+            <button @click="playBack" :disabled="recording || isPlaybacking" class="button-font" style="margin-left: 12px;">启动</button>
+
+            <button @click="pause ? resumeRecord() : pauseRecord()" :disabled="!recording" class="button-font" id="pauserecord"
+              style="margin-left: 12px;">
+            {{ pause ? '恢复录制 ' : '暂停录制 ' }}
+            </button>
+            
             <button @click="startScreenshot" :disabled="!recording || isPlaybacking" class="button-font"
               id="startScreenshot" style="margin-left: 12px;">截图</button>
           </div>
@@ -162,6 +166,7 @@ export default {
   data() {
     return {
       recording: false,
+      pause: false,
       log: '',
       log_playback: '',
       screenshotting: false,
@@ -209,6 +214,16 @@ export default {
       const currentTime = new Date().toLocaleTimeString();
       this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
 
+    },
+
+    async resumeRecord() {
+      this.pause = false;
+       invoke('resume_record');
+    },
+
+    async pauseRecord() {
+      this.pause = true;
+       invoke('pause_record');
     },
 
     async startScreenshot() {

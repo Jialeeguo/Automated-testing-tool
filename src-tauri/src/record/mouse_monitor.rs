@@ -5,20 +5,21 @@ pub mod mouse {
         io::Write,
     };
 
-    use crate::record::{screen_shot, self};
+    use crate::record::{self, screen_shot};
 
     use crate::MOUSE_BEFORE_PRESS;
     use crate::MOUSE_MOVE_TIME;
+    use crate::MOUSE_PATH;
     use crate::MOUSE_THREAD_FLAG;
+    use crate::PAUSE_TIME;
     use crate::SCREEN_PRESS;
     use crate::SCREEN_SHOT_FLAG;
     use crate::START_TIME;
-    use crate::MOUSE_PATH;
 
     //鼠标监听回调 recordstart = true的时候不会记录，还没想好
     pub fn callback(event: Event) {
         let mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
-        if *mouse_flag == true{
+        if *mouse_flag == true {
             return;
         }
         let mouse_path = MOUSE_PATH.lock().unwrap();
@@ -26,13 +27,20 @@ pub mod mouse {
 
         //记录最后移动时间
         let last_move_time = *MOUSE_MOVE_TIME.lock().unwrap();
-        let duration = START_TIME.lock().unwrap().elapsed().as_millis();
+
+        //暂停时间
+        let pause_time = PAUSE_TIME.lock().unwrap();
+        let duration = START_TIME.lock().unwrap().elapsed().as_millis()-*pause_time;
+        
         //打开文件，用于记录鼠标操作
         let file = OpenOptions::new()
             .write(true)
             .create(true)
             .append(true)
-            .open(format!("../Automated-testing/result/{}/record.txt", now_dir))
+            .open(format!(
+                "../Automated-testing/result/{}/record.txt",
+                now_dir
+            ))
             .unwrap();
         //判断是否有截图需求
         let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
@@ -47,7 +55,7 @@ pub mod mouse {
                 }
                 EventType::ButtonPress(button) => screen_record_press(duration, button, file),
                 EventType::ButtonRelease(button) => {
-                    screen_record_release(duration, button, file,now_dir);
+                    screen_record_release(duration, button, file, now_dir);
                     // let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
                     *screen_flag = false;
                 }
@@ -173,7 +181,7 @@ pub mod mouse {
     }
 
     //记录截图鼠标弹起
-    pub fn screen_record_release(time: u128, button: Button, mut file: File,now_dir:String) {
+    pub fn screen_record_release(time: u128, button: Button, mut file: File, now_dir: String) {
         //读取按下坐标
         let screen_press = SCREEN_PRESS.lock().unwrap();
         let (b_x, b_y) = *screen_press;
@@ -194,6 +202,6 @@ pub mod mouse {
         }
         file.write_all(val.as_bytes()).unwrap();
 
-        screen_shot::screen::screenshot(b_x, b_y, x, y,time,now_dir);
+        screen_shot::screen::screenshot(b_x, b_y, x, y, time, now_dir);
     }
 }

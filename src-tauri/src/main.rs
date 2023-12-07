@@ -11,10 +11,12 @@ mod record;
 // use std::process;
 // use std::time::Duration;
 use playback::playback_main::playback_main::playback_main;
+use record::record_main::record_main::record_end;
 use record::record_main::record_main::start_record;
 use record::record_main::record_main::start_screen;
+use record::record_main::record_main::pause_record;
+use record::record_main::record_main::resume_record;
 use record::screen_shot::screen::screenshot;
-use record::record_main::record_main::record_end;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -50,6 +52,10 @@ lazy_static! {
     pub static ref NOW_DIR: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
     //键盘是否停止监听标志
     pub static ref SHOULD_STOP_KEYBOARD: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    //暂停录制标志
+    static ref PAUSE_FLAG: Mutex<bool> = Mutex::new(false);
+    //暂停时间记录
+    static ref PAUSE_TIME: Mutex<u128> = Mutex::new(0);
 }
 
 fn main() {
@@ -59,7 +65,9 @@ fn main() {
             playback_main,
             screenshot,
             start_screen,
-            record_end
+            record_end,
+            pause_record,
+            resume_record,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

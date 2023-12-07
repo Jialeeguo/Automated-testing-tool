@@ -5,6 +5,8 @@ pub mod record_main {
     use crate::MOUSE_THREAD_FLAG;
     use crate::MOUSE_THREAD_START;
     use crate::NOW_DIR;
+    use crate::PAUSE_FLAG;
+    use crate::PAUSE_TIME;
     use crate::SCREEN_SHOT_FLAG;
     use crate::SHOULD_STOP;
     use crate::SHOULD_STOP_KEYBOARD;
@@ -94,23 +96,22 @@ pub mod record_main {
             let should_stop_keyboard = SHOULD_STOP_KEYBOARD.clone();
 
             thread::spawn(move || {
-                if let Err(error) =
-                    listen(move |event| mouse_monitor::mouse::callback(event))
-                {
+                if let Err(error) = listen(move |event| mouse_monitor::mouse::callback(event)) {
                     println!("Error: {:?}", error);
                 }
             });
         }
 
         loop {
+            //判断是否终止
             let should_stop = {
                 let stop_flag = SHOULD_STOP.lock().unwrap();
                 *stop_flag
             };
 
             if should_stop {
+                println!("录制被前端终止");
                 let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
-
                 *mouse_flag = true;
                 if status == "started" {
                     println!(
@@ -120,9 +121,42 @@ pub mod record_main {
                     return;
                 }
             }
+
+            //判断暂停录制
+            let mut pause_state = {
+                let pause_flag = PAUSE_FLAG.lock().unwrap();
+                *pause_flag
+            };
+            let mut m_flag = false;
+            let mut pause_start_time: u128 = 0;
+            let mut pause_end_time: u128 = 0;
+            while pause_state {
+                println!("录制被暂停");
+                let pause_flag = PAUSE_FLAG.lock().unwrap();
+                if *pause_flag == false {
+                    pause_end_time = START_TIME.lock().unwrap().elapsed().as_millis();
+                    let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
+                    *mouse_flag = false;
+                    println!("暂停结束mouse_flag{}", mouse_flag);
+                    pause_state = false;
+                    println!("暂停结束");
+                    let mut pause_time = PAUSE_TIME.lock().unwrap();
+                    *pause_time = *pause_time + pause_end_time - pause_start_time;
+                } else if m_flag == false {
+                    let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
+                    *mouse_flag = true;
+                    pause_start_time = START_TIME.lock().unwrap().elapsed().as_millis();
+                    println!("暂停1");
+                    println!("暂停开始mouse_flag{}", mouse_flag);
+                    m_flag = true;
+                }
+                thread::sleep(Duration::from_secs(1));
+            }
+
             let keys: Vec<Keycode> = device_state.get_keys();
             if (keys.len() != 0 && keys[0] != Keycode::F1) {
-                let duration_key = START_TIME.lock().unwrap().elapsed().as_millis();
+                let pause_time = PAUSE_TIME.lock().unwrap();
+                let duration_key = START_TIME.lock().unwrap().elapsed().as_millis() -  *pause_time;
                 println!("{}ms,捕捉到键盘输入{:?}", duration_key, keys[0]);
                 let output = format!("{},key,{:?}\n", duration_key, keys[0]);
                 save_file.write_all(output.as_bytes()).unwrap();
@@ -149,7 +183,8 @@ pub mod record_main {
             }
         }
     }
-    //点击终止录制后函数
+
+    //录制截图：启动！
     #[tauri::command]
     pub async fn start_screen(mut clickButton: bool, window: Window) {
         loop {
@@ -189,7 +224,7 @@ pub mod record_main {
                     let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
                     *screen_flag = true;
                 }
-                let output = Command::new("C:/Users/trookie/venv/Scripts/textshot")
+                let output = Command::new("textshot")
                     .arg("eng+chi_sim")
                     .output()
                     .expect("无法启动 textshot 命令");
@@ -247,9 +282,23 @@ pub mod record_main {
         }
     }
 
+    //录制完成前端按钮触发函数
     #[tauri::command]
     pub fn record_end() {
         let mut stop_flag = SHOULD_STOP.lock().unwrap();
         *stop_flag = true;
+    }
+
+    //暂停录制按钮触发
+    #[tauri::command]
+    pub fn pause_record() {
+        let mut pause_flag = PAUSE_FLAG.lock().unwrap();
+        *pause_flag = true;
+    }
+    //恢复录制按钮触发
+    #[tauri::command]
+    pub fn resume_record() {
+        let mut pause_flag = PAUSE_FLAG.lock().unwrap();
+        *pause_flag = false;
     }
 }
