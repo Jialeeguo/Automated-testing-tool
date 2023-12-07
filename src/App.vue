@@ -121,13 +121,14 @@
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
 
-            <button @click="playBack" :disabled="recording || isPlaybacking" class="button-font" style="margin-left: 12px;">启动</button>
+            <button @click="playBack" :disabled="recording || isPlaybacking" class="button-font"
+              style="margin-left: 12px;">启动</button>
 
-            <button @click="pause ? resumeRecord() : pauseRecord()" :disabled="!recording" class="button-font" id="pauserecord"
-              style="margin-left: 12px;">
-            {{ pause ? '恢复录制 ' : '暂停录制 ' }}
+            <button @click="pause ? resumeRecord() : pauseRecord()" :disabled="!recording" class="button-font"
+              id="pauserecord" style="margin-left: 12px;">
+              {{ pause ? '恢复录制 ' : '暂停录制 ' }}
             </button>
-            
+
             <button @click="startScreenshot" :disabled="!recording || isPlaybacking" class="button-font"
               id="startScreenshot" style="margin-left: 12px;">截图</button>
           </div>
@@ -167,6 +168,7 @@ export default {
     return {
       recording: false,
       pause: false,
+      pause1: true, //F3，对应按钮的pause
       log: '',
       log_playback: '',
       screenshotting: false,
@@ -179,6 +181,7 @@ export default {
       clickButton: false,
       logs: '',
       isPlaybacking: false,//是否正在执行回放
+      loggingEnabled: false,
     };
   },
   methods: {
@@ -218,13 +221,32 @@ export default {
 
     async resumeRecord() {
       this.pause = false;
-       invoke('resume_record');
+
+      const currentTime = new Date().toLocaleTimeString();
+      this.log += `${'录制已恢复'} - [${currentTime}]\n`;
+
+      invoke('resume_record');
     },
 
     async pauseRecord() {
-      this.pause = true;
-       invoke('pause_record');
-    },
+  this.pause = true;
+
+  if (!this.loggingEnabled) {
+    this.logIntervalId = setInterval(async () => {
+      const currentTime = new Date().toLocaleTimeString();
+      this.log += `${'录制被暂停，再次点击按钮或F4将恢复录制'} - [${currentTime}]\n`;
+
+      // 在每次输出后检查 loggingEnabled 是否为 true
+      if (!this.loggingEnabled) {
+        clearInterval(this.logIntervalId);
+      }
+    }, 1000);
+  }
+
+  invoke('pause_record');
+},
+
+
 
     async startScreenshot() {
 
@@ -235,10 +257,6 @@ export default {
         const textarea = document.getElementById('steps');
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
-        // setTimeout(() => {
-        //   const currentTime = new Date().toLocaleTimeString();
-        //   this.log += `${"提取文字执行成功，请继续操作"} - [${currentTime}]\n`;
-        // }, 10000)
         textarea.scrollTop = textarea.scrollHeight;
         if (!this.recording) {
           // 如果没有在录制，输出“没有录制”
@@ -273,10 +291,7 @@ export default {
 
 
     },
-    async pauseRecording() {
-      invoke('');
-      console.log("好好好");
-    },
+
     playBack() {
       this.log = '';
 
@@ -331,49 +346,66 @@ export default {
 
 
     handleKeyDown(event) {
-  
+
       if (event.key === "F1") {
-        if(this.isPlaybacking) {
-        //正在回放就不能录制
-        this.log += "正在回放中，请等待回放完毕再进行录制\n";
-      }else{
-        event.preventDefault();
-        // 执行开始/停止录制逻辑
-        this.startRecord();
+        if (this.isPlaybacking) {
+          //正在回放就不能录制
+          this.log += "正在回放中，请等待回放完毕再进行录制\n";
+        } else {
+          event.preventDefault();
+          // 执行开始/停止录制逻辑
+          this.startRecord();
 
-        // 更新 log 数据
-        this.$nextTick(() => {
-          const textarea = document.getElementById('steps');
-          const currentTime = new Date().toLocaleTimeString();
+          // 更新 log 数据
+          this.$nextTick(() => {
+            const textarea = document.getElementById('steps');
+            const currentTime = new Date().toLocaleTimeString();
 
-          // 添加特殊的日志，但仅当还没有添加过时
-          if (!this.recording && !this.hasRefreshLog) {
+            // 添加特殊的日志，但仅当还没有添加过时
+            if (!this.recording && !this.hasRefreshLog) {
 
 
-          } else if (this.recording == false) {
-            this.log += `${'录制结束,下次录制将刷新日志！'} - [${currentTime}]\n`;
+            } else if (this.recording == false) {
+              this.log += `${'录制结束,下次录制将刷新日志！'} - [${currentTime}]\n`;
 
-          }
+            }
 
-          textarea.scrollTop = textarea.scrollHeight;
-        });
+            textarea.scrollTop = textarea.scrollHeight;
+          });
+        }
       }
-    }
       if (event.key === "F2") {
 
         if (this.recording) {
           event.preventDefault();
-          // 执行开始/停止录制逻辑
+
           this.startScreenshot()
         } else {
 
           this.log += "不在录制过程中，请在录制过程中截图\n";
         }
       }
+      if (event.key === "F4") {
+
+        if (this.recording) {
+          if (this.pause1) {
+            this.pauseRecord();
+            this.pause1 = !this.pause1;
+          }
+          else {
+            this.resumeRecord();
+            this.pause1 = !this.pause1;
+          }
+        } else {
+
+          this.log += "不在录制过程中，无法暂停录制\n";
+        }
+      }
       if (event.key === "F6") {
 
 
         if (!this.recording) {
+
           // 阻止默认事件，以避免浏览器刷新页面
           event.preventDefault();
           // 调用 playback_main 方法
@@ -425,14 +457,21 @@ button {
   font-size: large;
   transition: background-color 0.5s, color 0.3s
 }
+
 .button-font:hover {
-  background-color: #e60000; /* 悬停时背景色变化 */
-  color: #ffffff; /* 悬停时文字颜色变化 */
+  background-color: #e60000;
+  /* 悬停时背景色变化 */
+  color: #ffffff;
+  /* 悬停时文字颜色变化 */
 }
+
 .button-font:disabled {
-  background-color: #c2baba; /* 禁用状态的背景色 */
-  color: #fc0000; /* 禁用状态的文字颜色 */
-  cursor: not-allowed; /* 显示禁用状态的鼠标样式 */
+  background-color: #c2baba;
+  /* 禁用状态的背景色 */
+  color: #fc0000;
+  /* 禁用状态的文字颜色 */
+  cursor: not-allowed;
+  /* 显示禁用状态的鼠标样式 */
 }
 
 select {
