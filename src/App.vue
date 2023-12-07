@@ -190,25 +190,27 @@ export default {
       
       }
       this.recordstart = !this.recordstart;
-      console.log(this.recordstart);
+    
       this.recording = !this.recording;
       if (this.recording) {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
         await invoke('start_record', { recordstart: this.recordstart });
-
       } else {
+        console.log(this.recording+'是');
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
-        console.group("录制结束,已保存到log文件夹下，下次录制时日志将被清空！")
+
 
       }
     },
 
     async stopRecord() {
-      this.recording = false;
+      this.recording = !this.recording;
       this.recordstart = !this.recordstart;
        invoke('record_end');
+       const currentTime = new Date().toLocaleTimeString();
+        this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
     },
 
     async startScreenshot() {
