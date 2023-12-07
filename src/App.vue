@@ -367,7 +367,6 @@ export default {
           this.startScreenshot()
         } else {
 
-          this.log = '';
           this.log += "不在录制过程中，请在录制过程中截图\n";
         }
       }
@@ -424,6 +423,16 @@ button {
   border-style: solid;
   border-color: red;
   font-size: large;
+  transition: background-color 0.5s, color 0.3s
+}
+.button-font:hover {
+  background-color: #e60000; /* 悬停时背景色变化 */
+  color: #ffffff; /* 悬停时文字颜色变化 */
+}
+.button-font:disabled {
+  background-color: #c2baba; /* 禁用状态的背景色 */
+  color: #fc0000; /* 禁用状态的文字颜色 */
+  cursor: not-allowed; /* 显示禁用状态的鼠标样式 */
 }
 
 select {
