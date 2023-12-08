@@ -184,6 +184,7 @@ export default {
       selectedFunctionKey3: 'F2',
       recordstart: true,
       clickButton: false,
+      isMarui: false,
       logs: '',
       isPlaybacking: false,//是否正在执行回放
       loggingEnabled: false,
@@ -387,7 +388,7 @@ export default {
           });
         }
       }
-
+      //截图下拉框监听
       if (this.recording) {
         const selectedValue = this.selectedFunctionKey3;
         if (event.key === selectedValue) {
@@ -397,15 +398,18 @@ export default {
 
           this.startScreenshot()
         }
-        
+
       } else {
-        if(this.recording) {
-        this.log += "不在录制过程中，请在录制过程中截图\n";
+        if (this.recording) {
+          this.log += "不在录制过程中，请在录制过程中截图\n";
         }
       }
-      if (event.key === "F4") {
 
-        if (this.recording) {
+
+      if (this.recording) {
+        const selectedValue = this.selectedFunctionKey1;
+        this.isMarui = !this.isMarui;
+        if (event.key === selectedValue) {
           if (this.pause1) {
             this.pauseRecord();
             this.pause1 = !this.pause1;
@@ -414,11 +418,13 @@ export default {
             this.resumeRecord();
             this.pause1 = !this.pause1;
           }
-        } else {
-
+        }
+      } else {
+        if(!this.isMarui){
           this.log += "不在录制过程中，无法暂停录制\n";
         }
       }
+
       if (event.key === "F6") {
 
 
