@@ -61,7 +61,7 @@
             <div style="margin: auto;"></div>
             <form action="#">
               <label for="action" class="ziti">开始/暂停录制</label>
-              <select name="languages" id="lang" style="width: 200px;">
+              <select v-model="selectedFunctionKey1" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2" selected>F2</option>
@@ -77,7 +77,7 @@
           <div style="display: flex; ">
             <form action="#">
               <label for="lang" class="ziti">终止录制</label>
-              <select name="languages" id="lang" style="width: 200px;">
+              <select v-model="selectedFunctionKey2" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
@@ -93,7 +93,7 @@
             <form action="#">
 
               <label for="lang" class="ziti">截图</label>
-              <select v-model="selectedFunctionKey4" name="languages" id="lang" style="width: 200px;">
+              <select v-model="selectedFunctionKey3" name="languages" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
@@ -178,8 +178,10 @@ export default {
       selectedFileName: '请选择回放文件夹',
       textData: '', // 初始化文本数据
       filename: '',
-      selectedFunctionKey: 'F2',//下拉框选择按钮回放按键,
-      selectedFunctionKey4: 'F7',
+      selectedFunctionKey: 'F1',//下拉框选择按钮回放按键,
+      selectedFunctionKey1: 'F3',
+      selectedFunctionKey2: 'F4',
+      selectedFunctionKey3: 'F2',
       recordstart: true,
       clickButton: false,
       logs: '',
@@ -356,13 +358,13 @@ export default {
 
     handleKeyDown(event) {
 
-      if (event.key === "F1") {
-        if (this.isPlaybacking) {
-          //正在回放就不能录制
-          this.log += "正在回放中，请等待回放完毕再进行录制\n";
-        } else {
-          const selectedValue = this.selectedOption;
-          if (event.key === selectedValue) { }
+
+      if (this.isPlaybacking) {
+        //正在回放就不能录制
+        this.log += "正在回放中，请等待回放完毕再进行录制\n";
+      } else {
+        const selectedValue = this.selectedFunctionKey;
+        if (event.key === selectedValue) {
 
           event.preventDefault();
           // 执行开始/停止录制逻辑
@@ -384,17 +386,21 @@ export default {
             textarea.scrollTop = textarea.scrollHeight;
           });
         }
-
       }
-      if (event.key === "F2") {
 
-        if (this.recording) {
+      if (this.recording) {
+        const selectedValue = this.selectedFunctionKey3;
+        if (event.key === selectedValue) {
+
+
           event.preventDefault();
 
           this.startScreenshot()
-        } else {
-
-          this.log += "不在录制过程中，请在录制过程中截图\n";
+        }
+        
+      } else {
+        if(this.recording) {
+        this.log += "不在录制过程中，请在录制过程中截图\n";
         }
       }
       if (event.key === "F4") {
