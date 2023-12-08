@@ -11,6 +11,7 @@
 
             <label for="lang" class="ziti">脚本</label>
             <select name="languages" id="lang" style="width: 140px;" value="请选择回放文件夹">
+
               <option value="请选择回放文件夹">{{ selectedFileName }}</option>
             </select>
             <button @click="selectPlaybackFile"
@@ -42,9 +43,9 @@
           <!-- <input type="file" id="docpicker" accept=".txt" /> -->
 
           <div style="display: flex; ">
-            <form action="#">
+            <form @keydown.prevent="handleKeyDown">
               <label for="lang" class="ziti">开始/暂停执行</label>
-              <select name="languages" id="lang" v-model="selectedFunctionKey" style="width: 200px;">
+              <select v-model="selectedFunctionKey" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
@@ -55,13 +56,13 @@
                 <option value="F7">F7</option>
                 <option value="F8">F8</option>
               </select>
-
             </form>
 
             <div style="margin: auto;"></div>
             <form action="#">
               <label for="action" class="ziti">开始/暂停录制</label>
               <select name="languages" id="lang" style="width: 200px;">
+                <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2" selected>F2</option>
                 <option value="F3">F3</option>
@@ -77,6 +78,7 @@
             <form action="#">
               <label for="lang" class="ziti">终止录制</label>
               <select name="languages" id="lang" style="width: 200px;">
+                <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
                 <option value="F3" selected>F3</option>
@@ -92,6 +94,7 @@
 
               <label for="lang" class="ziti">截图</label>
               <select v-model="selectedFunctionKey4" name="languages" id="lang" style="width: 200px;">
+                <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
                 <option value="F3">F3</option>
@@ -175,13 +178,14 @@ export default {
       selectedFileName: '请选择回放文件夹',
       textData: '', // 初始化文本数据
       filename: '',
-      selectedFunctionKey: 'F5',//下拉框选择按钮回放按键,
+      selectedFunctionKey: 'F2',//下拉框选择按钮回放按键,
       selectedFunctionKey4: 'F7',
       recordstart: true,
       clickButton: false,
       logs: '',
       isPlaybacking: false,//是否正在执行回放
       loggingEnabled: false,
+
     };
   },
   methods: {
@@ -197,7 +201,6 @@ export default {
 
       this.recording = !this.recording;
       if (this.recording) {
-
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
         await invoke('start_record', { recordstart: this.recordstart });
@@ -213,15 +216,23 @@ export default {
     async stopRecord() {
       this.recording = !this.recording;
       this.recordstart = !this.recordstart;
-      invoke('record_end');
-      const currentTime = new Date().toLocaleTimeString();
-      this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
+      console.log(this.pause);
+      if (this.pause) {
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${'正在暂停录制中，无法终止录制，请先恢复录制再终止录制'} - [${currentTime}]\n`;
 
+      } else {
+
+        invoke('record_end');
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
+      }
     },
 
     async resumeRecord() {
       this.pause = false;
 
+      clearInterval(this.logIntervalId);
       const currentTime = new Date().toLocaleTimeString();
       this.log += `${'录制已恢复'} - [${currentTime}]\n`;
 
@@ -229,22 +240,20 @@ export default {
     },
 
     async pauseRecord() {
-  this.pause = true;
+      this.pause = true;
 
-  if (!this.loggingEnabled) {
-    this.logIntervalId = setInterval(async () => {
-      const currentTime = new Date().toLocaleTimeString();
-      this.log += `${'录制被暂停，再次点击按钮或F4将恢复录制'} - [${currentTime}]\n`;
-
-      // 在每次输出后检查 loggingEnabled 是否为 true
       if (!this.loggingEnabled) {
-        clearInterval(this.logIntervalId);
-      }
-    }, 1000);
-  }
+        this.logIntervalId = setInterval(async () => {
+          const currentTime = new Date().toLocaleTimeString();
+          this.log += `${'录制被暂停，再次点击按钮或F4将恢复录制'} - [${currentTime}]\n`;
 
-  invoke('pause_record');
-},
+          // 在每次输出后检查 loggingEnabled 是否为 true
+
+        }, 1000);
+      }
+
+      invoke('pause_record');
+    },
 
 
 
@@ -352,6 +361,9 @@ export default {
           //正在回放就不能录制
           this.log += "正在回放中，请等待回放完毕再进行录制\n";
         } else {
+          const selectedValue = this.selectedOption;
+          if (event.key === selectedValue) { }
+
           event.preventDefault();
           // 执行开始/停止录制逻辑
           this.startRecord();
@@ -364,7 +376,6 @@ export default {
             // 添加特殊的日志，但仅当还没有添加过时
             if (!this.recording && !this.hasRefreshLog) {
 
-
             } else if (this.recording == false) {
               this.log += `${'录制结束,下次录制将刷新日志！'} - [${currentTime}]\n`;
 
@@ -373,6 +384,7 @@ export default {
             textarea.scrollTop = textarea.scrollHeight;
           });
         }
+
       }
       if (event.key === "F2") {
 
