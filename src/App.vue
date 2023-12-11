@@ -44,8 +44,8 @@
 
           <div style="display: flex; ">
             <form @keydown.prevent="handleKeyDown">
-              <label for="lang" class="ziti">开始/暂停执行</label>
-              <select v-model="selectedFunctionKey" id="lang" style="width: 200px;">
+              <label for="lang" class="ziti">开始执行</label>
+              <select v-model="selectedFunctionKey5" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
@@ -60,24 +60,18 @@
 
             <div style="margin: auto;"></div>
             <form action="#">
-              <label for="action" class="ziti">开始/暂停录制</label>
-              <select v-model="selectedFunctionKey1" id="lang" style="width: 200px;">
+              <label for="action" class="ziti">开始/终止录制</label>
+              <select v-model="selectedFunctionKey10" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
-                <option value="F2" selected>F2</option>
-                <option value="F3">F3</option>
-                <option value="F4">F4</option>
-                <option value="F5">F5</option>
-                <option value="F6">F6</option>
-                <option value="F7">F7</option>
-                <option value="F8">F8</option>
+        
               </select>
             </form>
           </div>
           <div style="display: flex; ">
             <form action="#">
-              <label for="lang" class="ziti">终止录制</label>
-              <select v-model="selectedFunctionKey2" id="lang" style="width: 200px;">
+              <label for="lang" class="ziti">暂停录制/恢复录制</label>
+              <select v-model="selectedFunctionKey1" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
@@ -179,9 +173,11 @@ export default {
       textData: '', // 初始化文本数据
       filename: '',
       selectedFunctionKey: 'F1',//下拉框选择按钮回放按键,
-      selectedFunctionKey1: 'F3',
-      selectedFunctionKey2: 'F4',
+      selectedFunctionKey1: 'F4',
+
       selectedFunctionKey3: 'F2',
+      selectedFunctionKey5: 'F6',
+      selectedFunctionKey10:'F1',
       recordstart: true,
       clickButton: false,
       isMarui: false,
@@ -248,7 +244,7 @@ export default {
       if (!this.loggingEnabled) {
         this.logIntervalId = setInterval(async () => {
           const currentTime = new Date().toLocaleTimeString();
-          this.log += `${'录制被暂停，再次点击按钮或F4将恢复录制'} - [${currentTime}]\n`;
+          this.log += `${'录制被暂停，再次点击按钮将恢复录制'} - [${currentTime}]\n`;
 
           // 在每次输出后检查 loggingEnabled 是否为 true
 
@@ -317,7 +313,9 @@ export default {
           if (xhr.status === okStatus) {
             // 请求成功，但是文件内容为空
             if (xhr.responseText.trim() === "") {
-              this.log += "没有选择文件夹或record.txt为空,请选择文件夹或检查record.txt是否为空\n";
+              const currentTime = new Date().toLocaleTimeString();
+            this.log += `${'没有选择文件夹或record.txt为空,请选择文件夹或检查record.txt是否为空'} - [${currentTime}]\n`;
+    
             } else {
               this.isPlaybacking = true;
               // 每隔一秒处理一行文本
@@ -337,7 +335,9 @@ export default {
           } else {
             // 如果请求失败，将错误消息添加到日志中
             if (!this.recording) {
-              this.log += "文件夹选择错误，文件夹下没有包含record.txt,请重新选择\n";
+              const currentTime = new Date().toLocaleTimeString();
+            this.log += `${'文件夹选择错误，文件夹下没有包含record.txt,请重新选择'} - [${currentTime}]\n`;
+    
             }
             this.isPlaybacking = false; // 在处理失败后也要设置为 false
           }
@@ -362,9 +362,12 @@ export default {
 
       if (this.isPlaybacking) {
         //正在回放就不能录制
-        this.log += "正在回放中，请等待回放完毕再进行录制\n";
+        const currentTime = new Date().toLocaleTimeString();
+            this.log += `${'正在回放中，请等待回放完毕再进行录制'} - [${currentTime}]\n`;
+    
+
       } else {
-        const selectedValue = this.selectedFunctionKey;
+        const selectedValue = this.selectedFunctionKey10;
         if (event.key === selectedValue) {
 
           event.preventDefault();
@@ -401,11 +404,12 @@ export default {
 
       } else {
         if (this.recording) {
-          this.log += "不在录制过程中，请在录制过程中截图\n";
+          const currentTime = new Date().toLocaleTimeString();
+            this.log += `${'不在录制过程中，请在录制过程中截图'} - [${currentTime}]\n`;
         }
       }
 
-
+      //开始恢复暂停下拉框监听
       if (this.recording) {
         const selectedValue = this.selectedFunctionKey1;
         this.isMarui = !this.isMarui;
@@ -420,22 +424,22 @@ export default {
           }
         }
       } else {
-        if(!this.isMarui){
-          this.log += "不在录制过程中，无法暂停录制\n";
+        if (!this.isMarui) {
+          const currentTime = new Date().toLocaleTimeString();
+          this.log += `${'不在录制过程中，无法暂停录制'} - [${currentTime}]\n`;
         }
       }
-
-      if (event.key === "F6") {
-
-
-        if (!this.recording) {
-
-          // 阻止默认事件，以避免浏览器刷新页面
+      //回放下拉框监听
+      if (!this.recording) {
+        const selectedValue = this.selectedFunctionKey5;
+        if (event.key === selectedValue) {
           event.preventDefault();
-          // 调用 playback_main 方法
           this.playBack();
         } else {
-          this.log += "正在录制中，请关闭录制并选择文件夹进行回放\n";
+          if (this.recording) {
+            const currentTime = new Date().toLocaleTimeString();
+            this.log += `${'正在录制中，请关闭录制并选择文件夹进行回放'} - [${currentTime}]\n`;
+          }
         }
       }
     },
