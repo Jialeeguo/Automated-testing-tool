@@ -234,12 +234,12 @@ export default {
 
       clearInterval(this.logIntervalId);
       const currentTime = new Date().toLocaleTimeString();
-      if(this.recording){
-      this.log += `${'录制已恢复'} - [${currentTime}]\n`;
-      invoke('resume_record');
-    }else{
-      this.log += `${'不在录制过程中，无法暂停录制'} - [${currentTime}]\n`;
-    }
+      if (this.recording) {
+        this.log += `${'录制已恢复'} - [${currentTime}]\n`;
+        invoke('resume_record');
+      } else {
+        this.log += `${'不在录制过程中，无法暂停录制'} - [${currentTime}]\n`;
+      }
 
     },
 
@@ -289,9 +289,9 @@ export default {
       } else {
         this.$nextTick(() => {
           const textarea = document.getElementById('steps');
-        const currentTime = new Date().toLocaleTimeString();
-        this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
-        textarea.scrollTop = textarea.scrollHeight;
+          const currentTime = new Date().toLocaleTimeString();
+          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+          textarea.scrollTop = textarea.scrollHeight;
 
         });
 
@@ -337,7 +337,7 @@ export default {
 
             } else {
               this.log = '';
-              this.isPlaybacking = true;
+              // this.isPlaybacking = true;
               // 每隔一秒处理一行文本
               let lines = xhr.responseText.split('\n');
               let currentIndex = 0;
@@ -348,6 +348,8 @@ export default {
                   currentIndex++;
                 } else {
                   clearInterval(intervalId); // 所有行处理完毕，清除定时器
+                  
+                  this.loadRecordResult();
                   this.isPlaybacking = false; // 在处理完毕后设置为 false
                 }
               }, 500);
@@ -363,34 +365,44 @@ export default {
           }
         }
       };
-      this.loadRecordResult();
+   
 
       xhr.send(null);
 
       // 文本的内容
       const filePath = this.selectedFileName;
-      invoke('playback_main', { filePath });
-    },
-
-    loadRecordResult() {
-      this.log_playback = '';
-      // 加载 record_result.txt 文件内容
-      let resultXhr = new XMLHttpRequest(),
-        resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
-      resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
-      resultXhr.overrideMimeType("text/html;charset=utf-8");
-      resultXhr.onreadystatechange = () => {
-        if (resultXhr.readyState === 4 && resultXhr.status === resultOkStatus) {
-          // 将 record_result.txt 的内容设置到 textarea
-          document.getElementById("steps1").value = resultXhr.responseText;
-        }else {
-            // 如果请求失败，将错误消息添加到日志中
-           
+        invoke('playback_main', { filePath, selectedFunctionKey: this.selectedFunctionKey });
+      },
+  
+  
+      loadRecordResult() {
+        this.log_playback = '';
+  
+        // 加载 record_result.txt 文件内容
+        let resultXhr = new XMLHttpRequest(),
+          resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
+  
+        resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
+        resultXhr.overrideMimeType("text/html;charset=utf-8");
+  
+        resultXhr.onreadystatechange = () => {
+          if (resultXhr.readyState === 4) {
+            if (resultXhr.status === resultOkStatus) {
+              // 如果 record_result.txt 的内容为空，输出日志
+  
+              // 将 record_result.txt 的内容设置到 textarea
+              document.getElementById("steps1").value = resultXhr.responseText;
+  
+            } else {
+              // 如果请求失败，将错误消息添加到日志中
+              this.log = "没有检测到任何移动轨迹，请查看record.txt是否为空\n";
+            }
           }
-      };
-      resultXhr.send(null);
-    },
-
+        };
+  
+        resultXhr.send(null);
+      },
+  
 
 
 
@@ -447,15 +459,15 @@ export default {
 
       const selectedValue = this.selectedFunctionKey1;
       if (event.key === selectedValue) {
-          if (this.pause1) {
-            this.pauseRecord();
-            this.pause1 = !this.pause1;
-          }
-          else {
-            this.resumeRecord();
-            this.pause1 = !this.pause1;
-          }
+        if (this.pause1) {
+          this.pauseRecord();
+          this.pause1 = !this.pause1;
         }
+        else {
+          this.resumeRecord();
+          this.pause1 = !this.pause1;
+        }
+      }
 
       //回放下拉框监听
       if (!this.recording) {
