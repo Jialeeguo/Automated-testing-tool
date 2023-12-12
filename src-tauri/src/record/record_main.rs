@@ -161,7 +161,8 @@ pub mod record_main {
                 let duration_key = START_TIME.lock().unwrap().elapsed().as_millis() -  *pause_time;
                 println!("{}ms,捕捉到键盘输入{:?}", duration_key, keys[0]);
                 let output = format!("{},key,{:?}\n", duration_key, keys[0]);
-                save_file.write_all(output.as_bytes()).unwrap();
+               if(keys[0] != Keycode::F1 && keys[0] != Keycode::F2 &&keys[0] != Keycode::F3 &&keys[0] != Keycode::F4 &&keys[0] != Keycode::F5 &&keys[0] != Keycode::F6 &&keys[0] != Keycode::F7 &&keys[0] != Keycode::F8){
+                save_file.write_all(output.as_bytes()).unwrap();}
                 sleep(Duration::from_millis(175));
                 continue;
             } else if keys.len() == 0 {

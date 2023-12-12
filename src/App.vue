@@ -185,7 +185,7 @@ export default {
       logs: '',
       isPlaybacking: false,//是否正在执行回放
       loggingEnabled: false,
-
+      back:false,
     };
   },
   methods: {
@@ -288,10 +288,12 @@ export default {
         await invoke('start_screen', { clickButton: this.clickButton });
       } else {
         this.$nextTick(() => {
+        if(this.back == false){
           const textarea = document.getElementById('steps');
           const currentTime = new Date().toLocaleTimeString();
           this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
           textarea.scrollTop = textarea.scrollHeight;
+        }
 
         });
 
@@ -320,7 +322,7 @@ export default {
     },
 
     playBack() {
-
+      this.back = true;
       let xhr = new XMLHttpRequest(),
         okStatus = document.location.protocol === "file:" ? 0 : 200;
 
@@ -392,15 +394,16 @@ export default {
   
               // 将 record_result.txt 的内容设置到 textarea
               document.getElementById("steps1").value = resultXhr.responseText;
-  
+              
             } else {
-              // 如果请求失败，将错误消息添加到日志中
-              this.log = "没有检测到任何移动轨迹，请查看record.txt是否为空\n";
+              // // 如果请求失败，将错误消息添加到日志中
+              // this.log = "没有检测到任何移动轨迹，请查看record.txt是否为空\n";
             }
           }
         };
   
         resultXhr.send(null);
+        this.back = false;
       },
   
 
