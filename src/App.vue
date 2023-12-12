@@ -20,18 +20,16 @@
             <div style="margin: auto;"></div>
 
             <form action="#">
-              <label for="lang" class="ziti">执行次数</label>
-              <select name="languages" id="lang" style="width: 200px; " value="5">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
+              <label for="lang" class="ziti">翻译对应语种</label>
+              <select v-model="Chinese" id="lang" style="width: 200px; ">
+                <option :value="null" disabled>默认为中文</option>
+                <option value="1">英语</option>
+                <option value="2">法语</option>
+                <option value="3">西班牙语</option>
+                <option value="4">阿拉伯语</option>
+                <option value="5">葡萄牙语</option>
+                <option value="6">俄语</option>
+                <option value="7">中文</option>
               </select>
 
             </form>
@@ -174,7 +172,7 @@ export default {
       filename: '',
       selectedFunctionKey: 'F1',//下拉框选择按钮回放按键,
       selectedFunctionKey1: 'F4',
-
+      Chinese:'7',
       selectedFunctionKey3: 'F2',
       selectedFunctionKey5: 'F6',
       selectedFunctionKey10:'F1',
