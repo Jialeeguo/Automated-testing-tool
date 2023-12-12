@@ -41,9 +41,22 @@
           <!-- <input type="file" id="docpicker" accept=".txt" /> -->
 
           <div style="display: flex; ">
-            <form @keydown.prevent="handleKeyDown">
-              <label for="lang" class="ziti">开始执行</label>
-              <select v-model="selectedFunctionKey5" id="lang" style="width: 200px;">
+            <form action="#">
+              <label for="action" class="ziti">开始/终止录制</label>
+              <select v-model="selectedFunctionKey10" id="lang" style="width: 200px;">
+                <option :value="null" disabled>请选择功能键</option>
+                <option value="F1">F1</option>
+
+              </select>
+            </form>
+
+            <div style="margin: auto;"></div>
+
+
+            <form action="#">
+
+              <label for="lang" class="ziti">截图</label>
+              <select v-model="selectedFunctionKey3" name="languages" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
@@ -53,16 +66,6 @@
                 <option value="F6">F6</option>
                 <option value="F7">F7</option>
                 <option value="F8">F8</option>
-              </select>
-            </form>
-
-            <div style="margin: auto;"></div>
-            <form action="#">
-              <label for="action" class="ziti">开始/终止录制</label>
-              <select v-model="selectedFunctionKey10" id="lang" style="width: 200px;">
-                <option :value="null" disabled>请选择功能键</option>
-                <option value="F1">F1</option>
-
               </select>
             </form>
           </div>
@@ -82,10 +85,9 @@
               </select>
             </form>
             <div style="margin: auto;"></div>
-            <form action="#">
-
-              <label for="lang" class="ziti">截图</label>
-              <select v-model="selectedFunctionKey3" name="languages" id="lang" style="width: 200px;">
+            <form @keydown.prevent="handleKeyDown">
+              <label for="lang" class="ziti">启动</label>
+              <select v-model="selectedFunctionKey5" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
                 <option value="F2">F2</option>
@@ -231,9 +233,13 @@ export default {
 
       clearInterval(this.logIntervalId);
       const currentTime = new Date().toLocaleTimeString();
+      if(this.recording){
       this.log += `${'录制已恢复'} - [${currentTime}]\n`;
-
       invoke('resume_record');
+    }else{
+      this.log += `${'不在录制过程中，无法暂停录制'} - [${currentTime}]\n`;
+    }
+
     },
 
     async pauseRecord() {
@@ -262,29 +268,29 @@ export default {
 
     async startScreenshot() {
       if (this.recording) {
-      if (this.clickButton == false) {
-        this.clickButton = !this.clickButton
-      }
-      
-          // 如果没有在录制，输出“没有录制”
-       
-       
-      this.$nextTick(() => {
-        const textarea = document.getElementById('steps');
-        const currentTime = new Date().toLocaleTimeString();
-        this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
-        textarea.scrollTop = textarea.scrollHeight;
-        
-      });
-
-
-      await invoke('start_screen', { clickButton: this.clickButton });
-    }else{
-    const currentTime = new Date().toLocaleTimeString();
-
-          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+        if (this.clickButton == false) {
+          this.clickButton = !this.clickButton
         }
-        },
+
+        // 如果没有在录制，输出“没有录制”
+
+
+        this.$nextTick(() => {
+          const textarea = document.getElementById('steps');
+          const currentTime = new Date().toLocaleTimeString();
+          this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
+          textarea.scrollTop = textarea.scrollHeight;
+
+        });
+
+
+        await invoke('start_screen', { clickButton: this.clickButton });
+      } else {
+        const currentTime = new Date().toLocaleTimeString();
+
+        this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+      }
+    },
     //选择回放文件夹
     async selectPlaybackFile() {
       const selected = await open({
@@ -317,7 +323,7 @@ export default {
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === okStatus) {
-      
+
             // 请求成功，但是文件内容为空
             if (xhr.responseText.trim() === "") {
               const currentTime = new Date().toLocaleTimeString();
@@ -400,34 +406,32 @@ export default {
         }
       }
       //截图下拉框监听
-     
-        const selectedValue5 = this.selectedFunctionKey3;
-        if (event.key === selectedValue5) {
+
+      const selectedValue5 = this.selectedFunctionKey3;
+      if (event.key === selectedValue5) {
 
 
-          event.preventDefault();
+        event.preventDefault();
 
-          this.startScreenshot()
-        }
+        this.startScreenshot()
+      }
 
-      
+
 
       //开始恢复暂停下拉框监听
-    
-        const selectedValue = this.selectedFunctionKey1;
-        if (event.key === selectedValue) {
+
+      const selectedValue = this.selectedFunctionKey1;
+      if (event.key === selectedValue) {
           if (this.pause1) {
-            console.log('aa');
             this.pauseRecord();
-            if(this.recording){
-            this.pause1 = !this.pause1;}
+            this.pause1 = !this.pause1;
           }
           else {
             this.resumeRecord();
-          
+            this.pause1 = !this.pause1;
           }
         }
-      
+
       //回放下拉框监听
       if (!this.recording) {
         const selectedValue = this.selectedFunctionKey5;
