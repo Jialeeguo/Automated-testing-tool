@@ -5,6 +5,7 @@
       <div style="background-color: rgb(245, 242, 242);">
         <div style="border: 2px solid white; margin: 5px; padding: 10px;">
           <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);">配置</label>
+          <div style="float:right;font-size: 13px; color:rgb(165, 2, 2);">注意：功能键选择不能重合，否则会崩溃</div>
           <div style="display: flex; align-items: center;">
 
 
@@ -286,9 +287,14 @@ export default {
 
         await invoke('start_screen', { clickButton: this.clickButton });
       } else {
+        this.$nextTick(() => {
+          const textarea = document.getElementById('steps');
         const currentTime = new Date().toLocaleTimeString();
-
         this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+        textarea.scrollTop = textarea.scrollHeight;
+
+        });
+
       }
     },
     //选择回放文件夹
@@ -347,7 +353,7 @@ export default {
               }, 500);
             }
           } else {
-            // 如果请求失败，将错误消息添加到日志中
+            // 如果请求失败，将错误消息添加到日志中steps
             if (!this.recording) {
               const currentTime = new Date().toLocaleTimeString();
               this.log += `${'文件夹选择错误，文件夹下没有包含record.txt,请重新选择'} - [${currentTime}]\n`;
@@ -357,13 +363,32 @@ export default {
           }
         }
       };
-      // this.loadRecordResult();
+      this.loadRecordResult();
 
       xhr.send(null);
 
       // 文本的内容
       const filePath = this.selectedFileName;
-      invoke('playback_main', { filePath, selectedFunctionKey: this.selectedFunctionKey });
+      invoke('playback_main', { filePath });
+    },
+
+    loadRecordResult() {
+      this.log_playback = '';
+      // 加载 record_result.txt 文件内容
+      let resultXhr = new XMLHttpRequest(),
+        resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
+      resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
+      resultXhr.overrideMimeType("text/html;charset=utf-8");
+      resultXhr.onreadystatechange = () => {
+        if (resultXhr.readyState === 4 && resultXhr.status === resultOkStatus) {
+          // 将 record_result.txt 的内容设置到 textarea
+          document.getElementById("steps1").value = resultXhr.responseText;
+        }else {
+            // 如果请求失败，将错误消息添加到日志中
+           
+          }
+      };
+      resultXhr.send(null);
     },
 
 
