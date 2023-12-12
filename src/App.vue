@@ -62,7 +62,7 @@
               <select v-model="selectedFunctionKey10" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
-        
+
               </select>
             </form>
           </div>
@@ -172,10 +172,10 @@ export default {
       filename: '',
       selectedFunctionKey: 'F1',//下拉框选择按钮回放按键,
       selectedFunctionKey1: 'F4',
-      Chinese:'7',
+      Chinese: '7',
       selectedFunctionKey3: 'F2',
       selectedFunctionKey5: 'F6',
-      selectedFunctionKey10:'F1',
+      selectedFunctionKey10: 'F1',
       recordstart: true,
       clickButton: false,
       isMarui: false,
@@ -237,45 +237,54 @@ export default {
     },
 
     async pauseRecord() {
-      this.pause = true;
+      console.log('ss');
+      if (this.recording) {
+        this.pause = true;
 
-      if (!this.loggingEnabled) {
-        this.logIntervalId = setInterval(async () => {
-          const currentTime = new Date().toLocaleTimeString();
-          this.log += `${'录制被暂停，再次点击按钮将恢复录制'} - [${currentTime}]\n`;
+        if (!this.loggingEnabled) {
+          this.logIntervalId = setInterval(async () => {
+            const currentTime = new Date().toLocaleTimeString();
+            this.log += `${'录制被暂停，再次点击按钮将恢复录制'} - [${currentTime}]\n`;
 
-          // 在每次输出后检查 loggingEnabled 是否为 true
+            // 在每次输出后检查 loggingEnabled 是否为 true
 
-        }, 1000);
+          }, 1000);
+        }
+
+        invoke('pause_record');
+      } else {
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${'不在录制过程中，无法暂停录制'} - [${currentTime}]\n`;
       }
-
-      invoke('pause_record');
     },
 
 
 
     async startScreenshot() {
-
+      if (this.recording) {
       if (this.clickButton == false) {
         this.clickButton = !this.clickButton
       }
+      
+          // 如果没有在录制，输出“没有录制”
+       
+       
       this.$nextTick(() => {
         const textarea = document.getElementById('steps');
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
         textarea.scrollTop = textarea.scrollHeight;
-        if (!this.recording) {
-          // 如果没有在录制，输出“没有录制”
-          const currentTime = new Date().toLocaleTimeString();
-          this.log = '';
-          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
-        }
+        
       });
 
 
       await invoke('start_screen', { clickButton: this.clickButton });
+    }else{
+    const currentTime = new Date().toLocaleTimeString();
 
-    },
+          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+        }
+        },
     //选择回放文件夹
     async selectPlaybackFile() {
       const selected = await open({
@@ -299,7 +308,6 @@ export default {
     },
 
     playBack() {
-      this.log = '';
 
       let xhr = new XMLHttpRequest(),
         okStatus = document.location.protocol === "file:" ? 0 : 200;
@@ -309,12 +317,14 @@ export default {
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === okStatus) {
+      
             // 请求成功，但是文件内容为空
             if (xhr.responseText.trim() === "") {
               const currentTime = new Date().toLocaleTimeString();
-            this.log += `${'没有选择文件夹或record.txt为空,请选择文件夹或检查record.txt是否为空'} - [${currentTime}]\n`;
-    
+              this.log += `${'没有选择文件夹或record.txt为空,请选择文件夹或检查record.txt是否为空'} - [${currentTime}]\n`;
+
             } else {
+              this.log = '';
               this.isPlaybacking = true;
               // 每隔一秒处理一行文本
               let lines = xhr.responseText.split('\n');
@@ -334,8 +344,8 @@ export default {
             // 如果请求失败，将错误消息添加到日志中
             if (!this.recording) {
               const currentTime = new Date().toLocaleTimeString();
-            this.log += `${'文件夹选择错误，文件夹下没有包含record.txt,请重新选择'} - [${currentTime}]\n`;
-    
+              this.log += `${'文件夹选择错误，文件夹下没有包含record.txt,请重新选择'} - [${currentTime}]\n`;
+
             }
             this.isPlaybacking = false; // 在处理失败后也要设置为 false
           }
@@ -361,8 +371,8 @@ export default {
       if (this.isPlaybacking) {
         //正在回放就不能录制
         const currentTime = new Date().toLocaleTimeString();
-            this.log += `${'正在回放中，请等待回放完毕再进行录制'} - [${currentTime}]\n`;
-    
+        this.log += `${'正在回放中，请等待回放完毕再进行录制'} - [${currentTime}]\n`;
+
 
       } else {
         const selectedValue = this.selectedFunctionKey10;
@@ -390,9 +400,9 @@ export default {
         }
       }
       //截图下拉框监听
-      if (this.recording) {
-        const selectedValue = this.selectedFunctionKey3;
-        if (event.key === selectedValue) {
+     
+        const selectedValue5 = this.selectedFunctionKey3;
+        if (event.key === selectedValue5) {
 
 
           event.preventDefault();
@@ -400,33 +410,24 @@ export default {
           this.startScreenshot()
         }
 
-      } else {
-        if (this.recording) {
-          const currentTime = new Date().toLocaleTimeString();
-            this.log += `${'不在录制过程中，请在录制过程中截图'} - [${currentTime}]\n`;
-        }
-      }
+      
 
       //开始恢复暂停下拉框监听
-      if (this.recording) {
+    
         const selectedValue = this.selectedFunctionKey1;
-        this.isMarui = !this.isMarui;
         if (event.key === selectedValue) {
           if (this.pause1) {
+            console.log('aa');
             this.pauseRecord();
-            this.pause1 = !this.pause1;
+            if(this.recording){
+            this.pause1 = !this.pause1;}
           }
           else {
             this.resumeRecord();
-            this.pause1 = !this.pause1;
+          
           }
         }
-      } else {
-        if (!this.isMarui) {
-          const currentTime = new Date().toLocaleTimeString();
-          this.log += `${'不在录制过程中，无法暂停录制'} - [${currentTime}]\n`;
-        }
-      }
+      
       //回放下拉框监听
       if (!this.recording) {
         const selectedValue = this.selectedFunctionKey5;
