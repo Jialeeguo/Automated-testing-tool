@@ -148,7 +148,7 @@ pub mod record_main {
                     let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
                     *mouse_flag = true;
                     pause_start_time = START_TIME.lock().unwrap().elapsed().as_millis();
-                    println!("暂停1");
+                    println!("暂停1s");
                     println!("暂停开始mouse_flag{}", mouse_flag);
                     m_flag = true;
                 }
