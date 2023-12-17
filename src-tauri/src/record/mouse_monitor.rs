@@ -5,7 +5,7 @@ pub mod mouse {
         io::Write,
     };
 
-    use crate::record::{self, screen_shot};
+    use crate::record::screen_shot;
 
     use crate::MOUSE_BEFORE_PRESS;
     use crate::MOUSE_MOVE_TIME;

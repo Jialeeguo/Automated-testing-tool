@@ -1,25 +1,23 @@
-use std::fs::OpenOptions;
 
 pub mod screen {
-    use std::{
-        fs::{File, OpenOptions},
-        io::Write,
-    };
     use image;
     use image_compare::Algorithm;
-    use screenshots::Screen;
-    use std::process::Command;
     use md5;
-    use tokio;
     use reqwest::Client;
+    use screenshots::Screen;
     use serde::Deserialize;
-    use futures::executor::block_on;
+    use std::process::Command;
+    use std::{
+        fs::OpenOptions,
+        io::Write,
+    };
+    use tokio;
     #[derive(Deserialize)]
     struct TranslationResult {
         trans_result: Vec<Translation>,
     }
 
-    #[derive(Deserialize)]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+    #[derive(Deserialize)]
 
     struct Translation {
         src: String,
@@ -27,7 +25,15 @@ pub mod screen {
     }
 
     //截图
-    pub fn screenshot(b_x: f64, b_y: f64, x: f64, y: f64, time: u128, now_dir: String, lang:String) {
+    pub fn screenshot(
+        b_x: f64,
+        b_y: f64,
+        x: f64,
+        y: f64,
+        time: u128,
+        now_dir: String,
+        lang: String,
+    ) {
         // 获取点所在屏幕
         // let mut log_path = String::from(file_path);
         let screen = Screen::from_point(100, 100).unwrap();
@@ -47,16 +53,16 @@ pub mod screen {
             .save(format!("{}/{}_playback.png", now_dir, time.to_string()))
             .unwrap();
         //对比图像是否一样
-        screen_shot_compare_and_text_compare(now_dir, time,lang);
+        screen_shot_compare_and_text_compare(now_dir, time, lang);
     }
 
     //图像对比
-    pub fn screen_shot_compare_and_text_compare(path: String, time: u128, lang:String) {
+    pub fn screen_shot_compare_and_text_compare(path: String, time: u128, lang: String) {
         // 打开图像文件
         let img1 = image::open(format!("{}/{}.png", path, time.to_string())).unwrap();
         let img2_path = format!("{}/{}_playback.png", path, time.to_string());
         let img2 = image::open(img2_path.clone()).unwrap();
-    
+
         Command::new("tesseract")
             .current_dir(format!("{}", path))
             .arg(format!("{}_playback.png", time.to_string()))
@@ -65,29 +71,29 @@ pub mod screen {
             .arg("eng+chi_sim")
             .output()
             .expect("提取文字错误");
-    
+
         //灰度值
         let gray_image1 = img1.to_luma8();
         let gray_image2 = img2.to_luma8();
-    
+
         let result = image_compare::gray_similarity_structure(
             &Algorithm::MSSIMSimple,
             &gray_image1,
             &gray_image2,
         )
         .expect("Images had different dimensions");
-    
+
         // 打开提取文字文件
         let text1 = std::fs::read_to_string(&format!("{}/textshot_{}.txt", path, time.to_string()))
             .expect("无法读取文件1的内容");
-    
+
         let text2 = std::fs::read_to_string(&format!(
             "{}/textshot_{}_playback.txt",
             path,
             time.to_string()
         ))
         .expect("无法读取文件2的内容");
-    
+
         if !text2.is_empty() {
             let modified_text2 = &text2[..text2.len() - 1];
             std::fs::write(
@@ -96,7 +102,7 @@ pub mod screen {
             )
             .expect("无法写入文件");
         }
-    
+
         let text2_new = std::fs::read_to_string(&format!(
             "{}/textshot_{}_playback.txt",
             path,
@@ -104,12 +110,17 @@ pub mod screen {
         ))
         .expect("无法读取文件2的内容");
 
-        tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime").block_on(async {
-            let (src, dst) = translate(lang, "zh".to_string(), text2_new.clone().replace("\n", "")).await.expect("Failed to get translation");
-            println!("source123: {}", src);
-            println!("translation123: {}", dst);
-        });
+        let mut translation = String::new();
 
+        tokio::runtime::Runtime::new()
+            .expect("Failed to create Tokio runtime")
+            .block_on(async {
+                let (_src, dst) =
+                    translate(lang, "zh".to_string(), text2_new.clone().replace("\n", " "))
+                        .await
+                        .expect("Failed to get translation");
+                translation = dst;
+            });
 
         let mut save_file = OpenOptions::new()
             .write(true)
@@ -117,17 +128,23 @@ pub mod screen {
             .append(true)
             .open(format!("{}/record_result.txt", path))
             .unwrap();
+
         writeln!(save_file, "文字提取录制结果:\n{}", text1).expect("写入失败");
         writeln!(save_file, "文字提取回放结果:\n{}", text2_new).expect("写入失败");
-        
 
+        let mut translation_save_file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(format!("{}/translation_result_{}.txt", path, time))
+            .unwrap();
+        writeln!(translation_save_file, "{}", translation).expect("翻译结果写入失败");
 
         if text1 == text2_new {
             writeln!(save_file, "{}时刻文字提取对比验证通过！", time).expect("写入失败");
         } else {
             writeln!(save_file, "{}文字提取对比结果不相同！", time).expect("写入失败");
         }
-    
+
         writeln!(
             save_file,
             "{}时刻对比图像相似度： {:?}",
@@ -135,10 +152,7 @@ pub mod screen {
             result.score
         )
         .expect("写入失败");
-        
-
     }
-
 
     pub async fn translate(
         from_lang: String,

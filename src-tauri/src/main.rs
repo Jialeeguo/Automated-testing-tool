@@ -18,7 +18,7 @@ use record::record_main::record_main::pause_record;
 use record::record_main::record_main::resume_record;
 use record::screen_shot::screen::screenshot;
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
+    atomic::AtomicBool,
     Arc,
 };
 // use record::record_main::record_main::stop_record;

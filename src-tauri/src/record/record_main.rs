@@ -20,10 +20,9 @@ pub mod record_main {
     use std::process::Command;
     use tauri::window;
     use tauri::{Manager, Window};
-    // use std::sync::{Arc, Mutex};
     use std::sync::{
         atomic::{AtomicBool, Ordering},
-        Arc, Mutex,
+        // Arc, Mutex,
     };
     use std::time::Instant;
     use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
@@ -32,12 +31,12 @@ pub mod record_main {
         message: String,
     }
     #[tauri::command]
-    pub async fn start_record(mut recordstart: bool) {
+    pub async fn start_record(recordstart: bool) {
         let mut status = "init";
         let device_state = DeviceState::new();
         //存储工作目录文件夹名
         let mut now_dir = String::new();
-        if (recordstart == true) {
+        if recordstart == true {
             return;
         }
         //设定开始按键
@@ -64,7 +63,7 @@ pub mod record_main {
             *start_time = Instant::now();
             let mut pause_time = PAUSE_TIME.lock().unwrap();
             *pause_time = 0;
-            
+
             *MOUSE_MOVE_TIME.lock().unwrap() = Some(start_time.elapsed().as_millis());
             //鼠标监听标志
             let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
@@ -95,7 +94,7 @@ pub mod record_main {
             *mouse_flag = true;
 
             // 使用 Arc<AtomicBool> 共享键盘监听标志
-            let should_stop_keyboard = SHOULD_STOP_KEYBOARD.clone();
+            // let should_stop_keyboard = SHOULD_STOP_KEYBOARD.clone();
 
             thread::spawn(move || {
                 if let Err(error) = listen(move |event| mouse_monitor::mouse::callback(event)) {
@@ -156,13 +155,22 @@ pub mod record_main {
             }
 
             let keys: Vec<Keycode> = device_state.get_keys();
-            if (keys.len() != 0 && keys[0] != Keycode::F1) {
+            if keys.len() != 0 && keys[0] != Keycode::F1 {
                 let pause_time = PAUSE_TIME.lock().unwrap();
-                let duration_key = START_TIME.lock().unwrap().elapsed().as_millis() -  *pause_time;
+                let duration_key = START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
                 println!("{}ms,捕捉到键盘输入{:?}", duration_key, keys[0]);
                 let output = format!("{},key,{:?}\n", duration_key, keys[0]);
-               if(keys[0] != Keycode::F1 && keys[0] != Keycode::F2 &&keys[0] != Keycode::F3 &&keys[0] != Keycode::F4 &&keys[0] != Keycode::F5 &&keys[0] != Keycode::F6 &&keys[0] != Keycode::F7 &&keys[0] != Keycode::F8){
-                save_file.write_all(output.as_bytes()).unwrap();}
+                if keys[0] != Keycode::F1
+                    && keys[0] != Keycode::F2
+                    && keys[0] != Keycode::F3
+                    && keys[0] != Keycode::F4
+                    && keys[0] != Keycode::F5
+                    && keys[0] != Keycode::F6
+                    && keys[0] != Keycode::F7
+                    && keys[0] != Keycode::F8
+                {
+                    save_file.write_all(output.as_bytes()).unwrap();
+                }
                 sleep(Duration::from_millis(175));
                 continue;
             } else if keys.len() == 0 {
@@ -189,7 +197,7 @@ pub mod record_main {
 
     //录制截图：启动！
     #[tauri::command]
-    pub async fn start_screen(mut clickButton: bool, window: Window) {
+    pub async fn start_screen(mut click_button: bool, window: Window) {
         loop {
             let mut now_dir = String::new();
             let device_state = DeviceState::new();
@@ -198,28 +206,29 @@ pub mod record_main {
             let global_now_dir = NOW_DIR.lock().unwrap();
             now_dir = global_now_dir.clone();
 
+            // 使用 Arc<AtomicBool> 共享键盘监听标志
             let should_stop_keyboard = SHOULD_STOP_KEYBOARD.clone();
 
             if should_stop_keyboard.load(Ordering::Relaxed) {
                 println!("键盘监听线程结束");
                 break;
             }
-            let mut save_file = OpenOptions::new()
-                .write(true)
-                .create(true)
-                .append(true)
-                .open(format!(
-                    "../Automated-testing/result/{}/record.txt",
-                    now_dir
-                ))
-                .unwrap();
-            if !clickButton {
+            // let mut save_file = OpenOptions::new()
+            //     .write(true)
+            //     .create(true)
+            //     .append(true)
+            //     .open(format!(
+            //         "../Automated-testing/result/{}/record.txt",
+            //         now_dir
+            //     ))
+            //     .unwrap();
+            if !click_button {
                 continue;
             }
 
-            if clickButton == true {
-                println!("传进来第一次的clickButton是{}", clickButton);
-                clickButton = false;
+            if click_button == true {
+                println!("传进来第一次的clickButton是{}", click_button);
+                click_button = false;
                 sleep(Duration::from_millis(300));
                 println!("进入截图功能");
                 println!("请等待几秒，正在提取图片文字...");
@@ -276,7 +285,7 @@ pub mod record_main {
                 }
 
                 continue;
-            } else if (keys.len() != 0 && keys[0] != Keycode::F1) {
+            } else if keys.len() != 0 && keys[0] != Keycode::F1 {
                 sleep(Duration::from_millis(175));
                 continue;
             } else if keys.len() == 0 {

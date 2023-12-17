@@ -17,7 +17,7 @@ pub mod playback_main {
     #[tauri::command]
     pub fn playback_main(file_path: String, lang: String) {
         println!("所选语言：{}\n", lang);
-        let mut now_dir = String::from(file_path);
+        let now_dir = String::from(file_path);
         *LAST_ACTION_TIME.lock().unwrap() = 0;
         let file = match File::open(format!("{}/record.txt", now_dir)) {
             Ok(f) => f,
