@@ -24,13 +24,14 @@
               <label for="lang" class="ziti">翻译对应语种</label>
               <select v-model="Chinese" id="lang" style="width: 200px; ">
                 <option :value="null" disabled>默认为中文</option>
-                <option value="1">英语</option>
-                <option value="2">法语</option>
+                <option value="1">自动识别</option>
+                <option value="2">英语</option>
                 <option value="3">西班牙语</option>
                 <option value="4">阿拉伯语</option>
                 <option value="5">葡萄牙语</option>
                 <option value="6">俄语</option>
-                <option value="7">中文</option>
+                <option value="7">法语</option>
+                <option value="8">中文</option>
               </select>
 
             </form>
@@ -175,7 +176,7 @@ export default {
       filename: '',
       selectedFunctionKey: 'F1',//下拉框选择按钮回放按键,
       selectedFunctionKey1: 'F4',
-      Chinese: '7',
+      Chinese: '8',
       selectedFunctionKey3: 'F2',
       selectedFunctionKey5: 'F6',
       selectedFunctionKey10: 'F1',
@@ -185,7 +186,7 @@ export default {
       logs: '',
       isPlaybacking: false,//是否正在执行回放
       loggingEnabled: false,
-      back:false,
+      back: false,
     };
   },
   methods: {
@@ -288,12 +289,12 @@ export default {
         await invoke('start_screen', { clickButton: this.clickButton });
       } else {
         this.$nextTick(() => {
-        if(this.back == false){
-          const textarea = document.getElementById('steps');
-          const currentTime = new Date().toLocaleTimeString();
-          this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
-          textarea.scrollTop = textarea.scrollHeight;
-        }
+          if (this.back == false) {
+            const textarea = document.getElementById('steps');
+            const currentTime = new Date().toLocaleTimeString();
+            this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
+            textarea.scrollTop = textarea.scrollHeight;
+          }
 
         });
 
@@ -350,7 +351,7 @@ export default {
                   currentIndex++;
                 } else {
                   clearInterval(intervalId); // 所有行处理完毕，清除定时器
-                  
+
                   this.loadRecordResult();
                   this.isPlaybacking = false; // 在处理完毕后设置为 false
                 }
@@ -367,45 +368,78 @@ export default {
           }
         }
       };
-   
+
 
       xhr.send(null);
 
-      // 文本的内容
+      // 调用回放后端函数
       const filePath = this.selectedFileName;
-        invoke('playback_main', { filePath, selectedFunctionKey: this.selectedFunctionKey });
-      },
-  
-  
-      loadRecordResult() {
-        this.log_playback = '';
-  
-        // 加载 record_result.txt 文件内容
-        let resultXhr = new XMLHttpRequest(),
-          resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
-  
-        resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
-        resultXhr.overrideMimeType("text/html;charset=utf-8");
-  
-        resultXhr.onreadystatechange = () => {
-          if (resultXhr.readyState === 4) {
-            if (resultXhr.status === resultOkStatus) {
-              // 如果 record_result.txt 的内容为空，输出日志
-  
-              // 将 record_result.txt 的内容设置到 textarea
-              document.getElementById("steps1").value = resultXhr.responseText;
-              
-            } else {
-              // // 如果请求失败，将错误消息添加到日志中
-              // this.log = "没有检测到任何移动轨迹，请查看record.txt是否为空\n";
-            }
+      let langValue;
+      switch (this.Chinese) {
+        case '1':
+          langValue = 'auto';
+          break;
+        case '8':
+          langValue = 'zh';
+          break;
+        case '2':
+          langValue = 'en';
+          break;
+        case '7':
+          langValue = 'fra';
+          break;
+        case '6':
+          langValue = 'ru';
+          break;
+        case '3':
+          langValue = 'spa';
+          break;
+        case '5':
+          langValue = 'pt';
+          break;
+        case '4':
+          langValue = 'ara';
+          break;
+        default:
+          langValue = '';
+          break;
+      }
+
+      console.log('txp:', this.Chinese);
+      console.log('langValue:', langValue);
+      invoke('playback_main', { filePath, lang: langValue, selectedFunctionKey: this.selectedFunctionKey });
+    },
+
+
+    loadRecordResult() {
+      this.log_playback = '';
+
+      // 加载 record_result.txt 文件内容
+      let resultXhr = new XMLHttpRequest(),
+        resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
+
+      resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
+      resultXhr.overrideMimeType("text/html;charset=utf-8");
+
+      resultXhr.onreadystatechange = () => {
+        if (resultXhr.readyState === 4) {
+          if (resultXhr.status === resultOkStatus) {
+            // 如果 record_result.txt 的内容为空，输出日志
+
+            // 将 record_result.txt 的内容设置到 textarea
+            document.getElementById("steps1").value = resultXhr.responseText;
+
+          } else {
+            // // 如果请求失败，将错误消息添加到日志中
+            // this.log = "没有检测到任何移动轨迹，请查看record.txt是否为空\n";
           }
-        };
-  
-        resultXhr.send(null);
-        this.back = false;
-      },
-  
+        }
+      };
+
+      resultXhr.send(null);
+      this.back = false;
+    },
+
 
 
 

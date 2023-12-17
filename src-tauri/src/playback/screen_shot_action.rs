@@ -9,9 +9,24 @@ pub mod screen {
     use image_compare::Algorithm;
     use screenshots::Screen;
     use std::process::Command;
+    use md5;
+    use reqwest::Client;
+    use serde::Deserialize;
+    use futures::executor::block_on;
+    #[derive(Deserialize)]
+    struct TranslationResult {
+        trans_result: Vec<Translation>,
+    }
+
+    #[derive(Deserialize)]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+
+    struct Translation {
+        src: String,
+        dst: String,
+    }
 
     //截图
-    pub fn screenshot(b_x: f64, b_y: f64, x: f64, y: f64, time: u128, now_dir: String) {
+    pub fn screenshot(b_x: f64, b_y: f64, x: f64, y: f64, time: u128, now_dir: String, lang:String) {
         // 获取点所在屏幕
         // let mut log_path = String::from(file_path);
         let screen = Screen::from_point(100, 100).unwrap();
@@ -31,11 +46,11 @@ pub mod screen {
             .save(format!("{}/{}_playback.png", now_dir, time.to_string()))
             .unwrap();
         //对比图像是否一样
-        screen_shot_compare_and_text_compare(now_dir, time);
+        screen_shot_compare_and_text_compare(now_dir, time,lang);
     }
 
     //图像对比
-    pub fn screen_shot_compare_and_text_compare(path: String, time: u128) {
+    pub fn screen_shot_compare_and_text_compare(path: String, time: u128, lang:String) {
         // 打开图像文件
         let img1 = image::open(format!("{}/{}.png", path, time.to_string())).unwrap();
         let img2_path = format!("{}/{}_playback.png", path, time.to_string());
@@ -87,7 +102,19 @@ pub mod screen {
             time.to_string()
         ))
         .expect("无法读取文件2的内容");
-    
+
+
+        let baidu_result = block_on(translate(lang, "zh".to_string(), text2_new.clone()));
+        match baidu_result {
+            Ok((trans_source, trans_translation)) => {
+                println!("Source: {}", trans_source);
+                println!("Translation: {}", trans_translation);
+            }
+            Err(err) => {
+                println!("Error: {}", err);
+            }
+        }
+
         let mut save_file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -114,5 +141,48 @@ pub mod screen {
         .expect("写入失败");
         
 
+    }
+
+
+    pub async fn translate(
+        from_lang: String,
+        to_lang: String,
+        query: String,
+    ) -> Result<(String, String), Box<dyn std::error::Error>> {
+        let client = Client::new();
+        let appid = "20231209001905731";
+        let appkey = "7aTtCh0dXiKXwFLcyO0n";
+        // let from_lang = "en";
+        // let to_lang = "zh";
+        // let query = "Nankai university college of software";
+
+        let salt = rand::random::<u32>();
+        let sign_string = format!("{}{}{}{}", appid, query, salt, appkey);
+        println!("{}", sign_string);
+
+        let sign = md5::compute(sign_string);
+
+        println!("md5:{:?}", sign);
+
+        let url: String = format!(
+        "http://api.fanyi.baidu.com/api/trans/vip/translate?q={}&from={}&to={}&appid={}&salt={}&sign={:?}",
+        query, from_lang, to_lang, appid, salt, sign
+    );
+        println!("url:{}", url);
+
+        let response = client.get(&url).send().await?;
+        let result: TranslationResult = response.json().await?;
+
+        let mut trans_source = String::new();
+        let mut trans_translation = String::new();
+
+        for trans in result.trans_result {
+            trans_source = trans.src.clone();
+            trans_translation = trans.dst.clone();
+            println!("Source: {}", trans.src);
+            println!("Translation: {}", trans.dst);
+        }
+
+        Ok((trans_source, trans_translation))
     }
 }

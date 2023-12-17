@@ -7,7 +7,7 @@ pub mod playback_main {
         thread,
         time::Duration,
     };
-  
+
     use crate::playback::keyboard_action::keyboard;
     use crate::playback::mouse_action::mouse;
     use crate::playback::screen_shot_action::screen;
@@ -15,7 +15,8 @@ pub mod playback_main {
     use crate::LAST_ACTION_TIME;
     use crate::SCREEN_PRESS;
     #[tauri::command]
-    pub fn playback_main(file_path:String) {
+    pub fn playback_main(file_path: String, lang: String) {
+        println!("所选语言：{}\n", lang);
         let mut now_dir = String::from(file_path);
         *LAST_ACTION_TIME.lock().unwrap() = 0;
         let file = match File::open(format!("{}/record.txt", now_dir)) {
@@ -100,7 +101,7 @@ pub mod playback_main {
                         let x = arr[3].parse::<f64>().unwrap();
                         let y = arr[4].parse::<f64>().unwrap();
                         let wait_duration = Duration::from_millis(wait_time.try_into().unwrap());
-                        screen::screenshot(b_x, b_y, x, y, time, now_dir.clone());
+                        screen::screenshot(b_x, b_y, x, y, time, now_dir.clone(), lang.clone());
                         thread::sleep(wait_duration);
                     }
                     _ => {}
