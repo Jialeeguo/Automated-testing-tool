@@ -179,7 +179,6 @@ export default {
       Chinese: '8',
       selectedFunctionKey3: 'F2',
       selectedFunctionKey5: 'F6',
-      selectedFunctionKey10: 'F1',
       recordstart: true,
       clickButton: false,
       isMarui: false,
@@ -340,7 +339,7 @@ export default {
 
             } else {
               this.log = '';
-              // this.isPlaybacking = true;
+              this.isPlaybacking = true;
               // 每隔一秒处理一行文本
               let lines = xhr.responseText.split('\n');
               let currentIndex = 0;
@@ -352,8 +351,9 @@ export default {
                 } else {
                   clearInterval(intervalId); // 所有行处理完毕，清除定时器
 
-                  this.loadRecordResult();
+                 
                   this.isPlaybacking = false; // 在处理完毕后设置为 false
+                  this.loadRecordResult();
                 }
               }, 500);
             }
@@ -427,7 +427,10 @@ export default {
             // 如果 record_result.txt 的内容为空，输出日志
 
             // 将 record_result.txt 的内容设置到 textarea
-            document.getElementById("steps1").value = resultXhr.responseText;
+            this.$nextTick(() => {
+          // 将 record_result.txt 的内容设置到 textarea
+          document.getElementById("steps1").value = resultXhr.responseText;
+        });
 
           } else {
             // // 如果请求失败，将错误消息添加到日志中
