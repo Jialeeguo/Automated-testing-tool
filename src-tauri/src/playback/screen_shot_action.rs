@@ -10,6 +10,7 @@ pub mod screen {
     use screenshots::Screen;
     use std::process::Command;
     use md5;
+    use tokio;
     use reqwest::Client;
     use serde::Deserialize;
     use futures::executor::block_on;
@@ -103,17 +104,12 @@ pub mod screen {
         ))
         .expect("无法读取文件2的内容");
 
+        tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime").block_on(async {
+            let (src, dst) = translate(lang, "zh".to_string(), text2_new.clone().replace("\n", "")).await.expect("Failed to get translation");
+            println!("source123: {}", src);
+            println!("translation123: {}", dst);
+        });
 
-        let baidu_result = block_on(translate(lang, "zh".to_string(), text2_new.clone()));
-        match baidu_result {
-            Ok((trans_source, trans_translation)) => {
-                println!("Source: {}", trans_source);
-                println!("Translation: {}", trans_translation);
-            }
-            Err(err) => {
-                println!("Error: {}", err);
-            }
-        }
 
         let mut save_file = OpenOptions::new()
             .write(true)
