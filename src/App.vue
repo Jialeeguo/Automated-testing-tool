@@ -119,6 +119,7 @@
               class="button-font" id="startrecord" @mouseover="handleButtonMouseOver" @mouseout="handleButtonMouseOut">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
+         
 
             <button @click="playBack" :disabled="recording || isPlaybacking" class="button-font"
               style="margin-left: 12px;">启动</button>
@@ -179,6 +180,7 @@ export default {
       Chinese: '8',
       selectedFunctionKey3: 'F2',
       selectedFunctionKey5: 'F6',
+      selectedFunctionKey10:'F1',//开始/终止录制默认
       recordstart: true,
       clickButton: false,
       isMarui: false,
@@ -186,46 +188,73 @@ export default {
       isPlaybacking: false,//是否正在执行回放
       loggingEnabled: false,
       back: false,
+      recordStateChangeTime: null,
     };
   },
   methods: {
 
     async startRecord() {
       // 添加新的事件监听器
-
+      
       if (!this.recording) {
         this.log = '';
 
       }
       this.recordstart = !this.recordstart;
-
+      const recordChangeTime = new Date(); 
       this.recording = !this.recording;
       if (this.recording) {
+        if (!this.recordStateChangeTime) {
+        // 如果之前没有记录过状态变化的时间戳，则记录当前时间戳
+        this.recordStateChangeTime = new Date();
+      }
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
         await invoke('start_record', { recordstart: this.recordstart });
       } else {
         console.log(this.recording + '是');
         const currentTime = new Date().toLocaleTimeString();
-        this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
+        
+        // 计算按钮状态变化经过的毫秒数
+        const elapsedTime = new Date() - this.recordStateChangeTime;
+        
+        // 添加 log，包含按钮状态变化经过的毫秒数
+        this.log +=  `本次录制时长 ${elapsedTime} 毫秒\n`;
 
+        this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]`;
 
+        // 重置状态变化的时间戳，以便下一次记录
+        this.recordStateChangeTime = null;
       }
     },
 
     async stopRecord() {
+      const recordChangeTime = new Date(); 
       this.recording = !this.recording;
       this.recordstart = !this.recordstart;
-      console.log(this.pause);
+
       if (this.pause) {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'正在暂停录制中，无法终止录制，请先恢复录制再终止录制'} - [${currentTime}]\n`;
 
       } else {
-
+        if (!this.recordStateChangeTime) {
+        // 如果之前没有记录过状态变化的时间戳，则记录当前时间戳
+        this.recordStateChangeTime = new Date();
+      }
         invoke('record_end');
         const currentTime = new Date().toLocaleTimeString();
-        this.log += `${'录制结束,已保存到log文件夹下，下次录制时将日志被清空！'} - [${currentTime}]\n`;
+        
+        // 计算按钮状态变化经过的毫秒数
+        const elapsedTime = new Date() - this.recordStateChangeTime;
+        
+        // 添加 log，包含按钮状态变化经过的毫秒数
+        this.log +=  `本次录制时长 ${elapsedTime} 毫秒\n`;
+
+        this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]`;
+
+        // 重置状态变化的时间戳，以便下一次记录
+        this.recordStateChangeTime = null;
       }
     },
 
@@ -528,6 +557,7 @@ export default {
   mounted() {
     // 监听键盘按下事件
     window.addEventListener("keydown", this.handleKeyDown);
+
     listen('event-name', (event) => {
       const currentTime = new Date().toLocaleTimeString();
       this.log += `${"提取文字执行成功！请继续操作。"} - [${currentTime}]\n`;

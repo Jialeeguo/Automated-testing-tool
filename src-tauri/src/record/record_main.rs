@@ -115,6 +115,7 @@ pub mod record_main {
                 let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
                 *mouse_flag = true;
                 if status == "started" {
+                 
                     println!(
                         "\n经过了：{}毫秒",
                         START_TIME.lock().unwrap().elapsed().as_millis()

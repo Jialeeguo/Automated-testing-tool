@@ -131,17 +131,20 @@ pub mod screen {
 
         writeln!(save_file, "文字提取录制结果:\n{}", text1).expect("写入失败");
         writeln!(save_file, "文字提取回放结果:\n{}", text2_new).expect("写入失败");
-
-        let mut translation_save_file = OpenOptions::new()
-            .write(true)
-            .create(true)
-            .open(format!("{}/translation_result_{}.txt", path, time))
-            .unwrap();
-        writeln!(translation_save_file, "{}", translation).expect("翻译结果写入失败");
+        writeln!(save_file, "文字提取翻译结果:\n{}", translation).expect("翻译结果写入失败");
+        // let mut translation_save_file = OpenOptions::new()
+        //     .write(true)
+        //     .create(true)
+        //     .open(format!("{}/translation_result_{}.txt", path, time))
+        //     .unwrap();
+        // writeln!(translation_save_file, "{}", translation).expect("翻译结果写入失败");
 
         if text1 == text2_new {
             writeln!(save_file, "{}时刻文字提取对比验证通过！", time).expect("写入失败");
-        } else {
+        } else if text1 == translation{
+            writeln!(save_file, "{}时刻文字提取对比验证通过！", time).expect("写入失败");
+        }
+        else{
             writeln!(save_file, "{}文字提取对比结果不相同！", time).expect("写入失败");
         }
 
@@ -154,7 +157,7 @@ pub mod screen {
         .expect("写入失败");
     }
 
-    pub async fn translate(
+    pub async fn translate(  
         from_lang: String,
         to_lang: String,
         query: String,
