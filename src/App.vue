@@ -119,18 +119,15 @@
               class="button-font" id="startrecord" @mouseover="handleButtonMouseOver" @mouseout="handleButtonMouseOut">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
             </button>
-         
-
             <button @click="playBack" :disabled="recording || isPlaybacking" class="button-font"
-              style="margin-left: 12px;">启动</button>
-
+              style="margin-left: 5px;">启动</button>
             <button @click="pause ? resumeRecord() : pauseRecord()" :disabled="!recording" class="button-font"
-              id="pauserecord" style="margin-left: 12px;">
+              id="pauserecord" style="margin-left: 5px;">
               {{ pause ? '恢复录制 ' : '暂停录制 ' }}
             </button>
 
             <button @click="startScreenshot" :disabled="!recording || isPlaybacking" class="button-font"
-              id="startScreenshot" style="margin-left: 12px;">截图</button>
+              id="startScreenshot" style="margin-left: 5px;">截图</button>
           </div>
         </div>
       </div>
@@ -140,6 +137,15 @@
         <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142); ">操作步骤</div>
         <div style="margin: 0 167px;"></div>
         <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142);">对比脚本结果</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        <form action="#">
+          <select name="languages" id="lang" style="width: 140px;" value="F2">
+            <option :value="null" value="请选择回放文件夹" disabled selected>请判定测试用例状态</option>
+            <option value="F1">通过</option>
+            <option value="F2">不通过</option>
+            <option value="F3">待定</option>
+          </select>
+        </form>
       </div>
 
       <div style="display: flex;">
@@ -156,7 +162,7 @@
 import { ref, reactive, onBeforeMount } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 import { appWindow } from "@tauri-apps/api/window"
-import { open } from '@tauri-apps/api/dialog';
+import { open ,ask,message} from '@tauri-apps/api/dialog';
 import { appConfigDir } from '@tauri-apps/api/path';
 // Open a selection dialog for directories
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs';
@@ -180,7 +186,7 @@ export default {
       Chinese: '8',
       selectedFunctionKey3: 'F2',
       selectedFunctionKey5: 'F6',
-      selectedFunctionKey10:'F1',//开始/终止录制默认
+      selectedFunctionKey10: 'F1',//开始/终止录制默认
       recordstart: true,
       clickButton: false,
       isMarui: false,
@@ -194,32 +200,32 @@ export default {
   methods: {
 
     async startRecord() {
-      // 添加新的事件监听器
-      
+
+
       if (!this.recording) {
         this.log = '';
 
       }
       this.recordstart = !this.recordstart;
-      const recordChangeTime = new Date(); 
+      const recordChangeTime = new Date();
       this.recording = !this.recording;
       if (this.recording) {
         if (!this.recordStateChangeTime) {
-        // 如果之前没有记录过状态变化的时间戳，则记录当前时间戳
-        this.recordStateChangeTime = new Date();
-      }
+
+          this.recordStateChangeTime = new Date();
+        }
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
         await invoke('start_record', { recordstart: this.recordstart });
       } else {
         console.log(this.recording + '是');
         const currentTime = new Date().toLocaleTimeString();
-        
-        // 计算按钮状态变化经过的毫秒数
+
+
         const elapsedTime = new Date() - this.recordStateChangeTime;
-        
-        // 添加 log，包含按钮状态变化经过的毫秒数
-        this.log +=  `本次录制时长 ${elapsedTime} 毫秒\n`;
+
+
+        this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
 
         this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]`;
 
@@ -229,7 +235,7 @@ export default {
     },
 
     async stopRecord() {
-      const recordChangeTime = new Date(); 
+      const recordChangeTime = new Date();
       this.recording = !this.recording;
       this.recordstart = !this.recordstart;
 
@@ -239,17 +245,17 @@ export default {
 
       } else {
         if (!this.recordStateChangeTime) {
-        // 如果之前没有记录过状态变化的时间戳，则记录当前时间戳
-        this.recordStateChangeTime = new Date();
-      }
+
+          this.recordStateChangeTime = new Date();
+        }
         invoke('record_end');
         const currentTime = new Date().toLocaleTimeString();
-        
-        // 计算按钮状态变化经过的毫秒数
+
+
         const elapsedTime = new Date() - this.recordStateChangeTime;
-        
-        // 添加 log，包含按钮状态变化经过的毫秒数
-        this.log +=  `本次录制时长 ${elapsedTime} 毫秒\n`;
+
+
+        this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
 
         this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]`;
 
@@ -380,7 +386,7 @@ export default {
                 } else {
                   clearInterval(intervalId); // 所有行处理完毕，清除定时器
 
-                 
+
                   this.isPlaybacking = false; // 在处理完毕后设置为 false
                   this.loadRecordResult();
                 }
@@ -440,7 +446,7 @@ export default {
     },
 
 
-    loadRecordResult() {
+    async loadRecordResult() {
       this.log_playback = '';
 
       // 加载 record_result.txt 文件内容
@@ -457,9 +463,9 @@ export default {
 
             // 将 record_result.txt 的内容设置到 textarea
             this.$nextTick(() => {
-          // 将 record_result.txt 的内容设置到 textarea
-          document.getElementById("steps1").value = resultXhr.responseText;
-        });
+              // 将 record_result.txt 的内容设置到 textarea
+              document.getElementById("steps1").value = resultXhr.responseText;
+            });
 
           } else {
             // // 如果请求失败，将错误消息添加到日志中
@@ -468,8 +474,10 @@ export default {
         }
       };
 
+
       resultXhr.send(null);
       this.back = false;
+      // const yes2 = await ask('测试用例状态通通过', { title: 'Tauri', type: 'warning' });
     },
 
 
@@ -555,7 +563,7 @@ export default {
 
   },
   mounted() {
-    // 监听键盘按下事件
+
     window.addEventListener("keydown", this.handleKeyDown);
 
     listen('event-name', (event) => {
@@ -574,7 +582,6 @@ export default {
 </script>
 
 <style scoped>
-/* 添加一些基本样式，你可以根据需要进行修改 */
 textarea {
   width: 50%;
   margin-top: 10px;
@@ -598,18 +605,18 @@ button {
 
 .button-font:hover {
   background-color: #e60000;
-  /* 悬停时背景色变化 */
+
   color: #ffffff;
-  /* 悬停时文字颜色变化 */
+
 }
 
 .button-font:disabled {
   background-color: #c2baba;
-  /* 禁用状态的背景色 */
+
   color: #fc0000;
-  /* 禁用状态的文字颜色 */
+
   cursor: not-allowed;
-  /* 显示禁用状态的鼠标样式 */
+
 }
 
 select {
@@ -651,7 +658,7 @@ select {
   display: flex;
   align-items: baseline;
 
-  /* 这里使用 baseline 对齐文字的基线，你也可以使用其他值如 center，flex-start 等 */
+
 }
 
 .log {
@@ -665,7 +672,7 @@ select {
   border-radius: 9px;
   box-shadow: 0 0 0 2px rgb(255, 0, 0);
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  /* 这里使用 baseline 对齐文字的基线，你也可以使用其他值如 center，flex-start 等 */
+
 }
 
 button:disabled {
