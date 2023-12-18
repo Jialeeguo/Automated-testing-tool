@@ -117,17 +117,24 @@ pub mod playback_main {
     pub fn playback_confirm(file_path: String, playback_result: String) {
         let result_text = std::fs::read_to_string(&format!("{}/record_result.txt", file_path))
             .expect("无法读取文件1的内容");
+        println!("result_text:{}\n", result_text);
 
         let mut process_lines = vec![];
         for line in result_text.lines() {
-            if !line.contains("回放结果为：") {
+            if !line.contains("\n回放结果为：") {
                 process_lines.push(line);
             }
         }
+        println!("process_lines:{:?}\n", process_lines);
 
         // 将处理后的内容写回文件
         let output_text = process_lines.join("\n");
-        fs::write(file_path.clone(), output_text).expect("无法写入文件");
+        println!("output_text{}",output_text);
+        std::fs::write(
+            &format!("{}/record_result.txt", file_path),
+            output_text,
+        ).expect("无法写入文件");
+
 
         let mut file = OpenOptions::new()
             .write(true)

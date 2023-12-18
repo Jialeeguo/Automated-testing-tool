@@ -139,7 +139,7 @@
         <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142);">对比脚本结果</div>
         <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
         <form action="#">
-          <select name="languages" id="lang" style="width: 140px;" value="F2">
+          <select name="languages" id="lang" style="width: 140px;" v-model="selectedFolder" @change="playbackConfirm">
             <option :value="null" value="请选择回放文件夹" disabled selected>请判定测试用例状态</option>
             <option value="F1">通过</option>
             <option value="F2">不通过</option>
@@ -162,9 +162,9 @@
 import { ref, reactive, onBeforeMount } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 import { appWindow } from "@tauri-apps/api/window"
-import { open ,ask,message} from '@tauri-apps/api/dialog';
+import { open, ask, message } from '@tauri-apps/api/dialog';
 import { appConfigDir } from '@tauri-apps/api/path';
-// Open a selection dialog for directories
+// Open a selection dialog for directoriesChinese
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs';
 import { listen } from '@tauri-apps/api/event';
 // Read the text file in the `$APPCONFIG/app.conf` path
@@ -183,6 +183,7 @@ export default {
       filename: '',
       selectedFunctionKey: 'F1',//下拉框选择按钮回放按键,
       selectedFunctionKey1: 'F4',
+      selectedFolder: null,//通过不通过选择
       Chinese: '8',
       selectedFunctionKey3: 'F2',
       selectedFunctionKey5: 'F6',
@@ -443,6 +444,29 @@ export default {
       console.log('txp:', this.Chinese);
       console.log('langValue:', langValue);
       invoke('playback_main', { filePath, lang: langValue, selectedFunctionKey: this.selectedFunctionKey });
+    },
+
+    //通过不通过触发函数
+    playbackConfirm() {
+      const filePath = this.selectedFileName;
+      let playbackResult;
+      switch (this.selectedFolder) {
+        case 'F1':
+          playbackResult = '通过';
+          break;
+        case 'F2':
+          playbackResult = '不通过';
+          break;
+        case 'F3':
+          playbackResult = '待定';
+          break;
+        default:
+          langValue = '';
+          break;
+      }
+      console.log('filePath:', filePath);
+      console.log('playbackResult:', playbackResult);
+      invoke('playback_confirm', { filePath, playbackResult});
     },
 
 
