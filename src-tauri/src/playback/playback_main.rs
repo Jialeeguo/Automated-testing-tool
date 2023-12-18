@@ -121,7 +121,7 @@ pub mod playback_main {
 
         let mut process_lines = vec![];
         for line in result_text.lines() {
-            if !line.contains("\n回放结果为：") {
+            if !line.contains("回放结果为：") {
                 process_lines.push(line);
             }
         }
@@ -142,6 +142,6 @@ pub mod playback_main {
             .open(format!("{}/record_result.txt", file_path))
             .unwrap();
 
-        writeln!(file, "回放结果为：{}\n", playback_result).expect("写入失败");
+        writeln!(file, "\n回放结果为：{}", playback_result).expect("写入失败");
     }
 }
