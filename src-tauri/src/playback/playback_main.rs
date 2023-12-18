@@ -2,8 +2,9 @@ pub mod playback_main {
     use enigo::{Enigo, Key, KeyboardControllable};
     use rdev::{Button, EventType};
     use std::{
-        fs::File,
-        io::{BufRead, BufReader},
+        fmt::write,
+        fs::{self, File, OpenOptions},
+        io::{BufRead, BufReader, Write},
         thread,
         time::Duration,
     };
@@ -109,5 +110,31 @@ pub mod playback_main {
                 _ => {}
             }
         }
+    }
+
+    //测试用例是否通过状态
+    #[tauri::command]
+    pub fn playback_confirm(file_path: String, playback_result: String) {
+        let result_text = std::fs::read_to_string(&format!("{}/record_result.txt", file_path))
+            .expect("无法读取文件1的内容");
+
+        let mut process_lines = vec![];
+        for line in result_text.lines() {
+            if !line.contains("回放结果为：") {
+                process_lines.push(line);
+            }
+        }
+
+        // 将处理后的内容写回文件
+        let output_text = process_lines.join("\n");
+        fs::write(file_path.clone(), output_text).expect("无法写入文件");
+
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(format!("{}/record_result.txt", file_path))
+            .unwrap();
+
+        writeln!(file, "回放结果为：{}\n", playback_result).expect("写入失败");
     }
 }

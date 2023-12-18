@@ -10,17 +10,15 @@ mod record;
 // use std::thread;
 // use std::process;
 // use std::time::Duration;
+use playback::playback_main::playback_main::playback_confirm;
 use playback::playback_main::playback_main::playback_main;
+use record::record_main::record_main::pause_record;
 use record::record_main::record_main::record_end;
+use record::record_main::record_main::resume_record;
 use record::record_main::record_main::start_record;
 use record::record_main::record_main::start_screen;
-use record::record_main::record_main::pause_record;
-use record::record_main::record_main::resume_record;
 use record::screen_shot::screen::screenshot;
-use std::sync::{
-    atomic::AtomicBool,
-    Arc,
-};
+use std::sync::{atomic::AtomicBool, Arc};
 // use record::record_main::record_main::stop_record;
 #[macro_use]
 extern crate lazy_static;
@@ -68,6 +66,7 @@ fn main() {
             record_end,
             pause_record,
             resume_record,
+            playback_confirm,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

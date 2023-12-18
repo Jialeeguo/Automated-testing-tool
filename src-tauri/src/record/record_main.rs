@@ -18,14 +18,11 @@ pub mod record_main {
     use device_query::{DeviceQuery, DeviceState, Keycode};
     use rdev::listen;
     use std::process::Command;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::time::Instant;
+    use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration,fs::File};
     use tauri::window;
     use tauri::{Manager, Window};
-    use std::sync::{
-        atomic::{AtomicBool, Ordering},
-        // Arc, Mutex,
-    };
-    use std::time::Instant;
-    use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
     #[derive(Clone, serde::Serialize)]
     struct Payload {
         message: String,
@@ -78,16 +75,18 @@ pub mod record_main {
         }
 
         //键盘监听文件
-
         let mut save_file = OpenOptions::new()
             .write(true)
             .create(true)
             .append(true)
             .open(format!(
                 "../Automated-testing/result/{}/record.txt",
-                now_dir
+                now_dir.clone()
             ))
             .unwrap();
+
+        File::create(format!("../Automated-testing/result/{}/record_result.txt", now_dir)).unwrap();
+
         // 鼠标监听线程
         let mut mouse_flag = MOUSE_THREAD_START.lock().unwrap();
         if *mouse_flag == false {
@@ -115,7 +114,6 @@ pub mod record_main {
                 let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
                 *mouse_flag = true;
                 if status == "started" {
-                 
                     println!(
                         "\n经过了：{}毫秒",
                         START_TIME.lock().unwrap().elapsed().as_millis()
