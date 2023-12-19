@@ -10,6 +10,7 @@ mod record;
 // use std::thread;
 // use std::process;
 // use std::time::Duration;
+use tauri::Manager;
 use playback::playback_main::playback_main::playback_confirm;
 use playback::playback_main::playback_main::playback_main;
 use record::record_main::record_main::pause_record;
@@ -55,7 +56,15 @@ lazy_static! {
     //暂停时间记录
     static ref PAUSE_TIME: Mutex<u128> = Mutex::new(0);
 }
-
+#[tauri::command]
+async fn close_splashscreen(window: tauri::Window) {
+  // Close splashscreen
+  if let Some(splashscreen) = window.get_window("splashscreen") {
+    splashscreen.close().unwrap();
+  }
+  // Show main window
+  window.get_window("main").unwrap().show().unwrap();
+}
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -67,6 +76,7 @@ fn main() {
             pause_record,
             resume_record,
             playback_confirm,
+            close_splashscreen
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

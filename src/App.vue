@@ -602,7 +602,7 @@ export default {
 
   },
   mounted() {
-
+    invoke('close_splashscreen');
     window.addEventListener("keydown", this.handleKeyDown);
 
     listen('event-name', (event) => {

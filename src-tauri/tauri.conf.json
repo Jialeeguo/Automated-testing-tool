@@ -59,10 +59,20 @@
         "center":true,
         "maximizable": false,
         "minHeight": 800,
-        "maxHeight": 600
-    
-      
-      }
+        "maxHeight": 600,
+        "visible": false 
+      },
+      {
+        "width": 400,
+        "height": 200,
+        "decorations": false,
+        "url": "splashscreen.html",
+        "label": "splashscreen",
+        "center":true,
+        "maximizable": false,
+        "minHeight": 800,
+        "maxHeight": 800
+        }
     ]
   }
 }
