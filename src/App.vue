@@ -1,22 +1,23 @@
 <template>
-  <div style="background-color: rgb(245, 242, 242);">
+  <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);" >
+    
     <div>
 
-      <div style="background-color: rgb(245, 242, 242);">
-        <div style="border: 2px solid white; margin: 5px; padding: 10px;">
-          <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);">配置</label>
-          <div style="float:right;font-size: 13px; color:rgb(165, 2, 2);">注意：功能键选择不能重合，否则会崩溃</div>
+      <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);">
+        <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
+          <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);  " >配置</label>
+          <div style="float:right;font-size: 13px; color:rgb(165, 2, 2); ">注意：功能键选择不能重合，否则会崩溃</div>
           <div style="display: flex; align-items: center;">
 
 
 
-            <label for="lang" class="ziti">脚本</label>
+            <label for="lang" class="ziti" style="color: rgb(0, 0, 0);" >脚本</label>
             <select name="languages" id="lang" style="width: 140px;" value="请选择回放文件夹">
 
               <option value="请选择回放文件夹">{{ selectedFileName }}</option>
             </select>
             <button @click="selectPlaybackFile"
-              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: red; ">...</button>
+              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(226, 217, 217); ">...</button>
 
             <div style="margin: auto;"></div>
 
@@ -111,7 +112,7 @@
 
       </div>
       <div style="background-color: rgb(245, 242, 242);">
-        <div style="border: 2px solid white; margin: 5px; padding: 10px;">
+        <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
 
           <div class="buttons-container">
             <!-- 添加按钮组 -->
@@ -132,7 +133,7 @@
         </div>
       </div>
     </div>
-    <div style="border: 2px solid white; margin: 5px; padding: 10px;">
+    <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
       <div class="log-container">
         <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142); ">操作步骤</div>
         <div style="margin: 0 167px;"></div>
@@ -625,34 +626,37 @@ textarea {
   width: 50%;
   margin-top: 10px;
   background-color: #e6e2e2;
+  
 }
 
 button {
   margin: 5px;
   padding: 10px;
   cursor: pointer;
+  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
   background-color: rgb(230, 227, 227);
   width: 172px;
-  color: red;
+  color: rgb(138, 123, 123);
   border: 1.5px;
   border-radius: 10px;
   border-style: solid;
-  border-color: red;
+  border-color: rgb(226, 217, 217);
   font-size: large;
   transition: background-color 0.5s, color 0.3s
+  
 }
 
 .button-font:hover {
-  background-color: #e60000;
-
+  background-color: #817b7b;
+  background: linear-gradient(135deg, #abecd6, #fbed96);
   color: #ffffff;
 
 }
 
 .button-font:disabled {
   background-color: #c2baba;
-
-  color: #fc0000;
+  background: linear-gradient(135deg, #a8caba, #d8ccd5);
+  color: rgb(145, 137, 137);
 
   cursor: not-allowed;
 
@@ -664,16 +668,19 @@ select {
   font-family: cursive, sans-serif;
   outline: 0;
   background: #ffffff;
-  color: red;
-  border: 1px solid red;
+  color: rgb(255, 0, 191);
+  border: 1px solid rgb(226, 217, 217);
   padding: 4px;
   border-radius: 9px;
+  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
+ 
 }
 
 .ziti {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   color: rgb(47, 51, 50);
   font-size: smaller;
+
 }
 
 .log_log {
@@ -681,37 +688,38 @@ select {
   color: rgb(47, 51, 50);
   font-size: smaller;
   color: rgb(255, 0, 0);
-
+  
 }
 
 .button-font {
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  color: rgb(236, 8, 20);
+  color: rgb(255, 0, 191);
   font-size: large;
   font-weight: 700;
   background-color: rgb(245, 242, 242);
-
+  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
 }
 
 .log-container {
   display: flex;
   align-items: baseline;
-
+  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
 
 }
 
 .log {
   display: flex;
   align-items: baseline;
-  color: rgb(255, 0, 0);
+  color: rgb(255, 0, 191);
   background-color: rgb(255, 255, 255);
   ;
   border: 7px solid rgb(241, 240, 240);
   padding: 4px;
   border-radius: 9px;
-  box-shadow: 0 0 0 2px rgb(255, 0, 0);
+  box-shadow: 0 0 0 2px rgb(226, 217, 217);
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-
+  background: linear-gradient(135deg, #e9defa, #dbeffb);
+  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
 }
 
 button:disabled {
@@ -727,6 +735,7 @@ body {
   margin: 0 auto;
   height: 100vh;
   background-color: #f1f1f1;
+  
 }
 
 input {
@@ -734,6 +743,7 @@ input {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
+  
 }
 
 
@@ -742,5 +752,6 @@ label {
   width: 150px;
   text-align: left;
   display: inline-block;
+
 }
 </style>
