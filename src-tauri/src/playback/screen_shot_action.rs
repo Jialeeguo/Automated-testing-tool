@@ -120,8 +120,8 @@ pub mod screen {
 
             let mut save_file = OpenOptions::new()
             .write(true)
-            .create(true) // 使用 create(true) 覆盖文件
-            .truncate(true) // 截断文件，清空内容
+            .create(true) 
+            .truncate(true) 
             .open(format!("{}/record_result.txt", path))
             .unwrap();
         

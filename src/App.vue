@@ -196,6 +196,7 @@ export default {
       loggingEnabled: false,
       back: false,
       recordStateChangeTime: null,
+      selectedContent: false,//通过不通过状态选择，如果没有回放状态则为false，输出日志
     };
   },
   methods: {
@@ -205,12 +206,13 @@ export default {
 
       if (!this.recording) {
         this.log = '';
-
+        
       }
       this.recordstart = !this.recordstart;
       const recordChangeTime = new Date();
       this.recording = !this.recording;
       if (this.recording) {
+        this.logs = '';
         if (!this.recordStateChangeTime) {
 
           this.recordStateChangeTime = new Date();
@@ -228,7 +230,7 @@ export default {
 
         this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
 
-        this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]`;
+        this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]\n`;
 
         // 重置状态变化的时间戳，以便下一次记录
         this.recordStateChangeTime = null;
@@ -236,6 +238,7 @@ export default {
     },
 
     async stopRecord() {
+      this.logs = '';
       const recordChangeTime = new Date();
       this.recording = !this.recording;
       this.recordstart = !this.recordstart;
@@ -254,11 +257,11 @@ export default {
 
 
         const elapsedTime = new Date() - this.recordStateChangeTime;
-
+        
 
         this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
 
-        this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]`;
+        this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]\n`;
 
         // 重置状态变化的时间戳，以便下一次记录
         this.recordStateChangeTime = null;
@@ -327,6 +330,7 @@ export default {
           if (this.back == false) {
             const textarea = document.getElementById('steps');
             const currentTime = new Date().toLocaleTimeString();
+            console.log("ss");
             this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
             textarea.scrollTop = textarea.scrollHeight;
           }
@@ -356,8 +360,9 @@ export default {
 
 
     },
-
+    //回放函数
     playBack() {
+      this.logs = '';
       this.back = true;
       let xhr = new XMLHttpRequest(),
         okStatus = document.location.protocol === "file:" ? 0 : 200;
@@ -379,7 +384,7 @@ export default {
               // 每隔一秒处理一行文本
               let lines = xhr.responseText.split('\n');
               let currentIndex = 0;
-
+              this.selectedContent = true;
               let intervalId = setInterval(() => {
                 if (currentIndex < lines.length) {
                   this.log += `${lines[currentIndex]}\n`;
@@ -389,6 +394,7 @@ export default {
 
 
                   this.isPlaybacking = false; // 在处理完毕后设置为 false
+              
                   this.loadRecordResult();
                 }
               }, 500);
@@ -443,6 +449,7 @@ export default {
 
       console.log('txp:', this.Chinese);
       console.log('langValue:', langValue);
+      this.back = false;
       invoke('playback_main', { filePath, lang: langValue, selectedFunctionKey: this.selectedFunctionKey });
     },
 
@@ -466,7 +473,15 @@ export default {
       }
       console.log('filePath:', filePath);
       console.log('playbackResult:', playbackResult);
-      invoke('playback_confirm', { filePath, playbackResult});
+      if (this.selectedContent) {
+        invoke('playback_confirm', { filePath, playbackResult });
+        this.selectedContent = false;
+      } else {
+        const currentTime = new Date().toLocaleTimeString();
+        this.logs = '';
+        this.logs += `${'没有回放任何脚本，不能判别测试用例状态，请回放脚本后再选择'} - [${currentTime}]\n`;
+
+      }
     },
 
 
@@ -500,7 +515,7 @@ export default {
 
 
       resultXhr.send(null);
-      this.back = false;
+      
       // const yes2 = await ask('测试用例状态通通过', { title: 'Tauri', type: 'warning' });
     },
 

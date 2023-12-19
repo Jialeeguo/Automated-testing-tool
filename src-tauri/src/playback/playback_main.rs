@@ -115,10 +115,13 @@ pub mod playback_main {
     //测试用例是否通过状态
     #[tauri::command]
     pub fn playback_confirm(file_path: String, playback_result: String) {
-        let result_text = std::fs::read_to_string(&format!("{}/record_result.txt", file_path))
-            .expect("无法读取文件1的内容");
+        let file_path = format!("{}/record_result.txt", file_path);
+
+        // 读取文件内容，如果文件不存在或为空，则提供默认值为空字符串
+        let result_text = std::fs::read_to_string(&file_path).unwrap_or_default();
         println!("result_text:{}\n", result_text);
 
+        // 处理文件内容
         let mut process_lines = vec![];
         for line in result_text.lines() {
             if !line.contains("回放结果为：") {
@@ -129,19 +132,15 @@ pub mod playback_main {
 
         // 将处理后的内容写回文件
         let output_text = process_lines.join("\n");
-        println!("output_text{}",output_text);
-        std::fs::write(
-            &format!("{}/record_result.txt", file_path),
-            output_text,
-        ).expect("无法写入文件");
-
-
+        println!("output_text{}", output_text);
+        std::fs::write(&file_path, output_text).unwrap_or_default();
+        // 打开文件进行追加写入
         let mut file = OpenOptions::new()
             .write(true)
             .append(true)
-            .open(format!("{}/record_result.txt", file_path))
-            .unwrap();
+            .open(&file_path)
+            .expect("无法打开文件");
 
-        writeln!(file, "\n回放结果为：{}", playback_result).expect("写入失败");
+        writeln!(file, "\n回放结果为：{}\n", playback_result).unwrap_or_default();
     }
 }
