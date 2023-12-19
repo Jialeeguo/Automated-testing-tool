@@ -108,29 +108,42 @@ pub mod screen {
 
         let mut translation = String::new();
 
-        tokio::runtime::Runtime::new()
-            .expect("Failed to create Tokio runtime")
-            .block_on(async {
-                let (_src, dst) =
-                    translate(lang, "zh".to_string(), text2_new.clone().replace("\n", " "))
-                        .await
-                        .expect("Failed to get translation");
-                translation = dst;
-            });
+        if !text2_new.is_empty() && lang != "zh" {
+            tokio::runtime::Runtime::new()
+                .expect("Failed to create Tokio runtime")
+                .block_on(async {
+                    let (_src, dst) =
+                        translate(lang, "zh".to_string(), text2_new.clone().replace("\n", " "))
+                            .await
+                            .map_err(|err| {
+                                println!("Failed to get translation: {:?}", err);
+                                "回放时没有查找到字体,请人工查看回放与录制时截图的操作是否一致（本条消息自动生成，非截图生成的字体）".to_string()
+                            })
+                            .unwrap_or_else(|default_value| ("回放时没有查找到字体,请人工查看回放与录制时截图的操作是否一致（本条消息自动生成，非截图生成的字体）".to_string(), default_value));
+                    translation = dst;
+                    
+                });
+        }
 
-            let mut save_file = OpenOptions::new()
+        let mut save_file = OpenOptions::new()
             .write(true)
-            .create(true) 
-            .truncate(true) 
+            .create(true)
+            .truncate(true)
             .open(format!("{}/record_result.txt", path))
             .unwrap();
-        
+
         // 写入内容
         writeln!(save_file, "文字提取录制结果:\n{}", text1).expect("写入失败");
+        if text2_new.is_empty(){
+            writeln!(save_file, "文字提取回放结果:{}", text2_new).expect("写入失败");
+            writeln!(save_file,"回放时没有查找到字体,请人工查看回放与录制时截图的操作是否一致（本条消息自动生成，非截图生成的字体）\n",).expect("写入失败");
+        }else{
         writeln!(save_file, "文字提取回放结果:\n{}\n", text2_new).expect("写入失败");
-        writeln!(save_file, "文字提取翻译结果:\n{}\n", translation).expect("翻译结果写入失败");
-        
-        let time = "当前时间"; // 使用你的实际时间
+    }
+        if !translation.is_empty() {
+            writeln!(save_file, "文字提取翻译结果:\n{}\n", translation).expect("翻译结果写入失败");
+        }
+        let time = "当前时间";
         if "text1" == "text2_new" {
             writeln!(save_file, "{}时刻文字提取对比验证通过！\n", time).expect("写入失败");
         } else if "text1" == "translation" {
@@ -138,7 +151,6 @@ pub mod screen {
         } else {
             writeln!(save_file, "{}文字提取对比结果不相同！", time).expect("写入失败");
         }
-        
         writeln!(
             save_file,
             "{}时刻对比图像相似度： {:?}",
@@ -146,6 +158,7 @@ pub mod screen {
             result.score
         )
         .expect("写入失败");
+  
     }
 
     pub async fn translate(
