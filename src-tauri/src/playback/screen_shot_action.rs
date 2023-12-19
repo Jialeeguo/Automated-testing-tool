@@ -118,42 +118,34 @@ pub mod screen {
                 translation = dst;
             });
 
-        let mut save_file = OpenOptions::new()
+            let mut save_file = OpenOptions::new()
             .write(true)
-            .create(true)
-            .append(true)
+            .create(true) // 使用 create(true) 覆盖文件
+            .truncate(true) // 截断文件，清空内容
             .open(format!("{}/record_result.txt", path))
             .unwrap();
-
-        // 判断文件是否为空
-        let is_file_empty = save_file.metadata().map(|m| m.len() == 0).unwrap_or(true);
-
-        if is_file_empty {
-            // 文件为空，可以写入内容
-            writeln!(save_file, "文字提取录制结果:\n{}", text1).expect("写入失败");
-            writeln!(save_file, "文字提取回放结果:\n{}\n", text2_new).expect("写入失败");
-            writeln!(save_file, "文字提取翻译结果:\n{}\n", translation).expect("翻译结果写入失败");
-
-            let time = "当前时间"; // 使用你的实际时间
-            if "text1" == "text2_new" {
-                writeln!(save_file, "{}时刻文字提取对比验证通过！\n", time).expect("写入失败");
-            } else if "text1" == "translation" {
-                writeln!(save_file, "{}时刻文字提取对比验证通过！", time).expect("写入失败");
-            } else {
-                writeln!(save_file, "{}文字提取对比结果不相同！", time).expect("写入失败");
-            }
-
-            writeln!(
-                save_file,
-                "{}时刻对比图像相似度： {:?}",
-                time.to_string(),
-                result.score
-            )
-            .expect("写入失败");
+        
+        // 写入内容
+        writeln!(save_file, "文字提取录制结果:\n{}", text1).expect("写入失败");
+        writeln!(save_file, "文字提取回放结果:\n{}\n", text2_new).expect("写入失败");
+        writeln!(save_file, "文字提取翻译结果:\n{}\n", translation).expect("翻译结果写入失败");
+        
+        let time = "当前时间"; // 使用你的实际时间
+        if "text1" == "text2_new" {
+            writeln!(save_file, "{}时刻文字提取对比验证通过！\n", time).expect("写入失败");
+        } else if "text1" == "translation" {
+            writeln!(save_file, "{}时刻文字提取对比验证通过！", time).expect("写入失败");
         } else {
-            // 文件不为空，不进行写入
-            println!("文件已包含内容，不进行写入");
+            writeln!(save_file, "{}文字提取对比结果不相同！", time).expect("写入失败");
         }
+        
+        writeln!(
+            save_file,
+            "{}时刻对比图像相似度： {:?}",
+            time.to_string(),
+            result.score
+        )
+        .expect("写入失败");
     }
 
     pub async fn translate(
