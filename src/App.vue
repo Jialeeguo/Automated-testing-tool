@@ -74,7 +74,7 @@
           </div>
           <div style="display: flex; ">
             <form action="#">
-              <label for="lang" class="ziti">暂停录制/恢复录制</label>
+              <label for="lang" class="ziti">暂停录制/恢复录制s</label>
               <select v-model="selectedFunctionKey1" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
