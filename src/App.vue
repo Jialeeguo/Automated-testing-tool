@@ -1,17 +1,17 @@
 <template>
-  <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);" >
-    
+  <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);">
+
     <div>
 
       <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);">
         <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
-          <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);  " >配置</label>
+          <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);  ">配置</label>
           <div style="float:right;font-size: 13px; color:rgb(165, 2, 2); ">注意：功能键选择不能重合，否则会崩溃</div>
           <div style="display: flex; align-items: center;">
 
 
 
-            <label for="lang" class="ziti" style="color: rgb(0, 0, 0);" >脚本</label>
+            <label for="lang" class="ziti" style="color: rgb(0, 0, 0);">脚本</label>
             <select name="languages" id="lang" style="width: 140px;" value="请选择回放文件夹">
 
               <option value="请选择回放文件夹">{{ selectedFileName }}</option>
@@ -147,6 +147,7 @@
             <option value="F3">待定</option>
           </select>
         </form>
+        <button @click="recordWindow">脚本编辑</button>
       </div>
 
       <div style="display: flex;">
@@ -162,6 +163,7 @@
 <script>
 import { ref, reactive, onBeforeMount } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
+import { WebviewWindow } from '@tauri-apps/api/window'
 import { appWindow } from "@tauri-apps/api/window"
 import { open, ask, message } from '@tauri-apps/api/dialog';
 import { appConfigDir } from '@tauri-apps/api/path';
@@ -207,7 +209,7 @@ export default {
 
       if (!this.recording) {
         this.log = '';
-        
+
       }
       this.recordstart = !this.recordstart;
       const recordChangeTime = new Date();
@@ -258,7 +260,7 @@ export default {
 
 
         const elapsedTime = new Date() - this.recordStateChangeTime;
-        
+
 
         this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
 
@@ -395,7 +397,7 @@ export default {
 
 
                   this.isPlaybacking = false; // 在处理完毕后设置为 false
-              
+
                   this.loadRecordResult();
                 }
               }, 500);
@@ -516,13 +518,45 @@ export default {
 
 
       resultXhr.send(null);
-      
+
       // const yes2 = await ask('测试用例状态通通过', { title: 'Tauri', type: 'warning' });
     },
 
 
 
+    //脚本编辑窗口
+    recordWindow() {
+      console.log("record");
+      const filePath = this.selectedFileName;
+      console.log(filePath);
+      invoke('read_a_record', { filePath })
+        .then((result) => {
+          console.log(result);
+          // 获取 PromiseResult 数组
+          const promiseResult = result;
 
+          // 将结果写入新窗口
+          const resultString = JSON.stringify(promiseResult);
+          const resultEncoded = encodeURIComponent(resultString);
+          console.log(resultString);
+
+          const webview = new WebviewWindow('theUniqueLabel', {
+            url: `script_edit.html?result=${resultEncoded}&filePath=${filePath}`, // 将结果作为查询参数传递
+          });
+
+          // 监听 webview 窗口创建成功事件
+          webview.once('tauri://created', function () {
+            // webview 窗口成功创建
+          });
+          // 监听 webview 窗口创建失败事件
+          webview.once('tauri://error', function (e) {
+            // 在 webview 窗口创建过程中发生错误
+          });
+        })
+        .catch((error) => {
+          console.error('An error occurred:', error);
+        });
+    },
 
 
     handleKeyDown(event) {
@@ -626,7 +660,7 @@ textarea {
   width: 50%;
   margin-top: 10px;
   background-color: #e6e2e2;
-  
+
 }
 
 button {
@@ -643,7 +677,6 @@ button {
   border-color: rgb(226, 217, 217);
   font-size: large;
   transition: background-color 0.5s, color 0.3s
-  
 }
 
 .button-font:hover {
@@ -673,7 +706,7 @@ select {
   padding: 4px;
   border-radius: 9px;
   background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
- 
+
 }
 
 .ziti {
@@ -688,7 +721,7 @@ select {
   color: rgb(47, 51, 50);
   font-size: smaller;
   color: rgb(255, 0, 0);
-  
+
 }
 
 .button-font {
@@ -735,7 +768,7 @@ body {
   margin: 0 auto;
   height: 100vh;
   background-color: #f1f1f1;
-  
+
 }
 
 input {
@@ -743,7 +776,7 @@ input {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  
+
 }
 
 

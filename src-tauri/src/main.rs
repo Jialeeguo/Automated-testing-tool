@@ -13,6 +13,8 @@ mod record;
 use tauri::Manager;
 use playback::playback_main::playback_main::playback_confirm;
 use playback::playback_main::playback_main::playback_main;
+use playback::script_edit::script_edit::read_a_record;
+use playback::script_edit::script_edit::script_write_back;
 use record::record_main::record_main::pause_record;
 use record::record_main::record_main::record_end;
 use record::record_main::record_main::resume_record;
@@ -76,26 +78,12 @@ fn main() {
             pause_record,
             resume_record,
             playback_confirm,
-            close_splashscreen
+            close_splashscreen,
+            read_a_record,
+            script_write_back
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
-// fn main() {
-//     loop {
-//         println!("菜单：");
-//         println!("1. 记录");
-//         println!("2. 播放");
-//         println!("3. 退出");
 
-//         let choice = read_user_input("请输入选项：");
-
-//         match choice.trim() {
-//             "1" => record::record_main::record_main::start_record(),
-//             "2" => playback::playback_main::playback_main::playback_main(),
-//             "3" => break,
-//             _ => println!("无效的选项"),
-//         };
-//     }
-// }
