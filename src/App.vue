@@ -371,127 +371,87 @@ export default {
       this.logs = '';
       this.back = true;
       const filePath = this.selectedFileName;
-      if (!invoke('check_file_exists', { filePath })) {
-        const currentTime = new Date().toLocaleTimeString();
-        this.log += `${'没有选择文件夹,请选择文件夹!'} - [${currentTime}]\n`;
-      }
-      invoke('dir_confirm', { filePath })
+      invoke('check_file_exists', { filePath })
         .then((result) => {
-          if (result && result.length > 0) {
-            // 文件内容不为空的处理逻辑
-            this.log = '';
-            this.isPlaybacking = true;
-            let currentIndex = 0;
-            this.selectedContent = true;
-            let intervalId = setInterval(() => {
-              if (currentIndex < result.length) {
-                this.log += `${result[currentIndex].join(' ')}\n`; // 将 result 中每行的单词以空格分隔，然后添加到 log 中
-                currentIndex++;
-              } else {
-                clearInterval(intervalId); // 所有行处理完毕，清除定时器
-                this.isPlaybacking = false; // 在处理完毕后设置为 false
-                // this.loadRecordResult();
-              }
-            }, 500);
-          } else {
+          if (result == false) {
+            console.log("没找到回放文件");
             const currentTime = new Date().toLocaleTimeString();
-            this.log += `${'record.txt为空,请检查record.txt或目录'} - [${currentTime}]\n`;
-            this.isPlaybacking = false; // 在处理失败也设置为 false
+            this.log += `${'没有选择文件夹,请选择文件夹!'} - [${currentTime}]\n`;
+            return;
+          } else {
+            invoke('dir_confirm', { filePath })
+              .then((result) => {
+                if (result && result.length > 0) {
+                  // 文件内容不为空的处理逻辑
+                  this.log = '';
+                  this.isPlaybacking = true;
+                  let currentIndex = 0;
+                  this.selectedContent = true;
+                  let intervalId = setInterval(() => {
+                    if (currentIndex < result.length) {
+                      this.log += `${result[currentIndex].join(' ')}\n`; // 将 result 中每行的单词以空格分隔，然后添加到 log 中
+                      currentIndex++;
+                    } else {
+                      clearInterval(intervalId); // 所有行处理完毕，清除定时器
+                      this.isPlaybacking = false; // 在处理完毕后设置为 false
+                      // this.loadRecordResult();
+                    }
+                  }, 500);
+                } else {
+                  const currentTime = new Date().toLocaleTimeString();
+                  this.log += `${'record.txt为空,请检查record.txt或目录'} - [${currentTime}]\n`;
+                  this.isPlaybacking = false; // 在处理失败也设置为 false
+                }
+              })
+              .catch((error) => {
+                console.error('前端脚本读取出错:', error);
+              });
+
+
+            // 调用回放后端函数
+            // const filePath = this.selectedFileName;
+            let langValue;
+            switch (this.Chinese) {
+              case '1':
+                langValue = 'auto';
+                break;
+              case '8':
+                langValue = 'zh';
+                break;
+              case '2':
+                langValue = 'en';
+                break;
+              case '7':
+                langValue = 'fra';
+                break;
+              case '6':
+                langValue = 'ru';
+                break;
+              case '3':
+                langValue = 'spa';
+                break;
+              case '5':
+                langValue = 'pt';
+                break;
+              case '4':
+                langValue = 'ara';
+                break;
+              default:
+                langValue = '';
+                break;
+            }
+
+            console.log('txp:', this.Chinese);
+            console.log('langValue:', langValue);
+            this.back = false;
+            invoke('playback_main', { filePath, lang: langValue, selectedFunctionKey: this.selectedFunctionKey });
           }
         })
         .catch((error) => {
-          console.error('前端脚本读取出错:', error);
+          console.error('文件不存在:', error);
         });
 
 
-
-      // let xhr = new XMLHttpRequest(),
-      //   okStatus = 200;
-      // console.log(`${this.selectedFileName}`);
-      // xhr.open("GET", `${this.selectedFileName}/record.txt`, false);
-      // xhr.overrideMimeType("text/plain;charset=utf-8");
-      // xhr.onreadystatechange = () => {
-      //   if (xhr.readyState === 4) {
-      //     if (xhr.status === okStatus) {
-
-      //       // 请求成功，但是文件内容为空
-      //       if (xhr.responseText.trim() === "") {
-      //         const currentTime = new Date().toLocaleTimeString();
-      //         this.log += `${'没有选择文件夹或record.txt为空,请选择文件夹或检查record.txt是否为空'} - [${currentTime}]\n`;
-
-      //       } else {
-      //         this.log = '';
-      //         this.isPlaybacking = true;
-      //         // 每隔一秒处理一行文本
-      //         let lines = xhr.responseText.split('\n');
-      //         let currentIndex = 0;
-      //         this.selectedContent = true;
-      //         let intervalId = setInterval(() => {
-      //           if (currentIndex < lines.length) {
-      //             this.log += `${lines[currentIndex]}\n`;
-      //             currentIndex++;
-      //           } else {
-      //             clearInterval(intervalId); // 所有行处理完毕，清除定时器
-
-
-      //             this.isPlaybacking = false; // 在处理完毕后设置为 false
-
-      //             this.loadRecordResult();
-      //           }
-      //         }, 500);
-      //       }
-      //     } else {
-      //       // 如果请求失败，将错误消息添加到日志中steps
-      //       if (!this.recording) {
-      //         const currentTime = new Date().toLocaleTimeString();
-      //         this.log += `${'文件夹选择错误，文件夹下没有包含record.txt,请重新选择'} - [${currentTime}]\n`;
-
-      //       }
-      //       this.isPlaybacking = false; // 在处理失败后也要设置为 false
-      //     }
-      //   }
-      // };
-
-
-      // xhr.send(null);
-
-      // 调用回放后端函数
-      // const filePath = this.selectedFileName;
-      let langValue;
-      switch (this.Chinese) {
-        case '1':
-          langValue = 'auto';
-          break;
-        case '8':
-          langValue = 'zh';
-          break;
-        case '2':
-          langValue = 'en';
-          break;
-        case '7':
-          langValue = 'fra';
-          break;
-        case '6':
-          langValue = 'ru';
-          break;
-        case '3':
-          langValue = 'spa';
-          break;
-        case '5':
-          langValue = 'pt';
-          break;
-        case '4':
-          langValue = 'ara';
-          break;
-        default:
-          langValue = '';
-          break;
-      }
-
-      console.log('txp:', this.Chinese);
-      console.log('langValue:', langValue);
-      this.back = false;
-      invoke('playback_main', { filePath, lang: langValue, selectedFunctionKey: this.selectedFunctionKey });
     },
 
     //通过不通过触发函数
@@ -564,39 +524,39 @@ export default {
 
     //脚本编辑窗口
     recordWindow() {
-      if(this.back1){
-      console.log("record");
-      const filePath = this.selectedFileName;
-      console.log(filePath);
-      invoke('read_a_record', { filePath })
-        .then((result) => {
-          console.log(result);
-          // 获取 PromiseResult 数组
-          const promiseResult = result;
+      if (this.back1) {
+        console.log("record");
+        const filePath = this.selectedFileName;
+        console.log(filePath);
+        invoke('read_a_record', { filePath })
+          .then((result) => {
+            console.log(result);
+            // 获取 PromiseResult 数组
+            const promiseResult = result;
 
-          // 将结果写入新窗口
-          const resultString = JSON.stringify(promiseResult);
-          const resultEncoded = encodeURIComponent(resultString);
-          console.log(resultString);
+            // 将结果写入新窗口
+            const resultString = JSON.stringify(promiseResult);
+            const resultEncoded = encodeURIComponent(resultString);
+            console.log(resultString);
 
-          const webview = new WebviewWindow('theUniqueLabel', {
-            title: `脚本修改功能`,  // 设置窗口的标题
-            url: `script_edit.html?result=${resultEncoded}&filePath=${filePath}`, // 将结果作为查询参数传递
-          });
+            const webview = new WebviewWindow('theUniqueLabel', {
+              title: `脚本修改功能`,  // 设置窗口的标题
+              url: `script_edit.html?result=${resultEncoded}&filePath=${filePath}`, // 将结果作为查询参数传递
+            });
 
-          // 监听 webview 窗口创建成功事件
-          webview.once('tauri://created', function () {
-            // webview 窗口成功创建
+            // 监听 webview 窗口创建成功事件
+            webview.once('tauri://created', function () {
+              // webview 窗口成功创建
+            });
+            // 监听 webview 窗口创建失败事件
+            webview.once('tauri://error', function (e) {
+              // 在 webview 窗口创建过程中发生错误
+            });
+          })
+          .catch((error) => {
+            console.error('An error occurred:', error);
           });
-          // 监听 webview 窗口创建失败事件
-          webview.once('tauri://error', function (e) {
-            // 在 webview 窗口创建过程中发生错误
-          });
-        })
-        .catch((error) => {
-          console.error('An error occurred:', error);
-        });
-      }else{
+      } else {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'没有选择要编辑的脚本，请选择文件夹'} - [${currentTime}]\n`;
       }

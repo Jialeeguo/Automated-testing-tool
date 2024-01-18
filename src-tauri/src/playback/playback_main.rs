@@ -6,17 +6,17 @@ pub mod playback_main {
     use enigo::{Enigo, Key, KeyboardControllable};
     use rdev::{Button, EventType};
     use serde::Deserialize;
-    use tauri::window;
-    use tauri::{Manager, Window};
     use std::fmt::format;
+    use std::path::Path;
     use std::{
         fmt::write,
         fs::{self, File, OpenOptions},
-        io::{BufRead, BufReader, Write,Read},
+        io::{BufRead, BufReader, Read, Write},
         thread,
         time::Duration,
     };
-    use std::path::Path;
+    use tauri::window;
+    use tauri::{Manager, Window};
 
     use crate::LAST_ACTION_TIME;
     use crate::SCREEN_PRESS;
@@ -27,7 +27,7 @@ pub mod playback_main {
     }
 
     #[tauri::command]
-    pub fn playback_main(file_path: String, lang: String,window:Window) {
+    pub fn playback_main(file_path: String, lang: String, window: Window) {
         let mut save_file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -48,9 +48,8 @@ pub mod playback_main {
         };
         let local: DateTime<Local> = Local::now();
         let back_time = local.format("%Y-%m-%d %H-%M-%S").to_string();
-        let log_file = format!("{}/generated_{}.html",now_dir, back_time.clone());
-        let mut html_file =
-            File::create(log_file.clone()).expect("Failed to create HTML file");
+        let log_file = format!("{}/generated_{}.html", now_dir, back_time.clone());
+        let mut html_file = File::create(log_file.clone()).expect("Failed to create HTML file");
         html_file
             .write_all(
                 format!(
@@ -147,13 +146,11 @@ pub mod playback_main {
                             log_file.clone(),
                         );
                         thread::sleep(wait_duration);
-                        
                     }
                     _ => {}
                 },
                 _ => {}
             }
-            
         }
         println!("record结果传前端");
         window
@@ -200,41 +197,56 @@ pub mod playback_main {
 
     //选择的回放文件夹是否存在
     #[tauri::command]
-    pub fn dir_confirm(file_path: String)-> Vec<Vec<String>> {
-        let file = File::open(format!("{}/record.txt",file_path)).expect("Error opening file");
-        let reader = BufReader::new(file);
-        let mut script: Vec<Vec<String>> = Vec::new();
-        for line in reader.lines() {
-            if let Ok(line) = line {
-                let words: Vec<String> = line.trim().split_whitespace().map(String::from).collect();
-                script.push(words);
+    pub fn dir_confirm(file_path: String) -> Vec<Vec<String>> {
+        let file = File::open(format!("{}/record.txt", file_path));
+        match file {
+            Ok(file) => {
+                let reader = BufReader::new(file);
+                let mut script: Vec<Vec<String>> = Vec::new();
+                for line in reader.lines() {
+                    if let Ok(line) = line {
+                        let words: Vec<String> =
+                            line.trim().split_whitespace().map(String::from).collect();
+                        script.push(words);
+                    }
+                }
+
+                script
+            }
+            Err(error) => {
+                // 文件打开失败，输出错误提示
+                println!("Error opening file: {}", error);
+                let content: Vec<Vec<String>> = Vec::new();
+                content
             }
         }
-    
-        script
     }
     #[tauri::command]
     pub fn check_file_exists(file_path: String) -> bool {
-        let file_path = format!("{}/record.txt",file_path);
+        let file_path = format!("{}/record.txt", file_path);
         let path = Path::new(&file_path);
-        path.exists() && path.is_file()
+        let b = path.exists() && path.is_file();
+        println!("结果{}", b);
+        b
     }
     #[tauri::command]
     pub fn return_record_result(file_path: String) -> String {
-        let file = File::open(format!("{}/record_result.txt",file_path));
+        let file = File::open(format!("{}/record_result.txt", file_path));
         match file {
             Ok(file) => {
                 let mut reader = BufReader::new(file);
                 let mut content = String::new();
                 // 将文件内容读取到字符串中
-                reader.read_to_string(&mut content).expect("Error reading file");
-            
+                reader
+                    .read_to_string(&mut content)
+                    .expect("Error reading file");
+
                 content
-            },
+            }
             Err(error) => {
                 // 文件打开失败，输出错误提示
                 println!("Error opening file: {}", error);
-                let content = format!(" ");
+                let content = format!("");
                 content
             }
         }
