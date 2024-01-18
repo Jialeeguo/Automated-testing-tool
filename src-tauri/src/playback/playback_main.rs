@@ -1,26 +1,44 @@
 pub mod playback_main {
-    use enigo::{Enigo, Key, KeyboardControllable};
-    use rdev::{Button, EventType};
-    use std::{
-        fmt::write,
-        fs::{self, File, OpenOptions},
-        io::{BufRead, BufReader, Write},
-        thread,
-        time::Duration,
-    };
-
     use crate::playback::keyboard_action::keyboard;
     use crate::playback::mouse_action::mouse;
     use crate::playback::screen_shot_action::screen;
+    use chrono::prelude::*;
+    use enigo::{Enigo, Key, KeyboardControllable};
+    use rdev::{Button, EventType};
+    use serde::Deserialize;
+    use tauri::window;
+    use tauri::{Manager, Window};
+    use std::fmt::format;
+    use std::{
+        fmt::write,
+        fs::{self, File, OpenOptions},
+        io::{BufRead, BufReader, Write,Read},
+        thread,
+        time::Duration,
+    };
+    use std::path::Path;
 
     use crate::LAST_ACTION_TIME;
     use crate::SCREEN_PRESS;
+
+    #[derive(Clone, serde::Serialize)]
+    struct ResultListen {
+        message: String,
+    }
+
     #[tauri::command]
-    pub fn playback_main(file_path: String, lang: String) {
+    pub fn playback_main(file_path: String, lang: String,window:Window) {
+        let mut save_file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true) // 清空文件内容
+            .open(format!("{}/record_result.txt", file_path))
+            .unwrap();
+        save_file.set_len(0).unwrap();
         println!("所选语言：{}\n", lang);
         let now_dir = String::from(file_path);
         *LAST_ACTION_TIME.lock().unwrap() = 0;
-        let file = match File::open(format!("{}/record.txt", now_dir)) {
+        let file = match File::open(format!("{}/record.txt", now_dir.clone())) {
             Ok(f) => f,
             Err(e) => {
                 // 打印错误信息并返回
@@ -28,6 +46,22 @@ pub mod playback_main {
                 return;
             }
         };
+        let local: DateTime<Local> = Local::now();
+        let back_time = local.format("%Y-%m-%d %H-%M-%S").to_string();
+        let log_file = format!("{}/generated_{}.html",now_dir, back_time.clone());
+        let mut html_file =
+            File::create(log_file.clone()).expect("Failed to create HTML file");
+        html_file
+            .write_all(
+                format!(
+                    "<html><head><title>{}脚本回放日志 时间：{}</title></head><body>",
+                    now_dir, back_time
+                )
+                .as_bytes(),
+            )
+            .expect("Failed to write HTML to file");
+        html_file.flush().expect("Failed to flush HTML file");
+        drop(html_file);
         let read_script = BufReader::new(file);
         for line in read_script.lines() {
             let instruct = line.unwrap();
@@ -102,14 +136,34 @@ pub mod playback_main {
                         let x = arr[3].parse::<f64>().unwrap();
                         let y = arr[4].parse::<f64>().unwrap();
                         let wait_duration = Duration::from_millis(wait_time.try_into().unwrap());
-                        screen::screenshot(b_x, b_y, x, y, time, now_dir.clone(), lang.clone());
+                        screen::screenshot(
+                            b_x,
+                            b_y,
+                            x,
+                            y,
+                            time,
+                            now_dir.clone(),
+                            lang.clone(),
+                            log_file.clone(),
+                        );
                         thread::sleep(wait_duration);
+                        
                     }
                     _ => {}
                 },
                 _ => {}
             }
+            
         }
+        println!("record结果传前端");
+        window
+            .emit(
+                "result_listen",
+                ResultListen {
+                    message: "Tauri is awesome!".into(),
+                },
+            )
+            .unwrap();
     }
 
     //测试用例是否通过状态
@@ -142,5 +196,47 @@ pub mod playback_main {
             .expect("无法打开文件");
 
         writeln!(file, "\n回放结果为：{}\n", playback_result).unwrap_or_default();
+    }
+
+    //选择的回放文件夹是否存在
+    #[tauri::command]
+    pub fn dir_confirm(file_path: String)-> Vec<Vec<String>> {
+        let file = File::open(format!("{}/record.txt",file_path)).expect("Error opening file");
+        let reader = BufReader::new(file);
+        let mut script: Vec<Vec<String>> = Vec::new();
+        for line in reader.lines() {
+            if let Ok(line) = line {
+                let words: Vec<String> = line.trim().split_whitespace().map(String::from).collect();
+                script.push(words);
+            }
+        }
+    
+        script
+    }
+    #[tauri::command]
+    pub fn check_file_exists(file_path: String) -> bool {
+        let file_path = format!("{}/record.txt",file_path);
+        let path = Path::new(&file_path);
+        path.exists() && path.is_file()
+    }
+    #[tauri::command]
+    pub fn return_record_result(file_path: String) -> String {
+        let file = File::open(format!("{}/record_result.txt",file_path));
+        match file {
+            Ok(file) => {
+                let mut reader = BufReader::new(file);
+                let mut content = String::new();
+                // 将文件内容读取到字符串中
+                reader.read_to_string(&mut content).expect("Error reading file");
+            
+                content
+            },
+            Err(error) => {
+                // 文件打开失败，输出错误提示
+                println!("Error opening file: {}", error);
+                let content = format!(" ");
+                content
+            }
+        }
     }
 }

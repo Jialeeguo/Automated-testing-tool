@@ -8,6 +8,7 @@ pub mod screen {
     use std::process::Command;
     use std::{fs::OpenOptions, io::Write};
     use tokio;
+
     #[derive(Deserialize)]
     struct TranslationResult {
         trans_result: Vec<Translation>,
@@ -20,6 +21,7 @@ pub mod screen {
         dst: String,
     }
 
+
     //截图
     pub fn screenshot(
         b_x: f64,
@@ -29,6 +31,7 @@ pub mod screen {
         time: u128,
         now_dir: String,
         lang: String,
+        log_file:String
     ) {
         // 获取点所在屏幕
         // let mut log_path = String::from(file_path);
@@ -49,15 +52,28 @@ pub mod screen {
             .save(format!("{}/{}_playback.png", now_dir, time.to_string()))
             .unwrap();
         //对比图像是否一样
-        screen_shot_compare_and_text_compare(now_dir, time, lang);
+        screen_shot_compare_and_text_compare(now_dir, time, lang,log_file);
     }
 
     //图像对比
-    pub fn screen_shot_compare_and_text_compare(path: String, time: u128, lang: String) {
+    pub fn screen_shot_compare_and_text_compare(path: String, time: u128, lang: String,log_file:String) {
         // 打开图像文件
         let img1 = image::open(format!("{}/{}.png", path, time.to_string())).unwrap();
         let img2_path = format!("{}/{}_playback.png", path, time.to_string());
         let img2 = image::open(img2_path.clone()).unwrap();
+
+        //打开生成的log文件
+        let mut html_file = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(log_file)
+        .expect("Failed to open HTML file");
+        html_file
+        .write_all(format!("<h1>{}时刻录制图像：</h1><img src=\"{}/{}.png\" /><h1>{}时刻回放图像：</h1><img src=\"{}\" />",time.to_string(), path, time.to_string(),time.to_string(),img2_path).as_bytes())
+        .expect("Failed to write HTML to file");
+        // html_file
+        // .write_all(format!("<h1>{}时刻回放图像：</h1><img src=\"{}\" />",time.to_string(),img2_path).as_bytes())
+        // .expect("Failed to write HTML to file");
 
         Command::new("tesseract")
             .current_dir(format!("{}", path))
@@ -78,6 +94,9 @@ pub mod screen {
             &gray_image2,
         )
         .expect("Images had different dimensions");
+        html_file
+        .write_all(format!("<h1>{}时刻图像相似对比度：{:?}",time.to_string(),result.score).as_bytes())
+        .expect("Failed to write HTML to file");
 
         // 打开提取文字文件
         let text1 = std::fs::read_to_string(&format!("{}/textshot_{}.txt", path, time.to_string()))
@@ -91,7 +110,7 @@ pub mod screen {
         .expect("无法读取文件2的内容");
 
         if !text2.is_empty() {
-            let modified_text2 = &text2[..text2.len() - 1];
+            let modified_text2 = &text2[..text2.len() - 1 ];
             std::fs::write(
                 &format!("{}/textshot_{}_playback.txt", path, time.to_string()),
                 modified_text2,
@@ -128,7 +147,7 @@ pub mod screen {
         let mut save_file = OpenOptions::new()
             .write(true)
             .create(true)
-            .truncate(true)
+            .append(true)
             .open(format!("{}/record_result.txt", path))
             .unwrap();
 
@@ -144,7 +163,7 @@ pub mod screen {
             writeln!(save_file, "文字提取翻译结果:\n{}\n", translation).expect("翻译结果写入失败");
         }
         let time = "当前时间";
-        if "text1" == "text2_new" {
+        if  text1 == text2_new {
             writeln!(save_file, "{}时刻文字提取对比验证通过！\n", time).expect("写入失败");
         } else if "text1" == "translation" {
             writeln!(save_file, "{}时刻文字提取对比验证通过！", time).expect("写入失败");
@@ -158,7 +177,7 @@ pub mod screen {
             result.score
         )
         .expect("写入失败");
-  
+        
     }
 
     pub async fn translate(

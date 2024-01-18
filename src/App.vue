@@ -1,12 +1,12 @@
 <template>
-  <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);">
+  <div style="background-color: rgb(242, 243, 245);  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);">
 
     <div>
 
-      <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);">
-        <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
-          <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);  ">配置</label>
-          <div style="float:right;font-size: 13px; color:rgb(165, 2, 2); ">注意：功能键选择不能重合，否则会崩溃</div>
+      <div style="background-color: rgb(242, 243, 245);  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);">
+        <div style="border: 2px solid #e3eefd; margin: 5px; padding: 10px;">
+          <label for="lang" style="font-size: 13px; color:rgb(163, 164, 168);  ">配置</label>
+          <div style="float:right;font-size: 13px; color:rgb(217, 4, 4); ">注意：功能键选择不能重合，否则会崩溃</div>
           <div style="display: flex; align-items: center;">
 
 
@@ -17,7 +17,7 @@
               <option value="请选择回放文件夹">{{ selectedFileName }}</option>
             </select>
             <button @click="selectPlaybackFile"
-              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(226, 217, 217); ">...</button>
+              style="margin-left: 7px; background-color: rgb(242, 243, 245); height: 24px; width: 50px; color: rgb(4, 0, 255); font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(217, 217, 226); ">...</button>
 
             <div style="margin: auto;"></div>
 
@@ -111,8 +111,8 @@
         <!-- 添加日志输出文本框 -->
 
       </div>
-      <div style="background-color: rgb(245, 242, 242);">
-        <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
+      <div style="background-color: rgb(242, 243, 245);">
+        <div style="border: 2px solid rgb(195, 228, 255); margin: 5px; padding: 10px;">
 
           <div class="buttons-container">
             <!-- 添加按钮组 -->
@@ -133,11 +133,11 @@
         </div>
       </div>
     </div>
-    <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
+    <div style="border: 2px solid #def0ff; margin: 5px; padding: 10px;">
       <div class="log-container">
-        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142); ">操作步骤</div>
+        <div class="log_log" style="font-size: 13px; color:rgb(19, 39, 255); ">操作步骤</div>
         <div style="margin: 0 167px;"></div>
-        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142);">对比脚本结果</div>
+        <div class="log_log" style="font-size: 13px; color:rgb(19, 39, 255);">对比脚本结果</div>
         <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
         <form action="#">
           <select name="languages" id="lang" style="width: 140px;" v-model="selectedFolder" @change="playbackConfirm">
@@ -147,7 +147,7 @@
             <option value="F3">待定</option>
           </select>
         </form>
-        <button @click="recordWindow">脚本编辑</button>
+        <button style="width:80px; font-size:13px;" @click="recordWindow" class="button-font">脚本编辑</button>
       </div>
 
       <div style="display: flex;">
@@ -198,6 +198,7 @@ export default {
       isPlaybacking: false,//是否正在执行回放
       loggingEnabled: false,
       back: false,
+      back1: false, //脚本编辑之前要判断是否选择了回放的路径
       recordStateChangeTime: null,
       selectedContent: false,//通过不通过状态选择，如果没有回放状态则为false，输出日志
     };
@@ -344,10 +345,12 @@ export default {
     },
     //选择回放文件夹
     async selectPlaybackFile() {
+      this.back1 = true;
+      const defaultPath = window.__TAURI__.appDir;
       const selected = await open({
         directory: true,
         multiple: false,
-        defaultPath: await appConfigDir(),
+        defaultPath: defaultPath,
       });
       if (Array.isArray(selected)) {
         // user selected multiple directories
@@ -367,58 +370,93 @@ export default {
     playBack() {
       this.logs = '';
       this.back = true;
-      let xhr = new XMLHttpRequest(),
-        okStatus = document.location.protocol === "file:" ? 0 : 200;
-
-      xhr.open("GET", `../Automated-testing/result/${this.filename}/record.txt`, false);
-      xhr.overrideMimeType("text/html;charset=utf-8"); // 默认为 utf-8
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState === 4) {
-          if (xhr.status === okStatus) {
-
-            // 请求成功，但是文件内容为空
-            if (xhr.responseText.trim() === "") {
-              const currentTime = new Date().toLocaleTimeString();
-              this.log += `${'没有选择文件夹或record.txt为空,请选择文件夹或检查record.txt是否为空'} - [${currentTime}]\n`;
-
-            } else {
-              this.log = '';
-              this.isPlaybacking = true;
-              // 每隔一秒处理一行文本
-              let lines = xhr.responseText.split('\n');
-              let currentIndex = 0;
-              this.selectedContent = true;
-              let intervalId = setInterval(() => {
-                if (currentIndex < lines.length) {
-                  this.log += `${lines[currentIndex]}\n`;
-                  currentIndex++;
-                } else {
-                  clearInterval(intervalId); // 所有行处理完毕，清除定时器
-
-
-                  this.isPlaybacking = false; // 在处理完毕后设置为 false
-
-                  this.loadRecordResult();
-                }
-              }, 500);
-            }
+      const filePath = this.selectedFileName;
+      if (!invoke('check_file_exists', { filePath })) {
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${'没有选择文件夹,请选择文件夹!'} - [${currentTime}]\n`;
+      }
+      invoke('dir_confirm', { filePath })
+        .then((result) => {
+          if (result && result.length > 0) {
+            // 文件内容不为空的处理逻辑
+            this.log = '';
+            this.isPlaybacking = true;
+            let currentIndex = 0;
+            this.selectedContent = true;
+            let intervalId = setInterval(() => {
+              if (currentIndex < result.length) {
+                this.log += `${result[currentIndex].join(' ')}\n`; // 将 result 中每行的单词以空格分隔，然后添加到 log 中
+                currentIndex++;
+              } else {
+                clearInterval(intervalId); // 所有行处理完毕，清除定时器
+                this.isPlaybacking = false; // 在处理完毕后设置为 false
+                // this.loadRecordResult();
+              }
+            }, 500);
           } else {
-            // 如果请求失败，将错误消息添加到日志中steps
-            if (!this.recording) {
-              const currentTime = new Date().toLocaleTimeString();
-              this.log += `${'文件夹选择错误，文件夹下没有包含record.txt,请重新选择'} - [${currentTime}]\n`;
-
-            }
-            this.isPlaybacking = false; // 在处理失败后也要设置为 false
+            const currentTime = new Date().toLocaleTimeString();
+            this.log += `${'record.txt为空,请检查record.txt或目录'} - [${currentTime}]\n`;
+            this.isPlaybacking = false; // 在处理失败也设置为 false
           }
-        }
-      };
+        })
+        .catch((error) => {
+          console.error('前端脚本读取出错:', error);
+        });
 
 
-      xhr.send(null);
+
+      // let xhr = new XMLHttpRequest(),
+      //   okStatus = 200;
+      // console.log(`${this.selectedFileName}`);
+      // xhr.open("GET", `${this.selectedFileName}/record.txt`, false);
+      // xhr.overrideMimeType("text/plain;charset=utf-8");
+      // xhr.onreadystatechange = () => {
+      //   if (xhr.readyState === 4) {
+      //     if (xhr.status === okStatus) {
+
+      //       // 请求成功，但是文件内容为空
+      //       if (xhr.responseText.trim() === "") {
+      //         const currentTime = new Date().toLocaleTimeString();
+      //         this.log += `${'没有选择文件夹或record.txt为空,请选择文件夹或检查record.txt是否为空'} - [${currentTime}]\n`;
+
+      //       } else {
+      //         this.log = '';
+      //         this.isPlaybacking = true;
+      //         // 每隔一秒处理一行文本
+      //         let lines = xhr.responseText.split('\n');
+      //         let currentIndex = 0;
+      //         this.selectedContent = true;
+      //         let intervalId = setInterval(() => {
+      //           if (currentIndex < lines.length) {
+      //             this.log += `${lines[currentIndex]}\n`;
+      //             currentIndex++;
+      //           } else {
+      //             clearInterval(intervalId); // 所有行处理完毕，清除定时器
+
+
+      //             this.isPlaybacking = false; // 在处理完毕后设置为 false
+
+      //             this.loadRecordResult();
+      //           }
+      //         }, 500);
+      //       }
+      //     } else {
+      //       // 如果请求失败，将错误消息添加到日志中steps
+      //       if (!this.recording) {
+      //         const currentTime = new Date().toLocaleTimeString();
+      //         this.log += `${'文件夹选择错误，文件夹下没有包含record.txt,请重新选择'} - [${currentTime}]\n`;
+
+      //       }
+      //       this.isPlaybacking = false; // 在处理失败后也要设置为 false
+      //     }
+      //   }
+      // };
+
+
+      // xhr.send(null);
 
       // 调用回放后端函数
-      const filePath = this.selectedFileName;
+      // const filePath = this.selectedFileName;
       let langValue;
       switch (this.Chinese) {
         case '1':
@@ -495,7 +533,7 @@ export default {
       let resultXhr = new XMLHttpRequest(),
         resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
 
-      resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
+      resultXhr.open("GET", `${this.selectedFileName}/record_result.txt`, false);
       resultXhr.overrideMimeType("text/html;charset=utf-8");
 
       resultXhr.onreadystatechange = () => {
@@ -526,6 +564,7 @@ export default {
 
     //脚本编辑窗口
     recordWindow() {
+      if(this.back1){
       console.log("record");
       const filePath = this.selectedFileName;
       console.log(filePath);
@@ -541,6 +580,7 @@ export default {
           console.log(resultString);
 
           const webview = new WebviewWindow('theUniqueLabel', {
+            title: `脚本修改功能`,  // 设置窗口的标题
             url: `script_edit.html?result=${resultEncoded}&filePath=${filePath}`, // 将结果作为查询参数传递
           });
 
@@ -556,6 +596,10 @@ export default {
         .catch((error) => {
           console.error('An error occurred:', error);
         });
+      }else{
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${'没有选择要编辑的脚本，请选择文件夹'} - [${currentTime}]\n`;
+      }
     },
 
 
@@ -644,6 +688,19 @@ export default {
       const currentTime = new Date().toLocaleTimeString();
       this.log += `${"提取文字执行成功！请继续操作。"} - [${currentTime}]\n`;
     });
+    listen('result_listen', (event) => {
+      console.log('结果监听事件触发');
+      // logs += '';
+      const filePath = this.selectedFileName;
+      invoke('return_record_result', { filePath })
+        .then((result) => {
+          this.logs += '回放结束。\n';
+          this.logs += `${result}`;
+        })
+        .catch((error) => {
+          console.error('An error occurred:', error);
+        });
+    });
   },
   beforeDestroy() {
     // 在组件销毁前移除事件监听
@@ -659,7 +716,7 @@ export default {
 textarea {
   width: 50%;
   margin-top: 10px;
-  background-color: #e6e2e2;
+  background-color: #e2e3e6;
 
 }
 
@@ -667,7 +724,7 @@ button {
   margin: 5px;
   padding: 10px;
   cursor: pointer;
-  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
+  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);
   background-color: rgb(230, 227, 227);
   width: 172px;
   color: rgb(138, 123, 123);
@@ -680,16 +737,16 @@ button {
 }
 
 .button-font:hover {
-  background-color: #817b7b;
+  background-color: #7b7c81;
   background: linear-gradient(135deg, #abecd6, #fbed96);
   color: #ffffff;
 
 }
 
 .button-font:disabled {
-  background-color: #c2baba;
+  background-color: #babcc2;
   background: linear-gradient(135deg, #a8caba, #d8ccd5);
-  color: rgb(145, 137, 137);
+  color: rgb(137, 140, 145);
 
   cursor: not-allowed;
 
@@ -701,11 +758,11 @@ select {
   font-family: cursive, sans-serif;
   outline: 0;
   background: #ffffff;
-  color: rgb(255, 0, 191);
+  color: rgb(21, 0, 255);
   border: 1px solid rgb(226, 217, 217);
   padding: 4px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
+  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);
 
 }
 
@@ -720,30 +777,30 @@ select {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   color: rgb(47, 51, 50);
   font-size: smaller;
-  color: rgb(255, 0, 0);
+  color: rgb(0, 26, 255);
 
 }
 
 .button-font {
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  color: rgb(255, 0, 191);
+  color: rgb(68, 0, 255);
   font-size: large;
   font-weight: 700;
   background-color: rgb(245, 242, 242);
-  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
+  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);
 }
 
 .log-container {
   display: flex;
   align-items: baseline;
-  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
+  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);
 
 }
 
 .log {
   display: flex;
   align-items: baseline;
-  color: rgb(255, 0, 191);
+  color: rgb(0, 17, 255);
   background-color: rgb(255, 255, 255);
   ;
   border: 7px solid rgb(241, 240, 240);
@@ -752,7 +809,7 @@ select {
   box-shadow: 0 0 0 2px rgb(226, 217, 217);
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   background: linear-gradient(135deg, #e9defa, #dbeffb);
-  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
+  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);
 }
 
 button:disabled {

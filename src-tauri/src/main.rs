@@ -23,6 +23,9 @@ use record::record_main::record_main::start_screen;
 use record::screen_shot::screen::screenshot;
 use std::sync::{atomic::AtomicBool, Arc};
 // use record::record_main::record_main::stop_record;
+use playback::playback_main::playback_main::check_file_exists;
+use playback::playback_main::playback_main::dir_confirm;
+use playback::playback_main::playback_main::return_record_result;
 #[macro_use]
 extern crate lazy_static;
 //定义静态全局变量
@@ -80,7 +83,10 @@ fn main() {
             playback_confirm,
             close_splashscreen,
             read_a_record,
-            script_write_back
+            script_write_back,
+            check_file_exists,
+            dir_confirm,
+            return_record_result
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
