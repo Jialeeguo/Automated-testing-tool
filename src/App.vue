@@ -393,7 +393,7 @@ export default {
                       currentIndex++;
                     } else {
                       clearInterval(intervalId); // 所有行处理完毕，清除定时器
-                      this.isPlaybacking = false; // 在处理完毕后设置为 false
+                      // this.isPlaybacking = false; // 在处理完毕后设置为 false
                       // this.loadRecordResult();
                     }
                   }, 500);
@@ -654,6 +654,7 @@ export default {
       const filePath = this.selectedFileName;
       invoke('return_record_result', { filePath })
         .then((result) => {
+          this.isPlaybacking = false; // 在处理完毕后设置为 false
           this.logs += '回放结束。\n';
           this.logs += `${result}`;
         })
