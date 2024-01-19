@@ -70,13 +70,10 @@ pub mod script_edit {
                 "key" => {
                     action_name = "键盘按键".to_string();
                     row.push(action_name);
-                    //判断键盘content是什么内容（待优化）
-                    //如果是单个字符，那就变成小写
                     if values[2].len() == 1 && values[2].chars().all(|c| c.is_ascii_uppercase()) {
                         let lowercase_char = values[2].chars().next().unwrap().to_ascii_lowercase();
                         row.push(lowercase_char.to_string());
                     } else {
-                        //如果是其他按键，赋值
                         coordinate_or_key = values[2].to_string();
                         row.push(coordinate_or_key);
                     }
@@ -105,8 +102,6 @@ pub mod script_edit {
                 },
                 _ => {}
             }
-            // let mut row: Vec<String> = values.iter().map(|&s| s.to_string()).collect();
-
             script.push(row);
         }
 
@@ -118,15 +113,11 @@ pub mod script_edit {
     pub fn script_write_back(path:String,mut script: Vec<Vec<String>>) {
         script.remove(0);
 
-        //判断是否为空
         if script.is_empty() {
-            //处理为空
         }
 
         let file_path = format!("{}/record.txt",path);
         println!("要处理的二维数组{:?}", script);
-        // let records_str: Vec<String> = script.iter().map(|row| row.join(",")).collect();
-
         let mut file = OpenOptions::new().write(true).open(file_path).unwrap();
         file.set_len(0).unwrap();
 
@@ -169,8 +160,6 @@ pub mod script_edit {
                 "键盘按键" => {
                     let mut coordinate = String::new();
 
-                    //判断键盘content是什么内容（待优化）
-                    //如果是单个字符，那就变成小写
                     if line[2].len() == 1 && line[2].chars().all(|c| c.is_ascii_lowercase()) {
                         coordinate = line[2]
                             .chars()
@@ -179,7 +168,6 @@ pub mod script_edit {
                             .to_ascii_uppercase()
                             .to_string();
                     } else {
-                        //如果是其他按键，赋值
                         coordinate = line[2].clone();
                     }
                     let action = format!("{},key,{}\n", line[0], coordinate);

@@ -1,26 +1,22 @@
 <template>
-  <div style="background-color: rgb(242, 243, 245);  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);">
+  <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);">
 
     <div>
 
-      <div style="background-color: rgb(242, 243, 245);  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);">
-        <div style="border: 2px solid #e3eefd; margin: 5px; padding: 10px;">
-          <label for="lang" style="font-size: 13px; color:rgb(163, 164, 168);  ">配置</label>
-          <div style="float:right;font-size: 13px; color:rgb(217, 4, 4); ">注意：功能键选择不能重合，否则会崩溃</div>
+      <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);">
+        <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
+          <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);  ">配置</label>
+          <div style="float:right;font-size: 13px; color:rgb(165, 2, 2); ">注意：功能键选择不能重合，否则会崩溃</div>
           <div style="display: flex; align-items: center;">
-
-
-
             <label for="lang" class="ziti" style="color: rgb(0, 0, 0);">脚本</label>
             <select name="languages" id="lang" style="width: 140px;" value="请选择回放文件夹">
-
               <option value="请选择回放文件夹">{{ selectedFileName }}</option>
             </select>
             <button @click="selectPlaybackFile"
-              style="margin-left: 7px; background-color: rgb(242, 243, 245); height: 24px; width: 50px; color: rgb(4, 0, 255); font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(217, 217, 226); ">...</button>
-
+              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line
+              -height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(226, 217, 217); ">...</button>
             <div style="margin: auto;"></div>
-
+            <!--The drop-down box corresponds-->
             <form action="#">
               <label for="lang" class="ziti">翻译对应语种</label>
               <select v-model="Chinese" id="lang" style="width: 200px; ">
@@ -34,30 +30,18 @@
                 <option value="7">法语</option>
                 <option value="8">中文</option>
               </select>
-
             </form>
-
           </div>
-
-
-
-          <!-- <input type="file" id="docpicker" accept=".txt" /> -->
-
           <div style="display: flex; ">
             <form action="#">
               <label for="action" class="ziti">开始/终止录制</label>
               <select v-model="selectedFunctionKey10" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
                 <option value="F1">F1</option>
-
               </select>
             </form>
-
             <div style="margin: auto;"></div>
-
-
             <form action="#">
-
               <label for="lang" class="ziti">截图</label>
               <select v-model="selectedFunctionKey3" name="languages" id="lang" style="width: 200px;">
                 <option :value="null" disabled>请选择功能键</option>
@@ -108,14 +92,11 @@
         </div>
       </div>
       <div>
-        <!-- 添加日志输出文本框 -->
-
       </div>
-      <div style="background-color: rgb(242, 243, 245);">
-        <div style="border: 2px solid rgb(195, 228, 255); margin: 5px; padding: 10px;">
-
+      <!--button-->
+      <div style="background-color: rgb(245, 242, 242);">
+        <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
           <div class="buttons-container">
-            <!-- 添加按钮组 -->
             <button @click="recording ? stopRecord() : startRecord()" :disabled="screenshotting || isPlaybacking"
               class="button-font" id="startrecord" @mouseover="handleButtonMouseOver" @mouseout="handleButtonMouseOut">
               {{ recording ? '终止录制 ' : '开始录制 ' }}
@@ -133,11 +114,11 @@
         </div>
       </div>
     </div>
-    <div style="border: 2px solid #def0ff; margin: 5px; padding: 10px;">
+    <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
       <div class="log-container">
-        <div class="log_log" style="font-size: 13px; color:rgb(19, 39, 255); ">操作步骤</div>
+        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142); ">操作步骤</div>
         <div style="margin: 0 167px;"></div>
-        <div class="log_log" style="font-size: 13px; color:rgb(19, 39, 255);">对比脚本结果</div>
+        <div class="log_log" style="font-size: 13px; color:rgb(146, 142, 142);">对比脚本结果</div>
         <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
         <form action="#">
           <select name="languages" id="lang" style="width: 140px;" v-model="selectedFolder" @change="playbackConfirm">
@@ -147,7 +128,7 @@
             <option value="F3">待定</option>
           </select>
         </form>
-        <button style="width:80px; font-size:13px;" @click="recordWindow" class="button-font">脚本编辑</button>
+        <button @click="recordWindow" class="button-font" style="width:80px; font-size:13px;">脚本编辑</button>
       </div>
 
       <div style="display: flex;">
@@ -155,7 +136,6 @@
         <div style="margin: 0 5px;"></div>
         <textarea v-model="logs" rows="15" readonly class="log" id="steps1"></textarea>
       </div>
-      <!-- 其他内容保持不变 -->
     </div>
   </div>
 </template>
@@ -178,39 +158,43 @@ export default {
       recording: false,
       pause: false,
       pause1: true, //F3，对应按钮的pause
-      log: '',
+      log: '',//左边截图框
       log_playback: '',
       screenshotting: false,
       selectedFileName: '请选择回放文件夹',
       textData: '', // 初始化文本数据
       filename: '',
-      selectedFunctionKey: 'F1',//下拉框选择按钮回放按键,
+      selectedFunctionKey10: 'F1',
+      selectedFunctionKey3: 'F2',
       selectedFunctionKey1: 'F4',
+      selectedFunctionKey5: 'F6',
       selectedFolder: null,//通过不通过选择
       Chinese: '8',
-      selectedFunctionKey3: 'F2',
-      selectedFunctionKey5: 'F6',
-      selectedFunctionKey10: 'F1',//开始/终止录制默认
       recordstart: true,
       clickButton: false,
       isMarui: false,
-      logs: '',
+      logs: '', //右边截图框
       isPlaybacking: false,//是否正在执行回放
       loggingEnabled: false,
       back: false,
       back1: false, //脚本编辑之前要判断是否选择了回放的路径
       recordStateChangeTime: null,
       selectedContent: false,//通过不通过状态选择，如果没有回放状态则为false，输出日志
+      isTruescreenshotting: true, //判断在截图过程中是否可以终止录制
+      pressedKey: '', //监听键盘按键
+      isRecording: false,
+      startTime: null,
+      elapsedTime: 0,
     };
   },
   methods: {
-
     async startRecord() {
-
-
+      // 开始录制
+      this.startTime = new Date();
+      this.isRecording = true;
+      this.elapsedTime = 0;
       if (!this.recording) {
         this.log = '';
-
       }
       this.recordstart = !this.recordstart;
       const recordChangeTime = new Date();
@@ -218,7 +202,6 @@ export default {
       if (this.recording) {
         this.logs = '';
         if (!this.recordStateChangeTime) {
-
           this.recordStateChangeTime = new Date();
         }
         const currentTime = new Date().toLocaleTimeString();
@@ -227,54 +210,40 @@ export default {
       } else {
         console.log(this.recording + '是');
         const currentTime = new Date().toLocaleTimeString();
-
-
         const elapsedTime = new Date() - this.recordStateChangeTime;
-
-
         this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
-
         this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]\n`;
-
-        // 重置状态变化的时间戳，以便下一次记录
         this.recordStateChangeTime = null;
       }
     },
 
     async stopRecord() {
+      //停止录制
+      this.isTruescreenshotting = false;
       this.logs = '';
       const recordChangeTime = new Date();
       this.recording = !this.recording;
       this.recordstart = !this.recordstart;
-
       if (this.pause) {
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'正在暂停录制中，无法终止录制，请先恢复录制再终止录制'} - [${currentTime}]\n`;
-
       } else {
         if (!this.recordStateChangeTime) {
-
           this.recordStateChangeTime = new Date();
         }
         invoke('record_end');
         const currentTime = new Date().toLocaleTimeString();
-
-
         const elapsedTime = new Date() - this.recordStateChangeTime;
-
-
         this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
-
         this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]\n`;
-
-        // 重置状态变化的时间戳，以便下一次记录
         this.recordStateChangeTime = null;
       }
+
     },
 
     async resumeRecord() {
+      //恢复回放
       this.pause = false;
-
       clearInterval(this.logIntervalId);
       const currentTime = new Date().toLocaleTimeString();
       if (this.recording) {
@@ -283,24 +252,18 @@ export default {
       } else {
         this.log += `${'不在录制过程中，无法暂停录制'} - [${currentTime}]\n`;
       }
-
     },
 
     async pauseRecord() {
-      console.log('ss');
+      //暂停回放
       if (this.recording) {
         this.pause = true;
-
         if (!this.loggingEnabled) {
           this.logIntervalId = setInterval(async () => {
             const currentTime = new Date().toLocaleTimeString();
             this.log += `${'录制被暂停，再次点击按钮将恢复录制'} - [${currentTime}]\n`;
-
-            // 在每次输出后检查 loggingEnabled 是否为 true
-
           }, 1000);
         }
-
         invoke('pause_record');
       } else {
         const currentTime = new Date().toLocaleTimeString();
@@ -308,26 +271,18 @@ export default {
       }
     },
 
-
-
     async startScreenshot() {
+      //截屏
       if (this.recording) {
         if (this.clickButton == false) {
           this.clickButton = !this.clickButton
         }
-
-        // 如果没有在录制，输出“没有录制”
-
-
         this.$nextTick(() => {
           const textarea = document.getElementById('steps');
           const currentTime = new Date().toLocaleTimeString();
           this.log += `${"请等待几秒，正在提取图片文字..."} - [${currentTime}]\n`;
           textarea.scrollTop = textarea.scrollHeight;
-
         });
-
-
         await invoke('start_screen', { clickButton: this.clickButton });
       } else {
         this.$nextTick(() => {
@@ -338,219 +293,142 @@ export default {
             this.log += `${"不在录制过程中，无法截图"} - [${currentTime}]\n`;
             textarea.scrollTop = textarea.scrollHeight;
           }
-
         });
-
       }
     },
-    //选择回放文件夹
+    
     async selectPlaybackFile() {
+      //选择回放文件夹
       this.back1 = true;
-      const defaultPath = window.__TAURI__.appDir;
       const selected = await open({
         directory: true,
         multiple: false,
-        defaultPath: defaultPath,
+        defaultPath: await appConfigDir(),
       });
       if (Array.isArray(selected)) {
-        // user selected multiple directories
       } else if (selected === null) {
-        // user cancelled the selection
       } else {
-        // user selected a single directory
       }
       this.selectedFileName = selected;
       //获取文件路径的最后一个文件名，用来xhr.open(点击哪个就放哪个)
       const fullPath = selected;
       this.filename = fullPath.replace(/^.*[\\\/]/, '');
-
-
     },
-    //回放函数
+
+    
     playBack() {
+      //回放函数
       this.logs = '';
       this.back = true;
       const filePath = this.selectedFileName;
-      invoke('check_file_exists', { filePath })
+      if (!invoke('check_file_exists', { filePath })) {
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${'没有选择文件夹,请选择文件夹!'} - [${currentTime}]\n`;
+      }
+      invoke('dir_confirm', { filePath })
         .then((result) => {
-          if (result == false) {
-            console.log("没找到回放文件");
-            const currentTime = new Date().toLocaleTimeString();
-            this.log += `${'没有选择文件夹,请选择文件夹!'} - [${currentTime}]\n`;
-            return;
+          if (result && result.length > 0) {
+            // 文件内容不为空的处理逻辑
+            this.log = '';
+            this.isPlaybacking = true;
+            let currentIndex = 0;
+            this.selectedContent = true;
+            let intervalId = setInterval(() => {
+              if (currentIndex < result.length) {
+                this.log += `${result[currentIndex].join(' ')}\n`;
+                currentIndex++;
+              } else {
+                clearInterval(intervalId);
+                this.isPlaybacking = false;
+                this.loadRecordResult();
+              }
+            }, 500);
           } else {
-            invoke('dir_confirm', { filePath })
-              .then((result) => {
-                if (result && result.length > 0) {
-                  // 文件内容不为空的处理逻辑
-                  this.log = '';
-                  this.isPlaybacking = true;
-                  let currentIndex = 0;
-                  this.selectedContent = true;
-                  let intervalId = setInterval(() => {
-                    if (currentIndex < result.length) {
-                      this.log += `${result[currentIndex].join(' ')}\n`; // 将 result 中每行的单词以空格分隔，然后添加到 log 中
-                      currentIndex++;
-                    } else {
-                      clearInterval(intervalId); // 所有行处理完毕，清除定时器
-                      // this.isPlaybacking = false; // 在处理完毕后设置为 false
-                      // this.loadRecordResult();
-                    }
-                  }, 500);
-                } else {
-                  const currentTime = new Date().toLocaleTimeString();
-                  this.log += `${'record.txt为空,请检查record.txt或目录'} - [${currentTime}]\n`;
-                  this.isPlaybacking = false; // 在处理失败也设置为 false
-                }
-              })
-              .catch((error) => {
-                console.error('前端脚本读取出错:', error);
-              });
-
-
-            // 调用回放后端函数
-            // const filePath = this.selectedFileName;
-            let langValue;
-            switch (this.Chinese) {
-              case '1':
-                langValue = 'auto';
-                break;
-              case '8':
-                langValue = 'zh';
-                break;
-              case '2':
-                langValue = 'en';
-                break;
-              case '7':
-                langValue = 'fra';
-                break;
-              case '6':
-                langValue = 'ru';
-                break;
-              case '3':
-                langValue = 'spa';
-                break;
-              case '5':
-                langValue = 'pt';
-                break;
-              case '4':
-                langValue = 'ara';
-                break;
-              default:
-                langValue = '';
-                break;
-            }
-
-            console.log('txp:', this.Chinese);
-            console.log('langValue:', langValue);
-            this.back = false;
-            invoke('playback_main', { filePath, lang: langValue, selectedFunctionKey: this.selectedFunctionKey });
+            const currentTime = new Date().toLocaleTimeString();
+            this.log += `${'record.txt为空,请检查record.txt或目录'} - [${currentTime}]\n`;
+            this.isPlaybacking = false;
           }
         })
         .catch((error) => {
-          console.error('文件不存在:', error);
+          console.error('前端脚本读取出错:', error);
         });
-
-
-    },
-
-    //通过不通过触发函数
-    playbackConfirm() {
-      const filePath = this.selectedFileName;
-      let playbackResult;
-      switch (this.selectedFolder) {
-        case 'F1':
-          playbackResult = '通过';
+        //选择语言
+      let langValue;
+      switch (this.Chinese) {
+        case '1':
+          langValue = 'auto';
           break;
-        case 'F2':
-          playbackResult = '不通过';
+        case '8':
+          langValue = 'zh';
           break;
-        case 'F3':
-          playbackResult = '待定';
+        case '2':
+          langValue = 'en';
+          break;
+        case '7':
+          langValue = 'fra';
+          break;
+        case '6':
+          langValue = 'ru';
+          break;
+        case '3':
+          langValue = 'spa';
+          break;
+        case '5':
+          langValue = 'pt';
+          break;
+        case '4':
+          langValue = 'ara';
           break;
         default:
           langValue = '';
           break;
       }
-      console.log('filePath:', filePath);
-      console.log('playbackResult:', playbackResult);
-      if (this.selectedContent) {
-        invoke('playback_confirm', { filePath, playbackResult });
-        this.selectedContent = false;
-      } else {
-        const currentTime = new Date().toLocaleTimeString();
-        this.logs = '';
-        this.logs += `${'没有回放任何脚本，不能判别测试用例状态，请回放脚本后再选择'} - [${currentTime}]\n`;
-
-      }
+      this.back = false;
+      invoke('playback_main', { filePath, lang: langValue });
     },
 
-
     async loadRecordResult() {
-      this.log_playback = '';
-
       // 加载 record_result.txt 文件内容
+      this.log_playback = '';
       let resultXhr = new XMLHttpRequest(),
         resultOkStatus = document.location.protocol === "file:" ? 0 : 200;
-
-      resultXhr.open("GET", `${this.selectedFileName}/record_result.txt`, false);
+      resultXhr.open("GET", `../Automated-testing/result/${this.filename}/record_result.txt`, false);
       resultXhr.overrideMimeType("text/html;charset=utf-8");
-
       resultXhr.onreadystatechange = () => {
         if (resultXhr.readyState === 4) {
           if (resultXhr.status === resultOkStatus) {
-            // 如果 record_result.txt 的内容为空，输出日志
-
-            // 将 record_result.txt 的内容设置到 textarea
             this.$nextTick(() => {
-              // 将 record_result.txt 的内容设置到 textarea
               document.getElementById("steps1").value = resultXhr.responseText;
             });
-
           } else {
             // // 如果请求失败，将错误消息添加到日志中
             // this.log = "没有检测到任何移动轨迹，请查看record.txt是否为空\n";
           }
         }
       };
-
-
       resultXhr.send(null);
-
-      // const yes2 = await ask('测试用例状态通通过', { title: 'Tauri', type: 'warning' });
     },
-
-
-
-    //脚本编辑窗口
+    
     recordWindow() {
+      //脚本编辑窗口
       if (this.back1) {
         console.log("record");
         const filePath = this.selectedFileName;
         console.log(filePath);
         invoke('read_a_record', { filePath })
           .then((result) => {
-            console.log(result);
-            // 获取 PromiseResult 数组
             const promiseResult = result;
-
-            // 将结果写入新窗口
             const resultString = JSON.stringify(promiseResult);
             const resultEncoded = encodeURIComponent(resultString);
-            console.log(resultString);
-
             const webview = new WebviewWindow('theUniqueLabel', {
-              title: `脚本修改功能`,  // 设置窗口的标题
               url: `script_edit.html?result=${resultEncoded}&filePath=${filePath}`, // 将结果作为查询参数传递
             });
-
-            // 监听 webview 窗口创建成功事件
             webview.once('tauri://created', function () {
-              // webview 窗口成功创建
+
             });
-            // 监听 webview 窗口创建失败事件
+
             webview.once('tauri://error', function (e) {
-              // 在 webview 窗口创建过程中发生错误
+
             });
           })
           .catch((error) => {
@@ -562,56 +440,36 @@ export default {
       }
     },
 
-
     handleKeyDown(event) {
-
-
+      //监听各种
       if (this.isPlaybacking) {
-        //正在回放就不能录制
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'正在回放中，请等待回放完毕再进行录制'} - [${currentTime}]\n`;
-
-
       } else {
         const selectedValue = this.selectedFunctionKey10;
         if (event.key === selectedValue) {
-
           event.preventDefault();
-          // 执行开始/停止录制逻辑
           this.startRecord();
-
-          // 更新 log 数据
           this.$nextTick(() => {
             const textarea = document.getElementById('steps');
             const currentTime = new Date().toLocaleTimeString();
-
-            // 添加特殊的日志，但仅当还没有添加过时
             if (!this.recording && !this.hasRefreshLog) {
-
             } else if (this.recording == false) {
               this.log += `${'录制结束,下次录制将刷新日志！'} - [${currentTime}]\n`;
-
             }
-
             textarea.scrollTop = textarea.scrollHeight;
           });
         }
       }
-      //截图下拉框监听
 
+      //截图下拉框监听
       const selectedValue5 = this.selectedFunctionKey3;
       if (event.key === selectedValue5) {
-
-
         event.preventDefault();
-
         this.startScreenshot()
       }
 
-
-
       //开始恢复暂停下拉框监听
-
       const selectedValue = this.selectedFunctionKey1;
       if (event.key === selectedValue) {
         if (this.pause1) {
@@ -637,30 +495,31 @@ export default {
           }
         }
       }
+      if (this.isRecording && event.key !== 'F1') {
+        const currentTime = new Date();
+        this.elapsedTime = currentTime - this.startTime;
+        this.pressedKey = event.key;
+        this.log += `${this.elapsedTime}ms,捕捉到键盘输入${this.pressedKey}\n`;
+      }
     },
 
   },
+  
   mounted() {
     invoke('close_splashscreen');
     window.addEventListener("keydown", this.handleKeyDown);
 
     listen('event-name', (event) => {
+
       const currentTime = new Date().toLocaleTimeString();
       this.log += `${"提取文字执行成功！请继续操作。"} - [${currentTime}]\n`;
+      console.log("你好");
+
     });
-    listen('result_listen', (event) => {
-      console.log('结果监听事件触发');
-      // logs += '';
-      const filePath = this.selectedFileName;
-      invoke('return_record_result', { filePath })
-        .then((result) => {
-          this.isPlaybacking = false; // 在处理完毕后设置为 false
-          this.logs += '回放结束。\n';
-          this.logs += `${result}`;
-        })
-        .catch((error) => {
-          console.error('An error occurred:', error);
-        });
+
+    listen('press-listen-keyboard', (event) => {
+
+      console.log("press-listen-keyboard");
     });
   },
   beforeDestroy() {
@@ -677,7 +536,7 @@ export default {
 textarea {
   width: 50%;
   margin-top: 10px;
-  background-color: #e2e3e6;
+  background-color: #e6e2e2;
 
 }
 
@@ -685,7 +544,7 @@ button {
   margin: 5px;
   padding: 10px;
   cursor: pointer;
-  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);
+  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
   background-color: rgb(230, 227, 227);
   width: 172px;
   color: rgb(138, 123, 123);
@@ -698,16 +557,16 @@ button {
 }
 
 .button-font:hover {
-  background-color: #7b7c81;
+  background-color: #817b7b;
   background: linear-gradient(135deg, #abecd6, #fbed96);
   color: #ffffff;
 
 }
 
 .button-font:disabled {
-  background-color: #babcc2;
+  background-color: #c2baba;
   background: linear-gradient(135deg, #a8caba, #d8ccd5);
-  color: rgb(137, 140, 145);
+  color: rgb(145, 137, 137);
 
   cursor: not-allowed;
 
@@ -719,11 +578,11 @@ select {
   font-family: cursive, sans-serif;
   outline: 0;
   background: #ffffff;
-  color: rgb(21, 0, 255);
+  color: rgb(255, 0, 191);
   border: 1px solid rgb(226, 217, 217);
   padding: 4px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);
+  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
 
 }
 
@@ -738,30 +597,30 @@ select {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   color: rgb(47, 51, 50);
   font-size: smaller;
-  color: rgb(0, 26, 255);
+  color: rgb(255, 0, 0);
 
 }
 
 .button-font {
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  color: rgb(68, 0, 255);
+  color: rgb(255, 0, 191);
   font-size: large;
   font-weight: 700;
   background-color: rgb(245, 242, 242);
-  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);
+  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
 }
 
 .log-container {
   display: flex;
   align-items: baseline;
-  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);
+  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
 
 }
 
 .log {
   display: flex;
   align-items: baseline;
-  color: rgb(0, 17, 255);
+  color: rgb(255, 0, 191);
   background-color: rgb(255, 255, 255);
   ;
   border: 7px solid rgb(241, 240, 240);
@@ -770,7 +629,7 @@ select {
   box-shadow: 0 0 0 2px rgb(226, 217, 217);
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   background: linear-gradient(135deg, #e9defa, #dbeffb);
-  background: linear-gradient(135deg, #e3fdf5, #d2ecfd);
+  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);
 }
 
 button:disabled {

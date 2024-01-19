@@ -62,12 +62,11 @@ lazy_static! {
     static ref PAUSE_TIME: Mutex<u128> = Mutex::new(0);
 }
 #[tauri::command]
+//开屏界面
 async fn close_splashscreen(window: tauri::Window) {
-  // Close splashscreen
   if let Some(splashscreen) = window.get_window("splashscreen") {
     splashscreen.close().unwrap();
   }
-  // Show main window
   window.get_window("main").unwrap().show().unwrap();
 }
 fn main() {
