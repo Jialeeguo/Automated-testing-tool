@@ -14,7 +14,16 @@ import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
 // @ts-ignore
 import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
 import * as server from './mock-server'
+import {
+  MouseStatus,
+  WheelStatus,
+  KeyboardStatus,
+  MessageType,
+  InputEventType,
+} from "../common/Constans";
 
+let remoteDesktopDpi: Record<string, any>;
+  let dc: RTCDataChannel;
 // ================ 初始化 init monaco-tree-editor ================
 window.MonacoEnvironment = {
   getWorker: function (_moduleId, label: string) {
@@ -77,6 +86,8 @@ const handleReload = (resolve: () => void, reject: (msg?: string) => void) => {
       reject(e.message)
     })
 }
+
+
 
 const handleSaveFile = (path: string, content: string, resolve: () => void, reject: (msg?: string) => void) => {
   server
@@ -198,11 +209,94 @@ const _relativePathFrom = (returnPath: string, fromPath: string): string => {
   }
   return (relativePath += returnPath)
 }
+const desktop = ref<HTMLVideoElement>();
+
+const startScreenSharing = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: false,
+    });
+
+    // 将获取的媒体流设置到视频元素
+    if (desktop.value) {
+      desktop.value.srcObject = stream;
+    } else {
+      console.error('Video element not found');
+    }
+  } catch (error) {
+    console.error('Error starting screen sharing:', error);
+  }
+};
+
+// 鼠标按下事件处理
+const mouseDown = (e: MouseEvent) => {
+  sendMouseEvent(e.x, e.y, mouseType(MouseStatus.MOUSE_DOWN, e.button));
+};
+
+// 鼠标松开事件处理
+const mouseUp = (e: MouseEvent) => {
+  sendMouseEvent(e.x, e.y, mouseType(MouseStatus.MOUSE_UP, e.button));
+};
+
+// 滚轮事件处理
+const wheel = (e: WheelEvent) => {
+  let type = e.deltaY > 0 ? WheelStatus.WHEEL_UP : WheelStatus.WHEEL_DOWN;
+  sendMouseEvent(e.x, e.y, type);
+};
+
+// 鼠标移动事件处理
+const mouseMove = (e: MouseEvent) => {
+  sendMouseEvent(e.x, e.y, MouseStatus.MOUSE_MOVE);
+};
+
+// 鼠标右键单击事件处理
+const rightClick = (e: MouseEvent) => {
+  sendMouseEvent(e.x, e.y, MouseStatus.RIGHT_CLICK);
+};
+
+// 发送鼠标事件
+const sendMouseEvent = (x: number, y: number, eventType: string) => {
+  if (remoteDesktopDpi) {
+    let widthRatio = remoteDesktopDpi.width / desktop.value!.clientWidth;
+    let heightRatio = remoteDesktopDpi.height / desktop.value!.clientHeight;
+
+    let data = {
+      x: parseInt((x * widthRatio).toFixed(0)),
+      y: parseInt((y * heightRatio).toFixed(0)),
+      eventType: eventType,
+    };
+    sendToClient({
+      type: InputEventType.MOUSE_EVENT,
+      data: data,
+    });
+  }
+};
+const sendToClient = (msg: Record<string, any>) => {
+  let msgJSON = JSON.stringify(msg);
+  dc.readyState == "open" && dc.send(msgJSON);
+};
+// 获取鼠标事件类型
+const mouseType = (mouseStatus: MouseStatus, button: number) => {
+  let type = "";
+  switch (button) {
+    case 0:
+      type = "left-" + mouseStatus;
+      break;
+    case 2:
+      type = "right-" + mouseStatus;
+      break;
+    // TODO 更多的按钮
+  }
+
+  return type;
+};
+
 </script>
 
 <template>
   <MonacoTreeEditor
-    :font-size="14"
+    :font-size="16"
     :files="files"
     :sider-min-width="240"
     filelist-title="源代码存储管理库"
@@ -221,5 +315,23 @@ const _relativePathFrom = (returnPath: string, fromPath: string): string => {
     :settings-menu="settingsMenu"
     @drag-in-editor="handleDragInEditor"
     ref="editorRef"
-  ></MonacoTreeEditor>
+  >
+</MonacoTreeEditor>
+
+/*没改好的video和button */
+<!-- <video ref="desktop" width=640 height=480   class="resizable-video" style="background-color: black;" 
+@mousedown="mouseDown($event)" @mouseup="mouseUp($event)"
+    @mousemove="mouseMove($event)" @wheel="wheel($event)" @contextmenu.prevent="rightClick($event)" autoplay></video>
+
+<button @click="startScreenSharing">共享</button> -->
+
 </template>
+
+<style>
+/* 添加可拉伸样式类 */
+.resizable-video {
+  resize: both;  /* 允许水平和垂直拉伸 */
+  overflow: hidden;  /* 隐藏溢出部分 */
+  border: 1px solid #ccc;  /* 添加边框 */
+}
+</style>
