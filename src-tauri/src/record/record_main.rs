@@ -28,7 +28,7 @@ pub mod record_main {
         message: String,
     }
     #[tauri::command]
-    pub async fn start_record(recordstart: bool,window: Window) {
+    pub async fn start_record(recordstart: bool) {
         let mut status = "init";
         let device_state = DeviceState::new();
         let mut now_dir = String::new();
@@ -141,15 +141,15 @@ pub mod record_main {
                 let duration_key = START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
                 println!("{}ms,捕捉到键盘输入{:?}", duration_key, keys[0]);
                 let output = format!("{},key,{:?}\n", duration_key, keys[0]);
-                window
-                .emit(
-                    "press-listen-keyboard",
-                    Payload {
+                // window
+                // .emit(
+                //     "press-listen-keyboard",
+                //     Payload {
                         
-                        message: "Tauri is awesome!".into(),
-                    },
-                )
-                .unwrap();
+                //         message: "Tauri is awesome!".into(),
+                //     },
+                // )
+                // .unwrap();
                 if keys[0] != Keycode::F1
                     && keys[0] != Keycode::F2
                     && keys[0] != Keycode::F3
