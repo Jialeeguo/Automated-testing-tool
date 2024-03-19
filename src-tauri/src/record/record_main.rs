@@ -28,6 +28,7 @@ pub mod record_main {
         message: String,
     }
     #[tauri::command]
+    //参数为recordstart: bool,window: Window
     pub async fn start_record(recordstart: bool) {
         let mut status = "init";
         let device_state = DeviceState::new();
