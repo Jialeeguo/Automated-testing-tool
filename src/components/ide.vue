@@ -295,6 +295,7 @@ const mouseType = (mouseStatus: MouseStatus, button: number) => {
 </script>
 
 <template>
+
   <MonacoTreeEditor
     :font-size="16"
     :files="files"

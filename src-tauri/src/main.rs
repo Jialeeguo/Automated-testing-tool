@@ -70,6 +70,12 @@ async fn close_splashscreen(window: tauri::Window) {
     }
     window.get_window("main").unwrap().show().unwrap();
 }
+
+
+
+fn a() {
+    println!("1");
+}
 fn main() {
     let begin_transcribe = CustomMenuItem::new("transcribe".to_string(), "开始/终止录制(F1)");
     let screen_shot: CustomMenuItem = CustomMenuItem::new("screen_shot".to_string(), "截图(F2)");
@@ -113,10 +119,13 @@ fn main() {
         .menu(menu)
         .on_menu_event(|event| match event.menu_item_id() {
             "transcribe" => {
-                start_record(true);
+                //没进方法，之后再改     
+                a();
+                start_record();
             }
-            "close" => {
-                event.window().close().unwrap();
+            "screen_shot" => {
+                // start_screen
+                
             }
             _ => {}
         })

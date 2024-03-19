@@ -29,13 +29,11 @@ pub mod record_main {
     }
     #[tauri::command]
     //参数为recordstart: bool,window: Window
-    pub async fn start_record(recordstart: bool) {
+    pub async fn start_record() {
+        println!("你好");
         let mut status = "init";
         let device_state = DeviceState::new();
         let mut now_dir = String::new();
-        if recordstart == true {
-            return;
-        }
         loop {
             sleep(Duration::from_millis(200));
             println!("程序开始");
