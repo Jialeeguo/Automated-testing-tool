@@ -28,49 +28,35 @@ pub mod record_main {
         message: String,
     }
     #[tauri::command]
-    pub async fn start_record(recordstart: bool) {
+    //参数为recordstart: bool,window: Window
+    pub async fn start_record() {
+        println!("你好");
         let mut status = "init";
         let device_state = DeviceState::new();
-        //存储工作目录文件夹名
         let mut now_dir = String::new();
-        if recordstart == true {
-            return;
-        }
-        //设定开始按键
         loop {
             sleep(Duration::from_millis(200));
             println!("程序开始");
             println!("F2启动截图功能");
-
-            //获取系统时间，创建当前项目文件夹
             let local: DateTime<Local> = Local::now();
             now_dir = local.format("%Y-%m-%d %H-%M-%S").to_string();
             std::fs::create_dir_all(format!("../Automated-testing/result/{}", now_dir)).unwrap();
-
             let mut global_now_dir = NOW_DIR.lock().unwrap();
             *global_now_dir = now_dir.clone();
-
             let mut mouse_path = MOUSE_PATH.lock().unwrap();
             *mouse_path = now_dir.clone();
 
-            //开启计时
             status = "started";
-            //重置计时时间
             let mut start_time = START_TIME.lock().unwrap();
             *start_time = Instant::now();
             let mut pause_time = PAUSE_TIME.lock().unwrap();
             *pause_time = 0;
 
             *MOUSE_MOVE_TIME.lock().unwrap() = Some(start_time.elapsed().as_millis());
-            //鼠标监听标志
             let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
-
             *mouse_flag = false;
-
-            //录制停止标志
             let mut stop_flag = SHOULD_STOP.lock().unwrap();
             *stop_flag = false;
-
             break;
         }
 
@@ -91,10 +77,6 @@ pub mod record_main {
         let mut mouse_flag = MOUSE_THREAD_START.lock().unwrap();
         if *mouse_flag == false {
             *mouse_flag = true;
-
-            // 使用 Arc<AtomicBool> 共享键盘监听标志
-            // let should_stop_keyboard = SHOULD_STOP_KEYBOARD.clone();
-
             thread::spawn(move || {
                 if let Err(error) = listen(move |event| mouse_monitor::mouse::callback(event)) {
                     println!("Error: {:?}", error);
@@ -103,7 +85,6 @@ pub mod record_main {
         }
 
         loop {
-            //判断是否终止
             let should_stop = {
                 let stop_flag = SHOULD_STOP.lock().unwrap();
                 *stop_flag
@@ -159,6 +140,15 @@ pub mod record_main {
                 let duration_key = START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
                 println!("{}ms,捕捉到键盘输入{:?}", duration_key, keys[0]);
                 let output = format!("{},key,{:?}\n", duration_key, keys[0]);
+                // window
+                // .emit(
+                //     "press-listen-keyboard",
+                //     Payload {
+                        
+                //         message: "Tauri is awesome!".into(),
+                //     },
+                // )
+                // .unwrap();
                 if keys[0] != Keycode::F1
                     && keys[0] != Keycode::F2
                     && keys[0] != Keycode::F3
@@ -184,17 +174,12 @@ pub mod record_main {
                     "\n经过了：{}毫秒",
                     START_TIME.lock().unwrap().elapsed().as_millis()
                 );
-                // std::thread::sleep(std::time::Duration::from_secs(3));
-                // mouse_stop_flag = true;
-                // println!("flag当前是3：{}", mouse_stop_flag);
-
-                // handle.join().unwrap();
                 return;
             }
         }
     }
 
-    //录制截图：启动！
+    //录制截图
     #[tauri::command]
     pub async fn start_screen(mut click_button: bool, window: Window) {
         loop {
@@ -212,15 +197,7 @@ pub mod record_main {
                 println!("键盘监听线程结束");
                 break;
             }
-            // let mut save_file = OpenOptions::new()
-            //     .write(true)
-            //     .create(true)
-            //     .append(true)
-            //     .open(format!(
-            //         "../Automated-testing/result/{}/record.txt",
-            //         now_dir
-            //     ))
-            //     .unwrap();
+
             if !click_button {
                 continue;
             }
@@ -235,7 +212,7 @@ pub mod record_main {
                     let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
                     *screen_flag = true;
                 }
-                let output = Command::new("textshot")
+                let output = Command::new("C:/Users/trookie/venv/Scripts/textshot")
                     .arg("eng+chi_sim")
                     .output()
                     .expect("无法启动 textshot 命令");
@@ -255,13 +232,10 @@ pub mod record_main {
                         .expect("无法打开文件");
 
                     let output_confirm = String::from_utf8_lossy(&output.stdout);
-                    //判断是否没有文字，如果是就不写入了
                     if output_confirm
                         .contains("ERROR: Unable to read text from image, did not copy")
                     {
                     } else {
-                        // let output_bytes = &output.stdout;
-                        // let output_without_info = &output_bytes[14..output_bytes.len() - 20];
                         let mut output_without_info: ClipboardContext =
                             ClipboardProvider::new().unwrap();
                         let mut clipboard_content = output_without_info.get_contents().unwrap();

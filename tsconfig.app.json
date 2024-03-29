@@ -1,0 +1,29 @@
+{
+    "extends": "@vue/tsconfig/tsconfig.dom.json",
+    "include": [
+      "lib/*",
+      "lib/**/*",
+      "lib/**/*.vue",
+      "env.d.ts",
+    ],
+    "exclude": [
+      "src/**/__tests__/*"
+    ],
+    "compilerOptions": {
+      "composite": true,
+      "baseUrl": ".",
+      "paths": {
+        "~lib/*": [
+          "/lib/*"
+        ],
+        "@/*": [
+          "/src/*"
+        ]
+      },
+      // "emitDeclarationOnly": true,
+      "declaration": true,
+      "declarationDir": "dist",
+      "jsx": "preserve",
+      "jsxImportSource": "vue",
+    }
+  }

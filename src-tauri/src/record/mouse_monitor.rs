@@ -16,7 +16,6 @@ pub mod mouse {
     use crate::SCREEN_SHOT_FLAG;
     use crate::START_TIME;
 
-    //鼠标监听回调 recordstart = true的时候不会记录，还没想好
     pub fn callback(event: Event) {
         let mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
         if *mouse_flag == true {
@@ -24,15 +23,10 @@ pub mod mouse {
         }
         let mouse_path = MOUSE_PATH.lock().unwrap();
         let now_dir = mouse_path.clone();
-
-        //记录最后移动时间
         let last_move_time = *MOUSE_MOVE_TIME.lock().unwrap();
-
-        //暂停时间
         let pause_time = PAUSE_TIME.lock().unwrap();
         let duration = START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
 
-        //打开文件，用于记录鼠标操作
         let file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -42,7 +36,6 @@ pub mod mouse {
                 now_dir
             ))
             .unwrap();
-        //判断是否有截图需求
         let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
         if *screen_flag == true {
             //调用系统截图工具
@@ -56,7 +49,6 @@ pub mod mouse {
                 EventType::ButtonPress(button) => screen_record_press(duration, button, file),
                 EventType::ButtonRelease(button) => {
                     screen_record_release(duration, button, file, now_dir);
-                    // let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
                     *screen_flag = false;
                 }
                 _ => {}
@@ -64,13 +56,11 @@ pub mod mouse {
         } else {
             match event.event_type {
                 EventType::MouseMove { x, y } => {
-                    //记录最后坐标点用于在鼠标点击动作移动动作后标注
                     let mut mouse_before_press = MOUSE_BEFORE_PRESS.lock().unwrap();
                     *mouse_before_press = (x, y);
                     //计算距离上一次记录鼠标移动事件的时间
                     let last_move_time = last_move_time.unwrap();
                     let elapsed = duration - last_move_time;
-                    // println!("两次鼠标间隔时间为{:?}", elapsed);
                     if elapsed > 200 {
                         record_move(duration, x.to_string(), y.to_string(), file);
                         *MOUSE_MOVE_TIME.lock().unwrap() = Some(duration);
@@ -82,7 +72,7 @@ pub mod mouse {
             }
         }
     }
-    //下边的函数都是记录文件
+
     //记录用户鼠标移动
     pub fn record_move(time: u128, x: String, y: String, mut file: File) {
         let mut val = String::new();

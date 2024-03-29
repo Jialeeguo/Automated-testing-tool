@@ -41,7 +41,6 @@ pub mod playback_main {
         let file = match File::open(format!("{}/record.txt", now_dir.clone())) {
             Ok(f) => f,
             Err(e) => {
-                // 打印错误信息并返回
                 eprintln!("Error opening file: {}", e);
                 return;
             }
@@ -70,7 +69,6 @@ pub mod playback_main {
             *LAST_ACTION_TIME.lock().unwrap() = time;
             let action = arr[1];
             let content = arr[2];
-            //键盘复现
             let mut enigo = Enigo::new();
             match action {
                 "move" => {
@@ -128,10 +126,8 @@ pub mod playback_main {
                 },
                 "screen_release" => match content {
                     "Left" => {
-                        //读取按下坐标
                         let screen_press = SCREEN_PRESS.lock().unwrap();
                         let (b_x, b_y) = *screen_press;
-                        //读取抬起坐标
                         let x = arr[3].parse::<f64>().unwrap();
                         let y = arr[4].parse::<f64>().unwrap();
                         let wait_duration = Duration::from_millis(wait_time.try_into().unwrap());
@@ -167,12 +163,8 @@ pub mod playback_main {
     #[tauri::command]
     pub fn playback_confirm(file_path: String, playback_result: String) {
         let file_path = format!("{}/record_result.txt", file_path);
-
-        // 读取文件内容，如果文件不存在或为空，则提供默认值为空字符串
         let result_text = std::fs::read_to_string(&file_path).unwrap_or_default();
         println!("result_text:{}\n", result_text);
-
-        // 处理文件内容
         let mut process_lines = vec![];
         for line in result_text.lines() {
             if !line.contains("回放结果为：") {
@@ -180,18 +172,14 @@ pub mod playback_main {
             }
         }
         println!("process_lines:{:?}\n", process_lines);
-
-        // 将处理后的内容写回文件
         let output_text = process_lines.join("\n");
         println!("output_text{}", output_text);
         std::fs::write(&file_path, output_text).unwrap_or_default();
-        // 打开文件进行追加写入
         let mut file = OpenOptions::new()
             .write(true)
             .append(true)
             .open(&file_path)
             .expect("无法打开文件");
-
         writeln!(file, "\n回放结果为：{}\n", playback_result).unwrap_or_default();
     }
 
@@ -214,7 +202,6 @@ pub mod playback_main {
                 script
             }
             Err(error) => {
-                // 文件打开失败，输出错误提示
                 println!("Error opening file: {}", error);
                 let content: Vec<Vec<String>> = Vec::new();
                 content
@@ -244,7 +231,6 @@ pub mod playback_main {
                 content
             }
             Err(error) => {
-                // 文件打开失败，输出错误提示
                 println!("Error opening file: {}", error);
                 let content = format!("");
                 content

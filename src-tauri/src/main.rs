@@ -10,7 +10,6 @@ mod record;
 // use std::thread;
 // use std::process;
 // use std::time::Duration;
-use tauri::Manager;
 use playback::playback_main::playback_main::playback_confirm;
 use playback::playback_main::playback_main::playback_main;
 use playback::script_edit::script_edit::read_a_record;
@@ -22,10 +21,12 @@ use record::record_main::record_main::start_record;
 use record::record_main::record_main::start_screen;
 use record::screen_shot::screen::screenshot;
 use std::sync::{atomic::AtomicBool, Arc};
+use tauri::Manager;
 // use record::record_main::record_main::stop_record;
 use playback::playback_main::playback_main::check_file_exists;
 use playback::playback_main::playback_main::dir_confirm;
 use playback::playback_main::playback_main::return_record_result;
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 #[macro_use]
 extern crate lazy_static;
 //定义静态全局变量
@@ -62,15 +63,42 @@ lazy_static! {
     static ref PAUSE_TIME: Mutex<u128> = Mutex::new(0);
 }
 #[tauri::command]
+//开屏界面
 async fn close_splashscreen(window: tauri::Window) {
-  // Close splashscreen
-  if let Some(splashscreen) = window.get_window("splashscreen") {
-    splashscreen.close().unwrap();
-  }
-  // Show main window
-  window.get_window("main").unwrap().show().unwrap();
+    if let Some(splashscreen) = window.get_window("splashscreen") {
+        splashscreen.close().unwrap();
+    }
+    window.get_window("main").unwrap().show().unwrap();
+}
+
+
+
+fn a() {
+    println!("1");
 }
 fn main() {
+    let begin_transcribe = CustomMenuItem::new("transcribe".to_string(), "开始/终止录制(F1)");
+    let screen_shot: CustomMenuItem = CustomMenuItem::new("screen_shot".to_string(), "截图(F2)");
+    let end_transcribe = CustomMenuItem::new("end_transcribe".to_string(), "暂停/恢复录制(F4)");
+    let running_transcribe: CustomMenuItem =
+        CustomMenuItem::new("running_transcribe".to_string(), "运行脚本(F6)");
+    let opening_script: CustomMenuItem =
+        CustomMenuItem::new("opening_script".to_string(), "打开脚本(ctrl+O)");
+    let save_script: CustomMenuItem =
+        CustomMenuItem::new("save_script".to_string(), "保存脚本(ctrl+S)");
+    let script = Submenu::new(
+        "文件",
+        Menu::new().add_item(opening_script).add_item(save_script),
+    );
+    let running = Submenu::new(
+        "运行",
+        Menu::new()
+            .add_item(begin_transcribe)
+            .add_item(screen_shot)
+            .add_item(end_transcribe)
+            .add_item(running_transcribe),
+    );
+    let menu = Menu::new().add_submenu(script).add_submenu(running);
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             start_record,
@@ -88,8 +116,19 @@ fn main() {
             dir_confirm,
             return_record_result
         ])
+        .menu(menu)
+        .on_menu_event(|event| match event.menu_item_id() {
+            "transcribe" => {
+                //没进方法，之后再改     
+                a();
+                start_record();
+            }
+            "screen_shot" => {
+                // start_screen
+                
+            }
+            _ => {}
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
-

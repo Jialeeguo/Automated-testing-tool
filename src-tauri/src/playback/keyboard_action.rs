@@ -17,8 +17,6 @@ pub mod keyboard {
         key_map.insert("LControl".to_string(), Key::LControl);
         key_map.insert("Control".to_string(), Key::Control);
         key_map.insert("RControl".to_string(), Key::RControl);
-        // key_map.insert("LWin".to_string(), Key::LWin);
-        // key_map.insert("RWin".to_string(), Key::RWin);
         key_map.insert("F1".to_string(), Key::F1);
         key_map.insert("F2".to_string(), Key::F2);
         key_map.insert("F3".to_string(), Key::F3);
@@ -31,8 +29,6 @@ pub mod keyboard {
         key_map.insert("F10".to_string(), Key::F10);
         key_map.insert("F11".to_string(), Key::F11);
         key_map.insert("F12".to_string(), Key::F12);
-        // key_map.insert("PrintScreen".to_string(), Key::PrintScreen);
-        // key_map.insert("ScrollLock".to_string(), Key::ScrollLock);
         key_map.insert("Pause".to_string(), Key::Pause);
         key_map.insert("Insert".to_string(), Key::Insert);
         key_map.insert("Home".to_string(), Key::Home);
@@ -45,32 +41,7 @@ pub mod keyboard {
         key_map.insert("Down".to_string(), Key::DownArrow);
         key_map.insert("Up".to_string(), Key::UpArrow);
         key_map.insert("NumLock".to_string(), Key::Numlock);
-        // key_map.insert("NumPad0".to_string(), Key::Num0);
-        // key_map.insert("NumPad1".to_string(), Key::Num1);
-        // key_map.insert("NumPad2".to_string(), Key::Num2);
-        // key_map.insert("NumPad3".to_string(), Key::Num3);
-        // key_map.insert("NumPad4".to_string(), Key::Num4);
-        // key_map.insert("NumPad5".to_string(), Key::Num5);
-        // key_map.insert("NumPad6".to_string(), Key::Num6);
-        // key_map.insert("NumPad7".to_string(), Key::Num7);
-        // key_map.insert("NumPad8".to_string(), Key::Num8);
-        // key_map.insert("NumPad9".to_string(), Key::Num9);
-        // key_map.insert("Multiply".to_string(), Key::Multiply);
-        // key_map.insert("Add".to_string(), Key::Add);
-        // key_map.insert("Subtract".to_string(), Key::Subtract);
-        // key_map.insert("Decimal".to_string(), Key::Decimal);
-        // key_map.insert("Divide".to_string(), Key::Divide);
-        // key_map.insert("Semicolon".to_string(), Key::Semicolon);
-        // key_map.insert("Equals".to_string(), Key::Equals);
-        // key_map.insert("Comma".to_string(), Key::Comma);
-        // key_map.insert("Minus".to_string(), Key::Minus);
-        // key_map.insert("Period".to_string(), Key::Period);
-        // key_map.insert("Slash".to_string(), Key::Slash);
-        // key_map.insert("Grave".to_string(), Key::Grave);
-        // key_map.insert("LeftBracket".to_string(), Key::LeftBracket);
-        // key_map.insert("Backslash".to_string(), Key::Backslash);
-        // key_map.insert("RightBracket".to_string(), Key::RightBracket);
-        // key_map.insert("Quote".to_string(), Key::Quote);
+
         // 添加更多键映射...
 
         key_map.get(content).cloned()

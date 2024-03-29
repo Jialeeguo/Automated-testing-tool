@@ -33,10 +33,7 @@ pub mod screen {
         lang: String,
         log_file:String
     ) {
-        // 获取点所在屏幕
-        // let mut log_path = String::from(file_path);
         let screen = Screen::from_point(100, 100).unwrap();
-        // println!("点所在屏幕： {screen:?}");
         let width = x - b_x - 2.0;
         let height = y - b_y - 2.0;
         println!("x{},y{},width{},height{}", x, y, width, height);
@@ -51,18 +48,14 @@ pub mod screen {
         image
             .save(format!("{}/{}_playback.png", now_dir, time.to_string()))
             .unwrap();
-        //对比图像是否一样
         screen_shot_compare_and_text_compare(now_dir, time, lang,log_file);
     }
 
     //图像对比
     pub fn screen_shot_compare_and_text_compare(path: String, time: u128, lang: String,log_file:String) {
-        // 打开图像文件
         let img1 = image::open(format!("{}/{}.png", path, time.to_string())).unwrap();
         let img2_path = format!("{}/{}_playback.png", path, time.to_string());
         let img2 = image::open(img2_path.clone()).unwrap();
-
-        //打开生成的log文件
         let mut html_file = OpenOptions::new()
         .write(true)
         .append(true)
@@ -71,10 +64,6 @@ pub mod screen {
         html_file
         .write_all(format!("<h1>{}时刻录制图像：</h1><img src=\"{}/{}.png\" /><h1>{}时刻回放图像：</h1><img src=\"{}\" />",time.to_string(), path, time.to_string(),time.to_string(),img2_path).as_bytes())
         .expect("Failed to write HTML to file");
-        // html_file
-        // .write_all(format!("<h1>{}时刻回放图像：</h1><img src=\"{}\" />",time.to_string(),img2_path).as_bytes())
-        // .expect("Failed to write HTML to file");
-
         Command::new("tesseract")
             .current_dir(format!("{}", path))
             .arg(format!("{}_playback.png", time.to_string()))
@@ -97,8 +86,6 @@ pub mod screen {
         html_file
         .write_all(format!("<h1>{}时刻图像相似对比度：{:?}",time.to_string(),result.score).as_bytes())
         .expect("Failed to write HTML to file");
-
-        // 打开提取文字文件
         let text1 = std::fs::read_to_string(&format!("{}/textshot_{}.txt", path, time.to_string()))
             .expect("无法读取文件1的内容");
 
@@ -188,10 +175,6 @@ pub mod screen {
         let client = Client::new();
         let appid = "20231209001905731";
         let appkey = "7aTtCh0dXiKXwFLcyO0n";
-        // let from_lang = "en";
-        // let to_lang = "zh";
-        // let query = "Nankai university college of software";
-
         let salt = rand::random::<u32>();
         let sign_string = format!("{}{}{}{}", appid, query, salt, appkey);
         println!("{}", sign_string);
