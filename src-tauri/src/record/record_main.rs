@@ -170,7 +170,7 @@ pub mod record_main {
                 {
                     save_file.write_all(output.as_bytes()).unwrap();
                 }
-                sleep(Duration::from_millis(175));
+                sleep(Duration::from_millis(300));
                 continue;
             } else if keys.len() == 0 {
                 continue;
