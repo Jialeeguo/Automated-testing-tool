@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // @ts-ignore
 import { Editor as MonacoTreeEditor, useMessage, useHotkey, useMonaco, type Files } from '~lib'
-import { ComputedRef, onMounted, ref } from 'vue'
+import { ComputedRef, onMounted, onUnmounted,ref } from 'vue'
 import * as monaco from 'monaco-editor'
 // @ts-ignore
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
@@ -14,6 +14,8 @@ import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
 // @ts-ignore
 import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
 import * as server from './mock-server'
+import { listen } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/tauri';
 import {
   MouseStatus,
   WheelStatus,
@@ -21,9 +23,21 @@ import {
   MessageType,
   InputEventType,
 } from "../common/Constans";
+import { Editor } from 'monaco-tree-editor'
 
 let remoteDesktopDpi: Record<string, any>;
   let dc: RTCDataChannel;
+
+const recording = ref(false);
+const pause = ref(false);
+const pause1 = ref(true);
+const startTime = ref<Date | null>(null);
+const isRecording = ref(false);
+const elapsedTime = ref(0);
+const recordstart = ref(true); // 假设初始值为 true
+const logs = ref('');
+const log = ref('');
+const recordStateChangeTime = ref<Date | null>(null);
 // ================ 初始化 init monaco-tree-editor ================
 window.MonacoEnvironment = {
   getWorker: function (_moduleId, label: string) {
@@ -41,14 +55,22 @@ window.MonacoEnvironment = {
   globalAPI: true,
 }
 let monacoStore
-// mock delay to test robustness
 server.delay().then(() => {
   monacoStore = useMonaco(monaco)
 })
 
 // ================ 推送消息 push message ================
 const messageStore = useMessage()
+const handleKeyDown = (event:KeyboardEvent) => {
+  console.log("ss");
+  if (event.key === 'F1') {
+    event.preventDefault(); 
+    startRecord(); 
+  }
+};
 onMounted(() => {
+  console.log("Component mounted, adding event listener.");
+  window.addEventListener("keydown", handleKeyDown);
   const id = messageStore.info({
     content: 'testing..',
     loading: true,
@@ -62,16 +84,72 @@ onMounted(() => {
       textTip: 'testing successed!',
     })
   }, 5000)
+  const cleanupListeners = Promise.all([
+    // listen('trans', (event) => startRecord()),
+    listen('running', (event) => stopRecord()),
+    listen('screen', (event) => startScreenshot()),
+    listen('opening', (event) => recordWindow()),
+    listen('run', (event) => playBack()),
+    listen('press-listen-keyboard', (event) => {
+      console.log("press-listen-keyboard");
+    }),
+  ]).then(unlistenFns => () => unlistenFns.forEach(unlisten => unlisten()));
 })
-
+onUnmounted(async () => {
+  window.removeEventListener("keydown", handleKeyDown);
+  });
 // ================ 快捷键 hotkey ==================
 const hotkeyStore = useHotkey()
 hotkeyStore.listen('root', (event: KeyboardEvent) => {})
-hotkeyStore.listen('editor', (event: KeyboardEvent) => {
-  if (event.ctrlKey && !event.shiftKey && !event.altKey && event.key === 's') {
-    // do something...
+hotkeyStore.listen('tran', (event: KeyboardEvent) => {
+  if (event.key === "F1") {
+    event.preventDefault(); 
+    startRecord(); 
   }
 })
+const startRecord = async () => {
+  startTime.value = new Date();
+  isRecording.value = true;
+  elapsedTime.value = 0;
+  if (!recording.value) {
+    log.value = '';
+  }
+  recordstart.value = !recordstart.value;
+  recording.value = !recording.value;
+  if (recording.value) {
+    logs.value = '';
+    if (!recordStateChangeTime.value) {
+      recordStateChangeTime.value = new Date();
+    }
+    const currentTime = new Date().toLocaleTimeString();
+    log.value += `${'录制已开始'} - [${currentTime}]\n`;
+    await invoke('start_record', { recordstart: recordstart.value });
+    console.log(recording.value + 'ss');
+  } else {
+    console.log(recording.value + '是');
+    // const currentTime = new Date().toLocaleTimeString();
+    // const timeElapsed = new Date() - recordStateChangeTime.value;
+    // log.value += `本次录制时长 ${timeElapsed} 毫秒\n`;
+    // log.value += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]\n`;
+    recordStateChangeTime.value = null;
+  }
+};
+
+const stopRecord = async () => {
+
+};
+const startScreenshot = async () => {
+  // 定义 startScreenshot 函数逻辑...
+};
+
+const recordWindow = async () => {
+  // 定义 recordWindow 函数逻辑...
+};
+
+const playBack = async () => {
+  // 定义 playBack 函数逻辑...
+};
+
 
 // ================ 加载文件 load files ================
 const files = ref<Files>()
@@ -291,6 +369,7 @@ const mouseType = (mouseStatus: MouseStatus, button: number) => {
 
   return type;
 };
+
 
 </script>
 

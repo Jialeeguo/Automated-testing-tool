@@ -229,10 +229,10 @@ export default {
         await invoke('start_record', { recordstart: this.recordstart });
       } else {
         console.log(this.recording + '是');
-        const currentTime = new Date().toLocaleTimeString();
-        const elapsedTime = new Date() - this.recordStateChangeTime;
-        this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
-        this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]\n`;
+        // const currentTime = new Date().toLocaleTimeString();
+        // const elapsedTime = new Date() - this.recordStateChangeTime;
+        // this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
+        // this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]\n`;
         this.recordStateChangeTime = null;
       }
     },
@@ -471,7 +471,7 @@ export default {
         const selectedValue = this.selectedFunctionKey10;
         if (event.key === selectedValue) {
           event.preventDefault();
-          this.startRecord();
+          // this.startRecord();
           this.$nextTick(() => {
             const textarea = document.getElementById('steps');
             const currentTime = new Date().toLocaleTimeString();
@@ -503,7 +503,20 @@ export default {
           this.pause1 = !this.pause1;
         }
       }
+      if (event.ctrlKey && event.key === 'o') {
+        event.preventDefault(); 
+        this.recordWindow();
+      }
 
+      if (event.ctrlKey &&event.key === 'q') {
+        event.preventDefault();
+        this.startRecord();
+      }
+      if (event.ctrlKey &&event.key === 'w') {
+        event.preventDefault(); 
+        this.stopRecord();
+      }
+      
       //回放下拉框监听
       if (!this.recording) {
         const selectedValue = this.selectedFunctionKey5;
@@ -530,9 +543,9 @@ export default {
   mounted() {
     // invoke('close_splashscreen');
     window.addEventListener("keydown", this.handleKeyDown);
-    listen('tran', (event) => {
-      this.startRecord();
-    });
+    // listen('tran', (event) => {
+    //   this.startRecord();
+    // });
     listen('screen', (event) => {
       this.startScreenshot();
     });
