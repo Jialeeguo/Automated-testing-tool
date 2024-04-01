@@ -316,24 +316,25 @@ export default {
         });
       }
     },
+    //1.0版本中选择文件夹的代码，已移用到recordWindow()。
 
-    async selectPlaybackFile() {
-      //选择回放文件夹
-      this.back1 = true;
-      const selected = await open({
-        directory: true,
-        multiple: false,
-        defaultPath: await appConfigDir(),
-      });
-      if (Array.isArray(selected)) {
-      } else if (selected === null) {
-      } else {
-      }
-      this.selectedFileName = selected;
-      //获取文件路径的最后一个文件名，用来xhr.open(点击哪个就放哪个)
-      const fullPath = selected;
-      this.filename = fullPath.replace(/^.*[\\\/]/, '');
-    },
+    // async selectPlaybackFile() {
+    //   //选择回放文件夹
+    //   this.back1 = true;
+    //   const selected = await open({
+    //     directory: true,
+    //     multiple: false,
+    //     defaultPath: await appConfigDir(),
+    //   });
+    //   if (Array.isArray(selected)) {
+    //   } else if (selected === null) {
+    //   } else {
+    //   }
+    //   this.selectedFileName = selected;
+    //   //获取文件路径的最后一个文件名，用来xhr.open(点击哪个就放哪个)
+    //   const fullPath = selected;
+    //   this.filename = fullPath.replace(/^.*[\\\/]/, '');
+    // },
 
 
     playBack() {
@@ -429,35 +430,37 @@ export default {
       resultXhr.send(null);
     },
 
-    recordWindow() {
-      //脚本编辑窗口
-      if (this.back1) {
-        console.log("record");
-        const filePath = this.selectedFileName;
-        console.log(filePath);
-        invoke('read_a_record', { filePath })
-          .then((result) => {
-            const promiseResult = result;
-            const resultString = JSON.stringify(promiseResult);
-            const resultEncoded = encodeURIComponent(resultString);
-            const webview = new WebviewWindow('theUniqueLabel', {
-              url: `script_edit.html?result=${resultEncoded}&filePath=${filePath}`, // 将结果作为查询参数传递
-            });
-            webview.once('tauri://created', function () {
-
-            });
-
-            webview.once('tauri://error', function (e) {
-
-            });
-          })
-          .catch((error) => {
-            console.error('An error occurred:', error);
+    async recordWindow() {
+      // 选择回放文件夹
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        defaultPath: await appConfigDir(),
+      });
+      const filePath = selected;
+      console.log(filePath);
+      this.selectedFileName = filePath;
+      this.filename = filePath.replace(/^.*[\\\/]/, '');
+      // 调用后端 `read_a_record` 命令，传递文件路径
+      invoke('read_a_record', { filePath })
+        .then((result) => {
+          const promiseResult = result;
+          const resultString = JSON.stringify(promiseResult);
+          const resultEncoded = encodeURIComponent(resultString);
+          const webview = new WebviewWindow('theUniqueLabel', {
+            url: `script_edit.html?result=${resultEncoded}&filePath=${filePath}`, // 将结果作为查询参数传递
           });
-      } else {
-        const currentTime = new Date().toLocaleTimeString();
-        this.log += `${'没有选择要编辑的脚本，请选择文件夹'} - [${currentTime}]\n`;
-      }
+          webview.once('tauri://created', function () {
+
+          });
+
+          webview.once('tauri://error', function (e) {
+
+          });
+        })
+        .catch((error) => {
+          console.error('An error occurred:', error);
+        });
     },
     handleKeyDown(event) {
       //监听各种
@@ -510,7 +513,7 @@ export default {
         } else {
           if (this.recording) {
             const currentTime = new Date().toLocaleTimeString();
-            this.log += `${'正在录制中，请关闭录制并选择文件夹进行回放'} - [${currentTime}]\n`;
+            this.log += `${'正在录制中，请关                                                                                闭录制并选择文件夹进行回放'} - [${currentTime}]\n`;
           }
         }
       }
@@ -530,15 +533,14 @@ export default {
     listen('tran', (event) => {
       this.startRecord();
     });
-    listen('event-name', (event) => {
-
-      const currentTime = new Date().toLocaleTimeString();
-      this.log += `${"提取文字执行成功！请继续操作。"} - [${currentTime}]\n`;
-      console.log("你好");
-
+    listen('screen', (event) => {
+      this.startScreenshot();
     });
-    listen('script', (event) => {
+    listen('opening', (event) => {
       this.recordWindow();
+    });
+    listen('run', (event) => {
+      this.playBack();
     });
     listen('press-listen-keyboard', (event) => {
 

@@ -126,10 +126,11 @@ fn main() {
                     window.emit("opening", Payload { message: "Tauri is awesome!".into() })
                         .expect("Failed to emit event");
             }
-            "save_script" => {
-                // tauri::async_runtime::spawn(async {
-                //     script_write_back(true).await;
-                // });
+            //运行脚本
+            "run_script" => {
+                let window = event.window();
+                window.emit("run", Payload { message: "Tauri is awesome!".into() })
+                    .expect("Failed to emit event");
             }
             "auto" => {
                 // tauri::async_runtime::spawn(async {
