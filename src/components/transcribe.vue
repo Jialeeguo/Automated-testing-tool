@@ -141,7 +141,7 @@
   </div>
 </template>
 
-<script >
+<script>
 import { ref, reactive, onBeforeMount } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 import { WebviewWindow } from '@tauri-apps/api/window'
@@ -188,25 +188,25 @@ export default {
     };
   },
   methods: {
-    async goToIde (){
+    async goToIde() {
 
-  // Create a unique label for each webview
+      // Create a unique label for each webview
 
-  const webview = new WebviewWindow('uniqueLabel', {
-    url: '#/ide',
-  });
+      const webview = new WebviewWindow('uniqueLabel', {
+        url: '#/ide',
+      });
 
-  webview.once('tauri://created', function () {
-    // Webview created successfully
-  });
+      webview.once('tauri://created', function () {
+        // Webview created successfully
+      });
 
-  webview.once('tauri://error', function (e) {
-    // An error occurred during webview window creation
-    console.error('Webview error:', e);
-  });
+      webview.once('tauri://error', function (e) {
+        // An error occurred during webview window creation
+        console.error('Webview error:', e);
+      });
 
- 
-},
+
+    },
 
     async startRecord() {
       // 开始录制
@@ -525,9 +525,11 @@ export default {
   },
 
   mounted() {
-    invoke('close_splashscreen');
+    // invoke('close_splashscreen');
     window.addEventListener("keydown", this.handleKeyDown);
-
+    listen('tran', (event) => {
+      this.startRecord();
+    });
     listen('event-name', (event) => {
 
       const currentTime = new Date().toLocaleTimeString();
@@ -535,7 +537,9 @@ export default {
       console.log("你好");
 
     });
-
+    listen('script', (event) => {
+      this.recordWindow();
+    });
     listen('press-listen-keyboard', (event) => {
 
       console.log("press-listen-keyboard");

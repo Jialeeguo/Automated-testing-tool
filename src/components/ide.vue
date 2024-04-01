@@ -319,12 +319,11 @@ const mouseType = (mouseStatus: MouseStatus, button: number) => {
   >
 </MonacoTreeEditor>
 
-/*没改好的video和button */
-<!-- <video ref="desktop" width=640 height=480   class="resizable-video" style="background-color: black;" 
+<video ref="desktop" width=640 height=480   class="resizable-video" style="background-color: black;" 
 @mousedown="mouseDown($event)" @mouseup="mouseUp($event)"
     @mousemove="mouseMove($event)" @wheel="wheel($event)" @contextmenu.prevent="rightClick($event)" autoplay></video>
 
-<button @click="startScreenSharing">共享</button> -->
+<button @click="startScreenSharing">共享</button>
 
 </template>
 

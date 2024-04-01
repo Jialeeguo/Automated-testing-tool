@@ -73,16 +73,10 @@ lazy_static! {
 // }
 #[derive(Clone, serde::Serialize)]
 struct Payload {
-  message: String,
+    message: String,
 }
 
 // init a background process on the command, and emit periodic events only to the window that used the command
-#[tauri::command]
-fn init_process(window: Window) {
-  std::thread::spawn(move || {
-      window.emit("event-name", Payload { message: "Tauri is awesome!".into() }).unwrap()
-  });
-}
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -99,39 +93,38 @@ fn main() {
             check_file_exists,
             dir_confirm,
             return_record_result,
-            init_process
         ])
         .menu(menu::get_main_menu())
         .on_menu_event(|event| match event.menu_item_id() {
-//录制
+            //录制
             "transcribe" => {
-                tauri::async_runtime::spawn(async {
-                start_record().await;
-                });
+                let window = event.window();
+                window.emit("tran", Payload { message: "Tauri is awesome!".into() })
+                    .expect("Failed to emit event");
             }
-//截图
+            //截图
             "screen_shot" => {
-                tauri::async_runtime::spawn(async {
-                    start_screen(true).await;
-                });
+                let window = event.window();
+                    window.emit("screen", Payload { message: "Tauri is awesome!".into() })
+                        .expect("Failed to emit event");
             }
             //暂停录制
             "end_transcribe" => {
-                tauri::async_runtime::spawn(async {
-                    start_screen(true).await;
-                });
+                let window = event.window();
+                    window.emit("end", Payload { message: "Tauri is awesome!".into() })
+                        .expect("Failed to emit event");
             }
             //终止录制
             "running_transcribe" => {
-                tauri::async_runtime::spawn(async {
-                    start_screen(true).await;
-                });
+                let window = event.window();
+                window.emit("running", Payload { message: "Tauri is awesome!".into() })
+                    .expect("Failed to emit event");
             }
             //打开脚本
             "opening_script" => {
-                tauri::async_runtime::spawn(async {
-                    // read_a_record().await;
-                });
+                let window = event.window();
+                    window.emit("opening", Payload { message: "Tauri is awesome!".into() })
+                        .expect("Failed to emit event");
             }
             "save_script" => {
                 // tauri::async_runtime::spawn(async {
