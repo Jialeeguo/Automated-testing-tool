@@ -5,6 +5,7 @@
 
 use std::{sync::Mutex, time::Instant};
 
+mod menu;
 mod playback;
 mod record;
 // use std::thread;
@@ -21,7 +22,7 @@ use record::record_main::record_main::start_record;
 use record::record_main::record_main::start_screen;
 use record::screen_shot::screen::screenshot;
 use std::sync::{atomic::AtomicBool, Arc};
-use tauri::Manager;
+use tauri::{Manager, Window};
 // use record::record_main::record_main::stop_record;
 use playback::playback_main::playback_main::check_file_exists;
 use playback::playback_main::playback_main::dir_confirm;
@@ -62,43 +63,27 @@ lazy_static! {
     //暂停时间记录
     static ref PAUSE_TIME: Mutex<u128> = Mutex::new(0);
 }
-#[tauri::command]
-//开屏界面
-async fn close_splashscreen(window: tauri::Window) {
-    if let Some(splashscreen) = window.get_window("splashscreen") {
-        splashscreen.close().unwrap();
-    }
-    window.get_window("main").unwrap().show().unwrap();
+// #[tauri::command]
+// //开屏界面
+// async fn close_splashscreen(window: tauri::Window) {
+//     if let Some(splashscreen) = window.get_window("splashscreen") {
+//         splashscreen.close().unwrap();
+//     }
+//     window.get_window("main").unwrap().show().unwrap();
+// }
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+  message: String,
 }
 
-
-
-fn a() {
-    println!("1");
+// init a background process on the command, and emit periodic events only to the window that used the command
+#[tauri::command]
+fn init_process(window: Window) {
+  std::thread::spawn(move || {
+      window.emit("event-name", Payload { message: "Tauri is awesome!".into() }).unwrap()
+  });
 }
 fn main() {
-    let begin_transcribe = CustomMenuItem::new("transcribe".to_string(), "开始/终止录制(F1)");
-    let screen_shot: CustomMenuItem = CustomMenuItem::new("screen_shot".to_string(), "截图(F2)");
-    let end_transcribe = CustomMenuItem::new("end_transcribe".to_string(), "暂停/恢复录制(F4)");
-    let running_transcribe: CustomMenuItem =
-        CustomMenuItem::new("running_transcribe".to_string(), "运行脚本(F6)");
-    let opening_script: CustomMenuItem =
-        CustomMenuItem::new("opening_script".to_string(), "打开脚本(ctrl+O)");
-    let save_script: CustomMenuItem =
-        CustomMenuItem::new("save_script".to_string(), "保存脚本(ctrl+S)");
-    let script = Submenu::new(
-        "文件",
-        Menu::new().add_item(opening_script).add_item(save_script),
-    );
-    let running = Submenu::new(
-        "运行",
-        Menu::new()
-            .add_item(begin_transcribe)
-            .add_item(screen_shot)
-            .add_item(end_transcribe)
-            .add_item(running_transcribe),
-    );
-    let menu = Menu::new().add_submenu(script).add_submenu(running);
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             start_record,
@@ -109,23 +94,89 @@ fn main() {
             pause_record,
             resume_record,
             playback_confirm,
-            close_splashscreen,
             read_a_record,
             script_write_back,
             check_file_exists,
             dir_confirm,
-            return_record_result
+            return_record_result,
+            init_process
         ])
-        .menu(menu)
+        .menu(menu::get_main_menu())
         .on_menu_event(|event| match event.menu_item_id() {
+//录制
             "transcribe" => {
-                //没进方法，之后再改     
-                a();
-                start_record();
+                tauri::async_runtime::spawn(async {
+                start_record().await;
+                });
             }
+//截图
             "screen_shot" => {
-                // start_screen
-                
+                tauri::async_runtime::spawn(async {
+                    start_screen(true).await;
+                });
+            }
+            //暂停录制
+            "end_transcribe" => {
+                tauri::async_runtime::spawn(async {
+                    start_screen(true).await;
+                });
+            }
+            //终止录制
+            "running_transcribe" => {
+                tauri::async_runtime::spawn(async {
+                    start_screen(true).await;
+                });
+            }
+            //打开脚本
+            "opening_script" => {
+                tauri::async_runtime::spawn(async {
+                    // read_a_record().await;
+                });
+            }
+            "save_script" => {
+                // tauri::async_runtime::spawn(async {
+                //     script_write_back(true).await;
+                // });
+            }
+            "auto" => {
+                // tauri::async_runtime::spawn(async {
+                //     script_write_back(true).await;
+                // });
+            }
+            "eng" => {
+                // tauri::async_runtime::spawn(async {
+                //     script_write_back(true).await;
+                // });
+            }
+            "spa" => {
+                // tauri::async_runtime::spawn(async {
+                //     script_write_back(true).await;
+                // });
+            }
+            "ara" => {
+                // tauri::async_runtime::spawn(async {
+                //     script_write_back(true).await;
+                // });
+            }
+            "por" => {
+                // tauri::async_runtime::spawn(async {
+                //     script_write_back(true).await;
+                // });
+            }
+            "rus" => {
+                // tauri::async_runtime::spawn(async {
+                //     script_write_back(true).await;
+                // });
+            }
+            "fre" => {
+                // tauri::async_runtime::spawn(async {
+                //     script_write_back(true).await;
+                // });
+            }
+            "chi" => {
+                // tauri::async_runtime::spawn(async {
+                //     script_write_back(true).await;
+                // });
             }
             _ => {}
         })
