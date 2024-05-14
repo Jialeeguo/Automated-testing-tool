@@ -4,10 +4,12 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
 use std::{sync::Mutex, time::Instant};
-
+mod command; 
 mod menu;
 mod playback;
 mod record;
+  use enigo::Key;
+  use std::collections::HashMap;
 // use std::thread;
 // use std::process;
 // use std::time::Duration;
@@ -27,6 +29,8 @@ use tauri::{Manager, Window};
 use playback::playback_main::playback_main::check_file_exists;
 use playback::playback_main::playback_main::dir_confirm;
 use playback::playback_main::playback_main::return_record_result;
+use command::key_event;
+use command::mouse_event;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 #[macro_use]
 extern crate lazy_static;
@@ -62,6 +66,15 @@ lazy_static! {
     static ref PAUSE_FLAG: Mutex<bool> = Mutex::new(false);
     //暂停时间记录
     static ref PAUSE_TIME: Mutex<u128> = Mutex::new(0);
+    // 创建静态的 KEYMAP 映射，将字符串键映射到 enigo::Key 枚举
+    static ref KEYMAP: HashMap<&'static str, Key> = {
+        let mut m = HashMap::new();
+        m.insert("Control", Key::Control);
+        m.insert("Alt", Key::Alt);
+        // 添加更多键映射...
+  
+        m
+    };
 }
 // #[tauri::command]
 // //开屏界面
@@ -93,6 +106,8 @@ fn main() {
             check_file_exists,
             dir_confirm,
             return_record_result,
+            key_event,
+            mouse_event,
         ])
         .menu(menu::get_main_menu())
         .on_menu_event(|event| match event.menu_item_id() {

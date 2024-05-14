@@ -13,8 +13,8 @@
               <option value="请选择回放文件夹">{{ selectedFileName }}</option>
             </select>
             <button @click="selectPlaybackFile"
-              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line
-              -height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(226, 217, 217); ">...</button>
+              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;
+              line-height:1px; border:1px; border-style: solid; border-radius:3px; border-color: rgb(226, 217, 217); ">...</button>
             <div style="margin: auto;"></div>
             <!--The drop-down box corresponds-->
             <form action="#">
@@ -504,19 +504,19 @@ export default {
         }
       }
       if (event.ctrlKey && event.key === 'o') {
-        event.preventDefault(); 
+        event.preventDefault();
         this.recordWindow();
       }
 
-      if (event.ctrlKey &&event.key === 'q') {
+      if (event.ctrlKey && event.key === 'q') {
         event.preventDefault();
         this.startRecord();
       }
-      if (event.ctrlKey &&event.key === 'w') {
-        event.preventDefault(); 
+      if (event.ctrlKey && event.key === 'w') {
+        event.preventDefault();
         this.stopRecord();
       }
-      
+
       //回放下拉框监听
       if (!this.recording) {
         const selectedValue = this.selectedFunctionKey5;

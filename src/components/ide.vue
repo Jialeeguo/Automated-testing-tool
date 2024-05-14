@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // @ts-ignore
 import { Editor as MonacoTreeEditor, useMessage, useHotkey, useMonaco, type Files } from '~lib'
-import { ComputedRef, onMounted, onUnmounted,ref } from 'vue'
+import { ComputedRef, onMounted, onUnmounted, ref,onBeforeMount,reactive } from 'vue'
 import * as monaco from 'monaco-editor'
 // @ts-ignore
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
@@ -16,18 +16,33 @@ import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
 import * as server from './mock-server'
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/tauri';
+import { handleKeyboardEvent, handleMouseEvent } from "../common/InputEvent";
+// import 'video.js/dist/video-js.css';
+// import videojs from 'video.js';
 import {
   MouseStatus,
   WheelStatus,
   KeyboardStatus,
   MessageType,
   InputEventType,
-} from "../common/Constans";
+} from "../Constant";
 import { Editor } from 'monaco-tree-editor'
-
-let remoteDesktopDpi: Record<string, any>;
-  let dc: RTCDataChannel;
-
+const data = reactive({
+  account: {
+    id: "00:FF:59:CB:C2:BE",
+    password: "1",
+  },
+  receiverAccount: {
+    id: "00:FF:59:CB:C2:BE",
+    password: "1",
+  },
+  isShowRemoteDesktop: false,
+});
+let dc: RTCDataChannel;
+let pc: RTCPeerConnection;
+// WebSocket 连接和RTC其他变量
+let ws: WebSocket;
+let webcamStream: MediaStream;
 const recording = ref(false);
 const pause = ref(false);
 const pause1 = ref(true);
@@ -61,12 +76,165 @@ server.delay().then(() => {
 
 // ================ 推送消息 push message ================
 const messageStore = useMessage()
-const handleKeyDown = (event:KeyboardEvent) => {
+const handleKeyDown = (event: KeyboardEvent) => {
   console.log("ss");
   if (event.key === 'F1') {
-    event.preventDefault(); 
-    startRecord(); 
+    event.preventDefault();
+    startRecord();
   }
+};
+const initWebSocket = () => {
+  console.log("初始化initWebSocket");
+  ws = new WebSocket(`ws://10.134.169.24:8081/conn/${data.account.id}`);
+ 
+  ws.onopen = (e: Event) => {
+    // 向服务器发送心跳消息
+    setInterval(() => {
+      sendToServer({
+        msg_type: "heartbeat",
+        receiver: "",
+        sender: "",
+        msg: "",
+      });
+    }, 1000 * 60);
+  };
+  ws.onmessage = async (e: MessageEvent) => {
+    const msg: Record<string, any> = JSON.parse(e.data);
+    switch (msg.msg_type) {
+      case MessageType.VIDEO_OFFER: // 视频通话邀请
+        handleVideoOfferMsg(msg);
+        break;
+      case MessageType.VIDEO_ANSWER: // 对方已接受邀请
+        handleVideoAnswerMsg(msg);
+        break;
+      case MessageType.NEW_ICE_CANDIDATE: // 收到新的 ICE 候选项
+        handleNewICECandidateMsg(msg);
+        break;
+      case MessageType.REMOTE_DESKTOP:
+        handleRemoteDesktopRequest(msg);
+        console.log("收到了handle消息");
+        break;
+      case MessageType.CLOSE_REMOTE_DESKTOP:
+        close();
+        break;
+    }
+  };
+  ws.onerror = (e: Event) => {
+    console.log("WebSocket 连接错误:", e);
+  };
+};
+const handleVideoOfferMsg = async (msg: Record<string, any>) => {
+  data.receiverAccount.id = msg.sender;
+  await initRTCPeerConnection();
+  const desc = new RTCSessionDescription(JSON.parse(msg.msg));
+  await pc.setRemoteDescription(desc);
+  await pc.setLocalDescription(await pc.createAnswer());
+  sendToServer({
+    msg_type: MessageType.VIDEO_ANSWER,
+    receiver: data.receiverAccount.id,
+    msg: JSON.stringify(pc.localDescription),
+    sender: data.account.id,
+  });
+};
+// 处理视频回应消息
+const handleVideoAnswerMsg = async (msg: Record<string, any>) => {
+  const desc = new RTCSessionDescription(JSON.parse(msg.msg));
+  await pc.setRemoteDescription(desc).catch(reportError);
+};
+// 处理新的 ICE 候选项消息
+const handleNewICECandidateMsg = async (msg: Record<string, any>) => {
+  const candidate = new RTCIceCandidate(JSON.parse(msg.msg));
+  try {
+    await pc.addIceCandidate(candidate);
+  } catch (err) {
+    reportError(err);
+  }
+};
+// 处理远程桌面请求消息
+const handleRemoteDesktopRequest = async (msg: Record<string, any>) => {
+  if (msg.msg != data.account.password) {
+    console.log("密码错误！");
+    return;
+  }
+  data.receiverAccount.id = msg.sender;
+  await initRTCPeerConnection();
+  initRTCDataChannel();
+  // 获取本地桌面流
+  webcamStream = await navigator.mediaDevices.getDisplayMedia({
+    video: true,
+    audio: false,
+  });
+  webcamStream.getTracks().forEach((track: MediaStreamTrack) =>
+    pc.addTrack(track, webcamStream)
+  );
+  sendOffer();
+};
+const initRTCPeerConnection = () => {
+  const iceServer: object = {
+    iceServers: [
+      {
+        url: "stun:stun.l.google.com:19302",
+      },
+      {
+        url: "turn:numb.viagenie.ca",
+        username: "webrtc@live.com",
+        credential: "muazkh",
+      },
+    ],
+  };
+  pc = new RTCPeerConnection(iceServer);
+  pc.onicecandidate = handleICECandidateEvent;
+  pc.oniceconnectionstatechange = handleICEConnectionStateChangeEvent;
+  pc.onicegatheringstatechange = handleICEGatheringStateChangeEvent;
+  pc.onsignalingstatechange = handleSignalingStateChangeEvent;
+  pc.ontrack = handleTrackEvent;
+  pc.ondatachannel = handleDataChannel;
+  console.log("初始化pc通道成功");
+};
+// 处理 ICE 候选项事件
+const handleICECandidateEvent = (event: RTCPeerConnectionIceEvent) => {
+  if (event.candidate) {
+    sendToServer({
+      msg_type: MessageType.NEW_ICE_CANDIDATE,
+      receiver: data.receiverAccount.id,
+      msg: JSON.stringify(event.candidate),
+      sender: data.account.id,
+    });
+  }
+};
+// 处理 ICE 连接状态变化事件
+const handleICEConnectionStateChangeEvent = (event: Event) => {
+  console.log("*** ICE 连接状态变为" + pc.iceConnectionState);
+};
+// 处理 ICE 聚集状态变化事件
+const handleICEGatheringStateChangeEvent = (event: Event) => {
+  console.log("*** ICE 聚集状态变为" + pc.iceGatheringState);
+};
+// 处理 WebRTC 信令状态变化事件
+const handleSignalingStateChangeEvent = (event: Event) => {
+  console.log("*** WebRTC 信令状态变为: " + pc.signalingState);
+};
+// 获取数据流事件处理
+const handleTrackEvent = (event: RTCTrackEvent) => {
+  desktop.value!.srcObject = event.streams[0];
+  document.onkeydown = (e: KeyboardEvent) => {
+    sendToClient({
+      type: InputEventType.KEY_EVENT,
+      data: {
+        eventType: KeyboardStatus.MOUSE_DOWN,
+        key: e.key,
+      },
+    });
+  };
+  document.onkeyup = (e: KeyboardEvent) => {
+    sendToClient({
+      type: InputEventType.KEY_EVENT,
+      data: {
+        eventType: KeyboardStatus.MOUSE_UP,
+        key: e.key,
+      },
+    });
+  };
 };
 onMounted(() => {
   console.log("Component mounted, adding event listener.");
@@ -97,14 +265,14 @@ onMounted(() => {
 })
 onUnmounted(async () => {
   window.removeEventListener("keydown", handleKeyDown);
-  });
+});
 // ================ 快捷键 hotkey ==================
 const hotkeyStore = useHotkey()
-hotkeyStore.listen('root', (event: KeyboardEvent) => {})
+hotkeyStore.listen('root', (event: KeyboardEvent) => { })
 hotkeyStore.listen('tran', (event: KeyboardEvent) => {
   if (event.key === "F1") {
-    event.preventDefault(); 
-    startRecord(); 
+    event.preventDefault();
+    startRecord();
   }
 })
 const startRecord = async () => {
@@ -150,6 +318,94 @@ const playBack = async () => {
   // 定义 playBack 函数逻辑...
 };
 
+const handleDataChannel = (e: RTCDataChannelEvent) => {
+  dc = e.channel;
+  dc.onopen = (e: Event) => {
+    console.log("数据通道已打开");
+  };
+  dc.onmessage = (event: MessageEvent) => {
+    console.log("收到数据通道消息:", event.data);
+  };
+  dc.onclose = (e: Event) => {
+    console.log("数据通道已关闭");
+  };
+  console.log("数据通道:", dc);
+};
+const initRTCDataChannel = () => {
+  dc = pc.createDataChannel("my channel", {
+    ordered: true,
+  });
+  dc.onopen = (e: Event) => {
+    console.log("数据通道已打开");
+    dc.send(
+      JSON.stringify({
+        width: window.screen.width * window.devicePixelRatio,
+        height: window.screen.height * window.devicePixelRatio,
+      })
+    );
+    console.log("数据通道:", dc);
+  };
+  dc.onmessage = (event: MessageEvent) => {
+    let msg: Record<string, any> = JSON.parse(event.data);
+    switch (msg.type) {
+      case InputEventType.MOUSE_EVENT:
+        handleMouseEvent(msg.data);
+        console.log("检测到鼠标");
+        break;
+      case InputEventType.KEY_EVENT:
+        handleKeyboardEvent(msg.data);
+        break;
+    }
+  };
+  dc.onclose = (e: Event) => {
+    console.log("数据通道已关闭");
+  };
+  console.log("数据通道:", dc);
+};
+const sendOffer = async () => {
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  sendToServer({
+    msg_type: MessageType.VIDEO_OFFER,
+    receiver: data.receiverAccount.id,
+    msg: JSON.stringify(pc.localDescription),
+    sender: data.account.id,
+  });
+};
+const remoteDesktop = async () => {
+
+  // 显示远程桌面面板
+  data.isShowRemoteDesktop = true;
+  //发给被远程者
+
+};
+// 关闭远程桌面
+const closeRemoteDesktop = async () => {
+  data.isShowRemoteDesktop = false;
+  close();
+  sendToServer({
+    msg_type: MessageType.CLOSE_REMOTE_DESKTOP,
+    receiver: data.receiverAccount.id,
+    msg: data.receiverAccount.password,
+    sender: data.account.id,
+  });
+};
+const close = () => {
+  if (desktop.value!.srcObject) {
+    const tracks = desktop.value!.srcObject as MediaStream;
+    tracks.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+    desktop.value!.srcObject = null;
+  } else {
+    webcamStream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+  }
+  // 关闭 Peer 连接
+  pc.close();
+};
+// 发送消息给服务器
+const sendToServer = (msg: Record<string, any>) => {
+  let msgJSON = JSON.stringify(msg);
+  ws.send(msgJSON);
+};
 
 // ================ 加载文件 load files ================
 const files = ref<Files>()
@@ -295,7 +551,12 @@ const startScreenSharing = async () => {
       video: true,
       audio: false,
     });
-
+    sendToServer({
+    msg_type: MessageType.REMOTE_DESKTOP,
+    receiver: data.receiverAccount.id,
+    msg: data.receiverAccount.password,
+    sender: data.account.id,
+  });
     // 将获取的媒体流设置到视频元素
     if (desktop.value) {
       desktop.value.srcObject = stream;
@@ -335,25 +596,28 @@ const rightClick = (e: MouseEvent) => {
 
 // 发送鼠标事件
 const sendMouseEvent = (x: number, y: number, eventType: string) => {
-  if (remoteDesktopDpi) {
-    let widthRatio = remoteDesktopDpi.width / desktop.value!.clientWidth;
-    let heightRatio = remoteDesktopDpi.height / desktop.value!.clientHeight;
-
-    let data = {
-      x: parseInt((x * widthRatio).toFixed(0)),
-      y: parseInt((y * heightRatio).toFixed(0)),
-      eventType: eventType,
-    };
-    sendToClient({
-      type: InputEventType.MOUSE_EVENT,
-      data: data,
-    });
-  }
+  // 直接使用原始坐标发送鼠标事件
+  let data = {
+    x: x,  // 使用视频显示元素上的直接坐标
+    y: y,
+    eventType: eventType,
+  };
+  sendToClient({
+    type: InputEventType.MOUSE_EVENT,
+    data: data,
+  });
 };
+
+
 const sendToClient = (msg: Record<string, any>) => {
   let msgJSON = JSON.stringify(msg);
-  dc.readyState == "open" && dc.send(msgJSON);
+  if (dc && dc.readyState == "open") {
+    dc.send(msgJSON);
+  } else {
+    console.error("RTCDataChannel is not initialized or not open.");
+  }
 };
+
 // 获取鼠标事件类型
 const mouseType = (mouseStatus: MouseStatus, button: number) => {
   let type = "";
@@ -369,48 +633,39 @@ const mouseType = (mouseStatus: MouseStatus, button: number) => {
 
   return type;
 };
+onBeforeMount(async () => {
 
+  initWebSocket();
+});
 
 </script>
 
 <template>
 
-  <MonacoTreeEditor
-    :font-size="16"
-    :files="files"
-    :sider-min-width="240"
-    filelist-title="源代码存储管理库"
-    language="en-US"
-    @reload="handleReload"
-    @new-file="handleNewFile"
-    @new-folder="handleNewFolder"
-    @save-file="handleSaveFile"
-    @delete-file="handleDeleteFile"
-    @delete-folder="handleDeleteFolder"
-    @rename-file="handleRename"
-    @rename-folder="handleRename"
-    :file-menu="fileMenu"
-    :folder-menu="folderMenu"
-    @contextmenu-select="handleContextMenuSelect"
-    :settings-menu="settingsMenu"
-    @drag-in-editor="handleDragInEditor"
-    ref="editorRef"
-  >
-</MonacoTreeEditor>
+  <MonacoTreeEditor :font-size="16" :files="files" :sider-min-width="240" filelist-title="源代码存储管理库" language="en-US"
+    @reload="handleReload" @new-file="handleNewFile" @new-folder="handleNewFolder" @save-file="handleSaveFile"
+    @delete-file="handleDeleteFile" @delete-folder="handleDeleteFolder" @rename-file="handleRename"
+    @rename-folder="handleRename" :file-menu="fileMenu" :folder-menu="folderMenu"
+    @contextmenu-select="handleContextMenuSelect" :settings-menu="settingsMenu" @drag-in-editor="handleDragInEditor"
+    ref="editorRef">
+  </MonacoTreeEditor>
 
-<video ref="desktop" width=640 height=480   class="resizable-video" style="background-color: black;" 
-@mousedown="mouseDown($event)" @mouseup="mouseUp($event)"
-    @mousemove="mouseMove($event)" @wheel="wheel($event)" @contextmenu.prevent="rightClick($event)" autoplay></video>
+  <video ref="desktop" width=640 height=480 controls class="resizable-video" style="background-color: black;"
+    @mousedown="mouseDown($event)" @mouseup="mouseUp($event)" @mousemove="mouseMove($event)" @wheel="wheel($event)"
+    @contextmenu.prevent="rightClick($event)" autoplay></video>
 
-<button @click="startScreenSharing">共享</button>
+  <button @click="startScreenSharing()">共享</button>
 
 </template>
 
 <style>
 /* 添加可拉伸样式类 */
 .resizable-video {
-  resize: both;  /* 允许水平和垂直拉伸 */
-  overflow: hidden;  /* 隐藏溢出部分 */
-  border: 1px solid #ccc;  /* 添加边框 */
+  resize: both;
+  /* 允许水平和垂直拉伸 */
+  overflow: hidden;
+  /* 隐藏溢出部分 */
+  border: 1px solid #ccc;
+  /* 添加边框 */
 }
 </style>
