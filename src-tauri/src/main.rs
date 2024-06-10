@@ -5,7 +5,6 @@
 
 use std::{sync::Mutex, time::Instant};
 
-mod menu;
 mod playback;
 mod record;
 // use std::thread;
@@ -22,7 +21,7 @@ use record::record_main::record_main::start_record;
 use record::record_main::record_main::start_screen;
 use record::screen_shot::screen::screenshot;
 use std::sync::{atomic::AtomicBool, Arc};
-use tauri::{Manager, Window};
+use tauri::Manager;
 // use record::record_main::record_main::stop_record;
 use playback::playback_main::playback_main::check_file_exists;
 use playback::playback_main::playback_main::dir_confirm;
@@ -72,13 +71,35 @@ async fn close_splashscreen(window: tauri::Window) {
     }
     window.get_window("main").unwrap().show().unwrap();
 }
-#[derive(Clone, serde::Serialize)]
-struct Payload {
-    message: String,
-}
 
-// init a background process on the command, and emit periodic events only to the window that used the command
+
+
+fn a() {
+    println!("1");
+}
 fn main() {
+    let begin_transcribe = CustomMenuItem::new("transcribe".to_string(), "开始/终止录制(F1)");
+    let screen_shot: CustomMenuItem = CustomMenuItem::new("screen_shot".to_string(), "截图(F2)");
+    let end_transcribe = CustomMenuItem::new("end_transcribe".to_string(), "暂停/恢复录制(F4)");
+    let running_transcribe: CustomMenuItem =
+        CustomMenuItem::new("running_transcribe".to_string(), "运行脚本(F6)");
+    let opening_script: CustomMenuItem =
+        CustomMenuItem::new("opening_script".to_string(), "打开脚本(ctrl+O)");
+    let save_script: CustomMenuItem =
+        CustomMenuItem::new("save_script".to_string(), "保存脚本(ctrl+S)");
+    let script = Submenu::new(
+        "文件",
+        Menu::new().add_item(opening_script).add_item(save_script),
+    );
+    let running = Submenu::new(
+        "运行",
+        Menu::new()
+            .add_item(begin_transcribe)
+            .add_item(screen_shot)
+            .add_item(end_transcribe)
+            .add_item(running_transcribe),
+    );
+    let menu = Menu::new().add_submenu(script).add_submenu(running);
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             start_record,
@@ -89,6 +110,7 @@ fn main() {
             pause_record,
             resume_record,
             playback_confirm,
+            close_splashscreen,
             read_a_record,
             script_write_back,
             check_file_exists,
@@ -96,83 +118,16 @@ fn main() {
             return_record_result,
             search_test_dir//遍历指定文件夹下所有文件
         ])
-        .menu(menu::get_main_menu())
+        .menu(menu)
         .on_menu_event(|event| match event.menu_item_id() {
-            //录制
             "transcribe" => {
-                let window = event.window();
-                window.emit("tran", Payload { message: "Tauri is awesome!".into() })
-                    .expect("Failed to emit event");
+                //没进方法，之后再改     
+                a();
+                start_record();
             }
-            //截图
             "screen_shot" => {
-                let window = event.window();
-                    window.emit("screen", Payload { message: "Tauri is awesome!".into() })
-                        .expect("Failed to emit event");
-            }
-            //暂停录制
-            "end_transcribe" => {
-                let window = event.window();
-                    window.emit("end", Payload { message: "Tauri is awesome!".into() })
-                        .expect("Failed to emit event");
-            }
-            //终止录制
-            "running_transcribe" => {
-                let window = event.window();
-                window.emit("running", Payload { message: "Tauri is awesome!".into() })
-                    .expect("Failed to emit event");
-            }
-            //打开脚本
-            "opening_script" => {
-                let window = event.window();
-                    window.emit("opening", Payload { message: "Tauri is awesome!".into() })
-                        .expect("Failed to emit event");
-            }
-            //运行脚本
-            "run_script" => {
-                let window = event.window();
-                window.emit("run", Payload { message: "Tauri is awesome!".into() })
-                    .expect("Failed to emit event");
-            }
-            "auto" => {
-                // tauri::async_runtime::spawn(async {
-                //     script_write_back(true).await;
-                // });
-            }
-            "eng" => {
-                // tauri::async_runtime::spawn(async {
-                //     script_write_back(true).await;
-                // });
-            }
-            "spa" => {
-                // tauri::async_runtime::spawn(async {
-                //     script_write_back(true).await;
-                // });
-            }
-            "ara" => {
-                // tauri::async_runtime::spawn(async {
-                //     script_write_back(true).await;
-                // });
-            }
-            "por" => {
-                // tauri::async_runtime::spawn(async {
-                //     script_write_back(true).await;
-                // });
-            }
-            "rus" => {
-                // tauri::async_runtime::spawn(async {
-                //     script_write_back(true).await;
-                // });
-            }
-            "fre" => {
-                // tauri::async_runtime::spawn(async {
-                //     script_write_back(true).await;
-                // });
-            }
-            "chi" => {
-                // tauri::async_runtime::spawn(async {
-                //     script_write_back(true).await;
-                // });
+                // start_screen
+                
             }
             _ => {}
         })
