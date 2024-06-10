@@ -1,11 +1,18 @@
 pub mod script_edit {
     use std::fs::{File, OpenOptions};
     use std::io::Write;
-    use std::io::{BufRead, BufReader};
+    use std::io::{BufRead, BufReader,};
+    use::std::path::Path;
 
     #[tauri::command]
-    pub fn read_a_record(file_path:String) -> Vec<Vec<String>> {
-        let file = File::open(format!("{}/record.txt",file_path)).expect("Error opening file");
+    pub fn read_a_record(file_path: String) -> Result<Vec<Vec<String>>, String> {
+        let path = Path::new(&file_path).join("record.txt");
+
+        // 尝试打开文件，如果失败则返回错误
+        let file = match File::open(&path) {
+            Ok(file) => file,
+            Err(_) => return Err(format!("文件不存在: {:?}", path.display())),
+        };
         let reader = BufReader::new(file);
         let mut script: Vec<Vec<String>> = Vec::new();
 
@@ -128,7 +135,8 @@ pub mod script_edit {
         }
 
         println!("{:?}", script);
-        script
+        
+    Ok(script)
     }
 
     #[tauri::command]

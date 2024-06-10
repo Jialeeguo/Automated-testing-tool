@@ -233,10 +233,10 @@ export default {
         await invoke('start_record', { recordstart: this.recordstart });
       } else {
         console.log(this.recording + '是');
-        const currentTime = new Date().toLocaleTimeString();
-        const elapsedTime = new Date() - this.recordStateChangeTime;
-        this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
-        this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]\n`;
+        // const currentTime = new Date().toLocaleTimeString();
+        // const elapsedTime = new Date() - this.recordStateChangeTime;
+        // this.log += `本次录制时长 ${elapsedTime} 毫秒\n`;
+        // this.log += `${'录制结束,生成脚本已保存到log文件夹下，下次录制时本次日志操作提示被清空！'} - [${currentTime}]\n`;
         this.recordStateChangeTime = null;
       }
     },
@@ -320,6 +320,7 @@ export default {
         });
       }
     },
+    //1.0版本中选择文件夹的代码，已移用到recordWindow()。
 
     //遍历文件夹函数 后续加一个从前端选择文件夹的功能
     async searchTestDir() {
@@ -494,35 +495,37 @@ export default {
       resultXhr.send(null);
     },
 
-    recordWindow() {
-      //脚本编辑窗口
-      if (this.back1) {
-        console.log("record");
-        const filePath = this.selectedFileName;
-        console.log(filePath);
-        invoke('read_a_record', { filePath })
-          .then((result) => {
-            const promiseResult = result;
-            const resultString = JSON.stringify(promiseResult);
-            const resultEncoded = encodeURIComponent(resultString);
-            const webview = new WebviewWindow('theUniqueLabel', {
-              url: `script_edit.html?result=${resultEncoded}&filePath=${filePath}`, // 将结果作为查询参数传递
-            });
-            webview.once('tauri://created', function () {
-
-            });
-
-            webview.once('tauri://error', function (e) {
-
-            });
-          })
-          .catch((error) => {
-            console.error('An error occurred:', error);
+    async recordWindow() {
+      // 选择回放文件夹
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        defaultPath: await appConfigDir(),
+      });
+      const filePath = selected;
+      console.log(filePath);
+      this.selectedFileName = filePath;
+      this.filename = filePath.replace(/^.*[\\\/]/, '');
+      // 调用后端 `read_a_record` 命令，传递文件路径
+      invoke('read_a_record', { filePath })
+        .then((result) => {
+          const promiseResult = result;
+          const resultString = JSON.stringify(promiseResult);
+          const resultEncoded = encodeURIComponent(resultString);
+          const webview = new WebviewWindow('theUniqueLabel', {
+            url: `script_edit.html?result=${resultEncoded}&filePath=${filePath}`, // 将结果作为查询参数传递
           });
-      } else {
-        const currentTime = new Date().toLocaleTimeString();
-        this.log += `${'没有选择要编辑的脚本，请选择文件夹'} - [${currentTime}]\n`;
-      }
+          webview.once('tauri://created', function () {
+
+          });
+
+          webview.once('tauri://error', function (e) {
+
+          });
+        })
+        .catch((error) => {
+          console.error('An error occurred:', error);
+        });
     },
     handleKeyDown(event) {
       //监听各种
@@ -533,7 +536,7 @@ export default {
         const selectedValue = this.selectedFunctionKey10;
         if (event.key === selectedValue) {
           event.preventDefault();
-          this.startRecord();
+          // this.startRecord();
           this.$nextTick(() => {
             const textarea = document.getElementById('steps');
             const currentTime = new Date().toLocaleTimeString();
@@ -565,7 +568,20 @@ export default {
           this.pause1 = !this.pause1;
         }
       }
+      if (event.ctrlKey && event.key === 'o') {
+        event.preventDefault(); 
+        this.recordWindow();
+      }
 
+      if (event.ctrlKey &&event.key === 'q') {
+        event.preventDefault();
+        this.startRecord();
+      }
+      if (event.ctrlKey &&event.key === 'w') {
+        event.preventDefault(); 
+        this.stopRecord();
+      }
+      
       //回放下拉框监听
       if (!this.recording) {
         const selectedValue = this.selectedFunctionKey5;
@@ -575,7 +591,7 @@ export default {
         } else {
           if (this.recording) {
             const currentTime = new Date().toLocaleTimeString();
-            this.log += `${'正在录制中，请关闭录制并选择文件夹进行回放'} - [${currentTime}]\n`;
+            this.log += `${'正在录制中，请关                                                                                闭录制并选择文件夹进行回放'} - [${currentTime}]\n`;
           }
         }
       }
@@ -590,17 +606,20 @@ export default {
   },
 
   mounted() {
-    invoke('close_splashscreen');
+    // invoke('close_splashscreen');
     window.addEventListener("keydown", this.handleKeyDown);
-
-    listen('event-name', (event) => {
-
-      const currentTime = new Date().toLocaleTimeString();
-      this.log += `${"提取文字执行成功！请继续操作。"} - [${currentTime}]\n`;
-      console.log("你好");
-
+    // listen('tran', (event) => {
+    //   this.startRecord();
+    // });
+    listen('screen', (event) => {
+      this.startScreenshot();
     });
-
+    listen('opening', (event) => {
+      this.recordWindow();
+    });
+    listen('run', (event) => {
+      this.playBack();
+    });
     listen('press-listen-keyboard', (event) => {
 
       console.log("press-listen-keyboard");

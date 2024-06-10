@@ -274,7 +274,7 @@ pub mod record_main {
 
     //录制截图
     #[tauri::command]
-    pub async fn start_screen(mut click_button: bool, window: Window) {
+    pub async fn start_screen(mut click_button: bool) {
         loop {
             let mut now_dir = String::new();
             let device_state = DeviceState::new();
@@ -336,14 +336,14 @@ pub mod record_main {
                         file.write_all(clipboard_content.as_bytes())
                             .expect("提取文字命令写入文件失败");
                     }
-                    window
-                        .emit(
-                            "event-name",
-                            Payload {
-                                message: "Tauri is awesome!".into(),
-                            },
-                        )
-                        .unwrap();
+                    // window
+                    //     .emit(
+                    //         "event-name",
+                    //         Payload {
+                    //             message: "Tauri is awesome!".into(),
+                    //         },
+                    //     )
+                    //     .unwrap();
                     println!("提取文字执行成功！请继续操作。");
                 } else {
                     let error = String::from_utf8_lossy(&output.stderr);
