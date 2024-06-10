@@ -6,6 +6,11 @@
       <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);">
         <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
           <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);  ">配置</label>
+          <button @click="searchTestDir"
+            style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 60px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(226, 217, 217); ">遍历</button>
+          <button @click="secondPage"
+            style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 60px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(226, 217, 217); ">窗口2</button>
+
           <div style="float:right;font-size: 13px; color:rgb(165, 2, 2); ">注意：功能键选择不能重合，否则会崩溃</div>
           <div style="display: flex; align-items: center;">
             <label for="lang" class="ziti" style="color: rgb(0, 0, 0);">脚本</label>
@@ -13,8 +18,7 @@
               <option value="请选择回放文件夹">{{ selectedFileName }}</option>
             </select>
             <button @click="selectPlaybackFile"
-              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line
-              -height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(226, 217, 217); ">...</button>
+              style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 50px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(226, 217, 217); ">...</button>
             <div style="margin: auto;"></div>
             <!--The drop-down box corresponds-->
             <form action="#">
@@ -141,7 +145,7 @@
   </div>
 </template>
 
-<script >
+<script>
 import { ref, reactive, onBeforeMount } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 import { WebviewWindow } from '@tauri-apps/api/window'
@@ -188,25 +192,25 @@ export default {
     };
   },
   methods: {
-    async goToIde (){
+    async goToIde() {
 
-  // Create a unique label for each webview
+      // Create a unique label for each webview
 
-  const webview = new WebviewWindow('uniqueLabel', {
-    url: '#/ide',
-  });
+      const webview = new WebviewWindow('uniqueLabel', {
+        url: '#/ide',
+      });
 
-  webview.once('tauri://created', function () {
-    // Webview created successfully
-  });
+      webview.once('tauri://created', function () {
+        // Webview created successfully
+      });
 
-  webview.once('tauri://error', function (e) {
-    // An error occurred during webview window creation
-    console.error('Webview error:', e);
-  });
+      webview.once('tauri://error', function (e) {
+        // An error occurred during webview window creation
+        console.error('Webview error:', e);
+      });
 
- 
-},
+
+    },
 
     async startRecord() {
       // 开始录制
@@ -315,6 +319,67 @@ export default {
           }
         });
       }
+    },
+
+    //遍历文件夹函数 后续加一个从前端选择文件夹的功能
+    async searchTestDir() {
+      //选择回放文件夹
+      this.back1 = true;
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        defaultPath: await appConfigDir(),
+      });
+      if (Array.isArray(selected)) {
+      } else if (selected === null) {
+      } else {
+      }
+      console.log(selected);
+      const filePath = selected;
+      invoke('search_test_dir', { filePath })
+        .then((result) => {
+          console.log(result);
+        })
+        .catch((error) => {
+          console.error('An error occurred:', error);
+        });
+
+    },
+
+    //顶部小窗口
+    async secondPage() {
+      const windowLabel = 'record-page';
+      // 如果窗口不存在，则创建新窗口
+      let existingWindow = new WebviewWindow(windowLabel, {
+        label: "record-page",
+        url: "dist/record-page.html",
+        fullscreen: false,
+        resizable: true,
+        width: 800,
+        height: 100,
+        x: 0,
+        y: 0,
+        hiddenTitle: true,
+        decorations: false,
+        title: "Second Page",
+        visible: false
+      });
+
+      // 显示新窗口之前添加延迟以确保窗口准备就绪，要不然因为生成需要一点时间会报错
+      setTimeout(async () => {
+        await existingWindow.show();
+      }, 1000);
+
+      // 隐藏当前窗口
+      await appWindow.hide();
+
+      // 监听新窗口的关闭事件，当新窗口关闭时显示主窗口
+      existingWindow.once('tauri://close-requested', async () => {
+        await existingWindow.close();
+        await appWindow.show();
+        // 清理实例
+        existingWindow = null;
+      });
     },
 
     async selectPlaybackFile() {
@@ -540,6 +605,30 @@ export default {
 
       console.log("press-listen-keyboard");
     });
+    //监听小窗口的截图函数触发
+    listen('start-screenshot', async () => {
+      await this.startScreenshot();
+    });
+    //监听小窗口的暂停恢复函数
+    listen('pause-record', async () => {
+      await this.pauseRecord();
+    });
+    listen('resume-record', async () => {
+      await this.resumeRecord();
+    });
+
+    //把素有窗口都关了
+    // appWindow.listen('tauri://close-requested', async (event) => {
+    //   // 取消关闭事件的默认行为
+    //   event.preventDefault();
+    //   // 关闭第二窗口
+    //   if (this.recordPageWindow) {
+    //     await this.recordPageWindow.close();
+    //   }
+    //   // 关闭主窗口
+    //   await appWindow.close();
+    // });
+
   },
   beforeDestroy() {
     // 在组件销毁前移除事件监听

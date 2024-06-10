@@ -67,8 +67,19 @@ pub mod script_edit {
                     }
                     _ => {}
                 },
-                "key" => {
-                    action_name = "键盘按键".to_string();
+                // "key" => {
+                //     action_name = "键盘按键".to_string();
+                //     row.push(action_name);
+                //     if values[2].len() == 1 && values[2].chars().all(|c| c.is_ascii_uppercase()) {
+                //         let lowercase_char = values[2].chars().next().unwrap().to_ascii_lowercase();
+                //         row.push(lowercase_char.to_string());
+                //     } else {
+                //         coordinate_or_key = values[2].to_string();
+                //         row.push(coordinate_or_key);
+                //     }
+                // },
+                "key_up" => {
+                    action_name = "键盘按键抬起".to_string();
                     row.push(action_name);
                     if values[2].len() == 1 && values[2].chars().all(|c| c.is_ascii_uppercase()) {
                         let lowercase_char = values[2].chars().next().unwrap().to_ascii_lowercase();
@@ -77,7 +88,18 @@ pub mod script_edit {
                         coordinate_or_key = values[2].to_string();
                         row.push(coordinate_or_key);
                     }
-                }
+                },
+                "key_down" => {
+                    action_name = "键盘按键按下".to_string();
+                    row.push(action_name);
+                    if values[2].len() == 1 && values[2].chars().all(|c| c.is_ascii_uppercase()) {
+                        let lowercase_char = values[2].chars().next().unwrap().to_ascii_lowercase();
+                        row.push(lowercase_char.to_string());
+                    } else {
+                        coordinate_or_key = values[2].to_string();
+                        row.push(coordinate_or_key);
+                    }
+                },
                 "screen_press" => match values[2] {
                     "Left" => {
                         action_name = "截图开始".to_string();

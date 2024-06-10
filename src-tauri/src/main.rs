@@ -26,6 +26,7 @@ use tauri::Manager;
 use playback::playback_main::playback_main::check_file_exists;
 use playback::playback_main::playback_main::dir_confirm;
 use playback::playback_main::playback_main::return_record_result;
+use playback::playback_main::playback_main::search_test_dir;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 #[macro_use]
 extern crate lazy_static;
@@ -114,7 +115,8 @@ fn main() {
             script_write_back,
             check_file_exists,
             dir_confirm,
-            return_record_result
+            return_record_result,
+            search_test_dir//遍历指定文件夹下所有文件
         ])
         .menu(menu)
         .on_menu_event(|event| match event.menu_item_id() {

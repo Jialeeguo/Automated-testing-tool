@@ -15,12 +15,12 @@ pub mod record_main {
     use chrono::prelude::*;
     use clipboard::ClipboardContext;
     use clipboard::ClipboardProvider;
-    use device_query::{DeviceQuery, DeviceState, Keycode};
+    use device_query::{DeviceEvents, DeviceQuery, DeviceState, Keycode};
     use rdev::listen;
     use std::process::Command;
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::time::Instant;
-    use std::{fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration,fs::File};
+    use std::{fs::File, fs::OpenOptions, io::Write, thread, thread::sleep, time::Duration};
     use tauri::window;
     use tauri::{Manager, Window};
     #[derive(Clone, serde::Serialize)]
@@ -71,7 +71,11 @@ pub mod record_main {
             ))
             .unwrap();
 
-        File::create(format!("../Automated-testing/result/{}/record_result.txt", now_dir)).unwrap();
+        File::create(format!(
+            "../Automated-testing/result/{}/record_result.txt",
+            now_dir
+        ))
+        .unwrap();
 
         // 鼠标监听线程
         let mut mouse_flag = MOUSE_THREAD_START.lock().unwrap();
@@ -84,12 +88,97 @@ pub mod record_main {
             });
         }
 
+        //按下监听闭包
+        let _guard_down = device_state.on_key_down(|key| {
+            // let keys = device_state.get_keys();
+            if *key != Keycode::F1 {
+                let pause_time = PAUSE_TIME.lock().unwrap();
+                let duration_key =
+                    START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
+                println!("{}ms, 捕捉到键盘输入按下{:?}", duration_key, key);
+                let output = format!("{},key_down,{:#?}\n", duration_key, key);
+
+                if *key != Keycode::F1
+                    && *key != Keycode::F2
+                    && *key != Keycode::F3
+                    && *key != Keycode::F4
+                    && *key != Keycode::F5
+                    && *key != Keycode::F6
+                    && *key != Keycode::F7
+                    && *key != Keycode::F8
+                {
+                    // window.emit(...) // Uncomment when necessary
+                    let global_now_dir = NOW_DIR.lock().unwrap();
+                    let now_dir = global_now_dir.clone();
+                    let mut save_file = OpenOptions::new()
+                        .write(true)
+                        .create(true)
+                        .append(true)
+                        .open(format!(
+                            "../Automated-testing/result/{}/record.txt",
+                            now_dir.clone()
+                        ))
+                        .unwrap();
+
+                    File::create(format!(
+                        "../Automated-testing/result/{}/record_result.txt",
+                        now_dir
+                    ))
+                    .unwrap();
+                    save_file.write_all(output.as_bytes()).unwrap();
+                }
+            }else if *key == Keycode::F1 {
+                let mut stop_flag = SHOULD_STOP.lock().unwrap();
+                *stop_flag = true;
+            }
+        });
+
+        //抬起监听闭包
+        let _guard_up = device_state.on_key_up(|key| {
+            // let keys = device_state.get_keys();
+            if *key != Keycode::F1 {
+                let pause_time = PAUSE_TIME.lock().unwrap();
+                let duration_key =
+                    START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
+                println!("{}ms, 捕捉到键盘抬起{:?}", duration_key, key);
+                let output = format!("{},key_up,{:#?}\n", duration_key, key);
+
+                if *key != Keycode::F1
+                    && *key != Keycode::F2
+                    && *key != Keycode::F3
+                    && *key != Keycode::F4
+                    && *key != Keycode::F5
+                    && *key != Keycode::F6
+                    && *key != Keycode::F7
+                    && *key != Keycode::F8
+                {
+                    let global_now_dir = NOW_DIR.lock().unwrap();
+                    let now_dir = global_now_dir.clone();
+                    let mut save_file = OpenOptions::new()
+                        .write(true)
+                        .create(true)
+                        .append(true)
+                        .open(format!(
+                            "../Automated-testing/result/{}/record.txt",
+                            now_dir.clone()
+                        ))
+                        .unwrap();
+
+                    File::create(format!(
+                        "../Automated-testing/result/{}/record_result.txt",
+                        now_dir
+                    ))
+                    .unwrap();
+                    save_file.write_all(output.as_bytes()).unwrap();
+                }
+            }
+        });
+
         loop {
             let should_stop = {
                 let stop_flag = SHOULD_STOP.lock().unwrap();
                 *stop_flag
             };
-
             if should_stop {
                 println!("录制被前端终止");
                 let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
@@ -133,49 +222,53 @@ pub mod record_main {
                 }
                 thread::sleep(Duration::from_secs(1));
             }
+            sleep(Duration::from_millis(300));
+            // let keys: Vec<Keycode> = device_state.get_keys();
+            // if keys.len() != 0 && keys[0] != Keycode::F1 {
+            //     let pause_time = PAUSE_TIME.lock().unwrap();
+            //     let duration_key = START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
+            //     println!("{}ms,捕捉到键盘输入{:?}", duration_key, keys[0]);
+            //     let output = format!("{},key,{:?}\n", duration_key, keys[0]);
+            //     // window
+            //     // .emit(
+            //     //     "press-listen-keyboard",
+            //     //     Payload {
 
-            let keys: Vec<Keycode> = device_state.get_keys();
-            if keys.len() != 0 && keys[0] != Keycode::F1 {
-                let pause_time = PAUSE_TIME.lock().unwrap();
-                let duration_key = START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
-                println!("{}ms,捕捉到键盘输入{:?}", duration_key, keys[0]);
-                let output = format!("{},key,{:?}\n", duration_key, keys[0]);
-                // window
-                // .emit(
-                //     "press-listen-keyboard",
-                //     Payload {
-                        
-                //         message: "Tauri is awesome!".into(),
-                //     },
-                // )
-                // .unwrap();
-                if keys[0] != Keycode::F1
-                    && keys[0] != Keycode::F2
-                    && keys[0] != Keycode::F3
-                    && keys[0] != Keycode::F4
-                    && keys[0] != Keycode::F5
-                    && keys[0] != Keycode::F6
-                    && keys[0] != Keycode::F7
-                    && keys[0] != Keycode::F8
-                {
-                    save_file.write_all(output.as_bytes()).unwrap();
-                }
-                sleep(Duration::from_millis(300));
-                continue;
-            } else if keys.len() == 0 {
-                continue;
-            }
-            let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
+            //     //         message: "Tauri is awesome!".into(),
+            //     //     },
+            //     // )
+            //     // .unwrap();
+            //     if keys[0] != Keycode::F1
+            //         && keys[0] != Keycode::F2
+            //         && keys[0] != Keycode::F3
+            //         && keys[0] != Keycode::F4
+            //         && keys[0] != Keycode::F5
+            //         && keys[0] != Keycode::F6
+            //         && keys[0] != Keycode::F7
+            //         && keys[0] != Keycode::F8
+            //     {
+            //         save_file.write_all(output.as_bytes()).unwrap();
+            //     }
+            //     sleep(Duration::from_millis(300));
+            //     continue;
+            // } else if keys.len() == 0 {
+            //     continue;
+            // }
 
-            *mouse_flag = true;
 
-            if status == "started" {
-                println!(
-                    "\n经过了：{}毫秒",
-                    START_TIME.lock().unwrap().elapsed().as_millis()
-                );
-                return;
-            }
+
+
+            // let mut mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
+
+            // *mouse_flag = true;
+
+            // if status == "started" {
+            //     println!(
+            //         "\n经过了：{}毫秒",
+            //         START_TIME.lock().unwrap().elapsed().as_millis()
+            //     );
+            //     return;
+            // }
         }
     }
 
@@ -212,7 +305,7 @@ pub mod record_main {
                     let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
                     *screen_flag = true;
                 }
-                let output = Command::new("C:/Users/trookie/venv/Scripts/textshot")
+                let output = Command::new("textshot")
                     .arg("eng+chi_sim")
                     .output()
                     .expect("无法启动 textshot 命令");

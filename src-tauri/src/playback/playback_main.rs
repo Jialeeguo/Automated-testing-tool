@@ -93,12 +93,12 @@ pub mod playback_main {
                     "Middle" => mouse::send(&EventType::ButtonRelease(Button::Middle)),
                     _ => {}
                 },
-                "key" => {
-                    //判断键盘content是什么内容（待优化）
+                "key_down" => {
+                    //判断键盘content按下是什么内容
                     //如果是单个字符，那就变成小写然后模拟输入
                     if content.len() == 1 && content.chars().all(|c| c.is_ascii_uppercase()) {
                         let lowercase_char = content.chars().next().unwrap().to_ascii_lowercase();
-                        enigo.key_click(Key::Layout(lowercase_char));
+                        enigo.key_down(Key::Layout(lowercase_char));
                         let wait_duration = Duration::from_millis(wait_time.try_into().unwrap());
                         thread::sleep(wait_duration);
                     } else {
@@ -108,6 +108,26 @@ pub mod playback_main {
                             None => return,
                         };
                         enigo.key_down(key);
+                        // enigo.key_up(key);
+                        let wait_duration = Duration::from_millis(wait_time.try_into().unwrap());
+                        thread::sleep(wait_duration);
+                    }
+                },
+                "key_up" => {
+                    //判断键盘content抬起是什么内容
+                    //如果是单个字符，那就变成小写然后模拟输入
+                    if content.len() == 1 && content.chars().all(|c| c.is_ascii_uppercase()) {
+                        let lowercase_char = content.chars().next().unwrap().to_ascii_lowercase();
+                        enigo.key_up(Key::Layout(lowercase_char));
+                        let wait_duration = Duration::from_millis(wait_time.try_into().unwrap());
+                        thread::sleep(wait_duration);
+                    } else {
+                        //如果是其他按键，到哈希表找对应按键值，执行操作
+                        let key = match keyboard::get_key(content) {
+                            Some(k) => k,
+                            None => return,
+                        };
+                        // enigo.key_down(key);
                         enigo.key_up(key);
                         let wait_duration = Duration::from_millis(wait_time.try_into().unwrap());
                         thread::sleep(wait_duration);
@@ -236,5 +256,21 @@ pub mod playback_main {
                 content
             }
         }
+    }
+
+    #[tauri::command]
+    pub fn search_test_dir(file_path:String) -> Vec<String> {
+        let mut file = Vec::new();
+
+        if let Ok(entries) = fs::read_dir(Path::new(&file_path)) {
+            for entry in entries{
+                if let Ok(entry) = entry{
+                    if let Ok(file_name) = entry.file_name().into_string() {
+                        file.push(file_name);
+                    }
+                }
+            }
+        }
+        file
     }
 }
