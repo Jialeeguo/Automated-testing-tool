@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+             font-family: 'Arial', sans-serif;
+             margin: 0;
+             padding: 0;
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             justify-content: center;
+             min-height: 100vh;
+             background: linear-gradient(to right, #3498db, #2c3e50);
+             color: white;
+         }
+ 
+         h1 {
+             font-size: 3vw; /* 使用相对单位vw */
+             margin-bottom: 2vh; /* 使用相对单位vh */
+         }
+ 
+         button {
+             padding: 1vh 2vh; /* 使用相对单位vh */
+             margin-top: 2vh; /* 使用相对单位vh */
+             background-color: #2ecc71;
+             color: white;
+             border: none;
+             cursor: pointer;
+             font-size: 2vw; /* 使用相对单位vw */
+             border-radius: 1vh; /* 使用相对单位vh */
+             transition: background-color 0.3s ease;
+         }
+ 
+         button:hover {
+             background-color: #27ae60;
+         }
+ 
+         table {
+             width: 80%;
+             margin-top: 2vh; /* 使用相对单位vh */
+             border-collapse: collapse;
+             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+             overflow: hidden;
+             border-radius: 1vh; /* 使用相对单位vh */
+         }
+ 
+         th, td {
+             border: 1px solid #ddd;
+             padding: 1vh; /* 使用相对单位vh */
+             text-align: left;
+         }
+ 
+         th {
+             background-color: #3498db;
+             color: white;
+         }
+ 
+         input {
+             width: 100%;
+             box-sizing: border-box;
+             padding: 1vh; /* 使用相对单位vh */
+             font-size: 1.6vw; /* 使用相对单位vw */
+             border: 1px solid #ddd;
+             border-radius: 0.5vh; /* 使用相对单位vh */
+         }
+ 
+         button.add, button.delete {
+             padding: 1vh 2vh; /* 使用相对单位vh */
+             font-size: 1.6vw; /* 使用相对单位vw */
+             border-radius: 0.5vh; /* 使用相对单位vh */
+         }
+     </style>
+</head>
+
+<body>
+    <button onclick="updateRecords()">脚本保存</button>
+    <table>
+
+    </table>
+
+    <script>
+        const { invoke } = window.__TAURI__.tauri;
+
+        const queryParams = new URLSearchParams(window.location.search); // 获取查询参数
+        const resultParam = queryParams.get('result'); // 获取包含结果的字符串
+        const path = queryParams.get('filePath'); // 获取包含结果的字符串
+
+        const resultString = decodeURIComponent(resultParam); // 对字符串进行解码
+        const result = JSON.parse(resultString); // 将字符串解析为 JavaScript 对象
+        console.log(result);
+        document.addEventListener('DOMContentLoaded', function () {
+            const tdElement = document.getElementById('resultString'); // 获取 <td> 元素
+            // tdElement.textContent = JSON.stringify(result); // 将结果设置为元素的文本内容
+        });
+
+        // 创建表头行
+        const table = document.querySelector('table'); // 获取表格元素
+        const headerRow = table.insertRow();
+        const headerCell1 = document.createElement('th');
+        headerCell1.textContent = '时间(ms)';
+        headerRow.appendChild(headerCell1);
+        const headerCell2 = document.createElement('th');
+        headerCell2.textContent = '记录动作';
+        headerRow.appendChild(headerCell2);
+        const headerCell3 = document.createElement('th');
+        headerCell3.textContent = '鼠标坐标/键盘按键';
+        headerRow.appendChild(headerCell3);
+        const headerCell4 = document.createElement('th');
+        headerCell4.textContent = '操作';
+        headerRow.appendChild(headerCell4);
+
+        // 遍历二维数组并创建表格行
+        result.forEach((entry) => {
+            const row = table.insertRow();
+
+            entry.forEach((value) => {
+                const cell = row.insertCell();
+                const input = document.createElement('input');
+                input.value = value;
+                cell.appendChild(input);
+            });
+
+            const actionCell = row.insertCell();
+            const addButton = document.createElement('button');
+            addButton.textContent = '添加';
+            addButton.addEventListener('click', () => {
+                const newRow = table.insertRow(row.rowIndex + 1);
+                let count = 0;
+                Array.from(row.cells).forEach((cell, index) => {
+                    if (count < 3) {
+                        const newCell = newRow.insertCell();
+                        const input = document.createElement('input');
+                        input.value = '';
+                        newCell.appendChild(input);
+                        count++;
+                    }
+                });
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '删除';
+                deleteButton.addEventListener('click', () => {
+                    table.deleteRow(newRow.rowIndex);
+                });
+
+                const deleteCell = newRow.insertCell();
+                deleteCell.appendChild(deleteButton);
+
+                deleteButton.disabled = false;
+            });
+            actionCell.appendChild(addButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '删除';
+            deleteButton.addEventListener('click', () => {
+                table.deleteRow(row.rowIndex);
+            });
+            actionCell.appendChild(deleteButton);
+
+
+        });
+
+        // document.body.appendChild(container); // 将容器元素添加到页面中的 body 元素中
+
+
+        function collectTableData() {
+            const table = document.querySelector('table'); // 获取表格元素
+            const rows = table.querySelectorAll('tr'); // 获取所有表格行
+
+            // 创建一个空的二维数组来保存表格数据
+            const data = [];
+
+            rows.forEach((row) => {
+                const rowData = [];
+                console.log("lalal", row);
+                // 遍历表格行中的所有单元格
+                const cells = row.querySelectorAll('td');
+                cells.forEach((cell) => {
+                    const input = cell.querySelector('input');
+                    if (input) {
+                        rowData.push(input.value); // 将单元格中的值添加到行数据数组中
+                    }
+                });
+
+                data.push(rowData); // 将行数据添加到二维数组中
+            });
+
+            return data;
+        };
+
+        function updateRecords() {
+            const script = collectTableData(); // 获取表格数据
+            console.log(typeof script);
+            console.log("保存内容：{}", script);
+            // 调用后端接口，将数据发送到后端
+            invoke('script_write_back', { path,script })
+                .then((response) => {
+                    console.log("保存成功");
+                })
+                .catch((error) => {
+                    console.error("保存出错");
+                });
+        };
+    </script>
+</body>
+
+</html>
