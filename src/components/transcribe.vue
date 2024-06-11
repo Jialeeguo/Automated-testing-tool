@@ -1,8 +1,6 @@
 <template>
   <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);">
-
     <div>
-
       <div style="background-color: rgb(245, 242, 242);  background: linear-gradient(135deg, #e3fdf5, #ffe6fa);">
         <div style="border: 2px solid #e3fdf5; margin: 5px; padding: 10px;">
           <label for="lang" style="font-size: 13px; color:rgb(168, 163, 163);  ">配置</label>
@@ -10,7 +8,6 @@
             style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 60px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(226, 217, 217); ">遍历</button>
           <button @click="secondPage"
             style="margin-left: 7px; background-color: rgb(245, 242, 242); height: 24px; width: 60px; color: red; font-size: 15px; text-align: center; vertical-align:middle;line-height: 1px; border:1px; border-style: solid; border-radius: 3px; border-color: rgb(226, 217, 217); ">窗口2</button>
-
           <div style="float:right;font-size: 13px; color:rgb(165, 2, 2); ">注意：功能键选择不能重合，否则会崩溃</div>
           <div style="display: flex; align-items: center;">
             <label for="lang" class="ziti" style="color: rgb(0, 0, 0);">脚本</label>
