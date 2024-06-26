@@ -50,14 +50,190 @@ pub mod playback_main {
         let log_file = format!("{}/generated_{}.html", now_dir, back_time.clone());
         let mut html_file = File::create(log_file.clone()).expect("Failed to create HTML file");
         html_file
-            .write_all(
-                format!(
-                    "<html><head><title>{}脚本回放日志 时间：{}</title></head><body>",
-                    now_dir, back_time
-                )
-                .as_bytes(),
+        .write_all(
+            format!(
+                "<!DOCTYPE html>
+<html lang=\"zh-CN\">
+<head>
+    <meta charset=\"UTF-8\">
+    <title>{}脚本回放日志 时间：{}</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #6A006A;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }}
+        .container {{
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+        }}
+        .section {{
+            background-color: #9B009B;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 30%;
+        }}
+        .section h2 {{
+            text-align: center;
+            margin-bottom: 20px;
+        }}
+        .chart {{
+            height: 200px;
+        }}
+        .table-container {{
+            background-color: #B300B3;
+            border-radius: 10px;
+            padding: 10px;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+        }}
+        table, th, td {{
+            border: 1px solid white;
+        }}
+        th, td {{
+            padding: 10px;
+            text-align: center;
+        }}
+        .donut-chart {{
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(#00FF00 0% 63.33%, #FFFF00 63.33% 90%, #FF0000 90% 100%);
+            margin: 0 auto;
+        }}
+        .donut-chart::before {{
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background-color: #6A006A;
+            border-radius: 50%;
+        }}
+        .donut-chart p {{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            font-size: 20px;
+        }}
+        .legend {{
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }}
+        .legend div {{
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }}
+        .legend div span {{
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }}
+        .legend .pass {{
+            background-color: #00FF00;
+        }}
+        .legend .fail {{
+            background-color: #FFFF00;
+        }}
+        .legend .pending {{
+            background-color: #FF0000;
+        }}
+    </style>
+</head>
+<body>
+    <h1 style=\"text-align: center;\">自动化测试报告</h1>
+    <div class=\"container\">
+        <div class=\"section\">
+            <h2>执行结果</h2>
+            <div>
+                <p>通过用例: 19条</p>
+                <p>失败用例: 12条</p>
+                <p>暂定用例: 4条</p>
+            </div>
+            <h2>成功占比</h2>
+            <div class=\"donut-chart\">
+                <p>通过</p>
+            </div>
+            <div class=\"legend\">
+                <div><span class=\"pass\"></span>通过</div>
+                <div><span class=\"fail\"></span>失败</div>
+                <div><span class=\"pending\"></span>暂定</div>
+            </div>
+        </div>
+        <div class=\"section\">
+            <h2>运行信息</h2>
+            <div>
+                <p>开始时间: {}</p>
+                <p>用例总数: 30</p>
+                <p>测试人员: 用旭涵</p>
+                <p>成功用例: 30</p>
+                <p>通过率: 100%</p>
+                <p>运行时间: 20.05S</p>
+            </div>
+        </div>
+        <div class=\"section\">
+            <h2>历史构建结果</h2>
+            <div class=\"table-container\">
+                <table>
+                    <tr>
+                        <th>执行结果</th>
+                        <th>用例总数</th>
+                        <th>成功用例</th>
+                        <th>通过率</th>
+                    </tr>
+                    <tr>
+                        <td>2024-01-12 18:08:31</td>
+                        <td>30</td>
+                        <td>30</td>
+                        <td>100%</td>
+                    </tr>
+                    <tr>
+                        <td>2024-01-12 18:08:31</td>
+                        <td>18</td>
+                        <td>12</td>
+                        <td>66.66%</td>
+                    </tr>
+                    <tr>
+                        <td>2024-01-12 18:08:31</td>
+                        <td>28</td>
+                        <td>26</td>
+                        <td>92.85%</td>
+                    </tr>
+                    <tr>
+                        <td>2024-01-12 18:08:31</td>
+                        <td>15</td>
+                        <td>10</td>
+                        <td>66.67%</td>
+                    </tr>
+                    <tr>
+                        <td>2024-01-12 18:08:31</td>
+                        <td>7</td>
+                        <td>4</td>
+                        <td>57%</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>",
+                now_dir, back_time, back_time
             )
-            .expect("Failed to write HTML to file");
+            .as_bytes(),
+        )
+        .expect("Failed to write HTML to file");
         html_file.flush().expect("Failed to flush HTML file");
         drop(html_file);
         let read_script = BufReader::new(file);

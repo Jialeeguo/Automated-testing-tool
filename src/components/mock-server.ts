@@ -6,17 +6,17 @@ let responseFiles: Files = {
   'F:/test_project/components': {
     isFolder: true,
   },
-  'F:/test_project/index.ts': {
+  'F:/test_project/index.py': {
     isFile: true,
-    content: 'console.log("index")',
+    content: 'print("index")',
   },
-  'F:/test_project/api/TestApi.ts': {
+  'F:/test_project/api/TestApi.py': {
     isFile: true,
-    content: 'console.log("TestApi")',
+    content: 'print("TestApi")',
   },
-  'F:/test_project/dto/TestDto.ts': {
+  'F:/test_project/dto/TestDto.py': {
     isFile: true,
-    content: 'console.log("TestDto")',
+    content: 'print("TestDto")',
   },
 }
 // 模拟延迟，延迟时间
