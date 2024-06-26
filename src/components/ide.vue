@@ -244,7 +244,7 @@ const closeTerminal = () => {
       :font-size="14"
       :files="files"
       :sider-min-width="240"
-      filelist-title="源代码存储管理库"
+      filelist-title="os-9-IDE"
       language="python"
       @reload="handleReload"
       @new-file="handleNewFile"
