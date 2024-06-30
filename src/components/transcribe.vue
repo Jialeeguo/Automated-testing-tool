@@ -146,15 +146,15 @@
 </template>
 
 <script>
-import { ref, reactive, onBeforeMount } from "vue";
+import { ref, reactive, onBeforeMount, watch } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
-import { WebviewWindow } from '@tauri-apps/api/window'
-import { appWindow } from "@tauri-apps/api/window"
+import { WebviewWindow } from '@tauri-apps/api/window';
+import { appWindow } from "@tauri-apps/api/window";
 import { open, ask, message } from '@tauri-apps/api/dialog';
 import { appConfigDir } from '@tauri-apps/api/path';
-// Open a selection dialog for directoriesChinese
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs';
-import { listen } from '@tauri-apps/api/event';
+import { listen, emit } from '@tauri-apps/api/event';
+
 
 export default {
   data() {
@@ -166,6 +166,7 @@ export default {
       log_playback: '',
       screenshotting: false,
       selectedFileName: '请选择回放文件夹',
+      selectedBatchFileName: '请选择批量回放文件夹',
       textData: '', // 初始化文本数据
       filename: '',
       selectedFunctionKey10: 'F1',
@@ -182,6 +183,7 @@ export default {
       loggingEnabled: false,
       back: false,
       back1: false, //脚本编辑之前要判断是否选择了回放的路径
+      back2: false, //批量回放之前要判断是否选择了回放的路径
       recordStateChangeTime: null,
       selectedContent: false,//通过不通过状态选择，如果没有回放状态则为false，输出日志
       isTruescreenshotting: true, //判断在截图过程中是否可以终止录制
@@ -189,7 +191,21 @@ export default {
       isRecording: false,
       startTime: null,
       elapsedTime: 0,
+      yAxis: null,//y轴坐标
+      mini_window: false,//是否小窗口
     };
+  },
+  watch: {
+    log(newLog) {
+      console.log('Log updated, sending new log content');
+      emit('sync-log', newLog)
+        .then(() => {
+          console.log('Log content sent successfully');
+        })
+        .catch((error) => {
+          console.error('Failed to send log content:', error);
+        });
+    }
   },
   methods: {
     async goToIde() {
@@ -216,6 +232,7 @@ export default {
       // 开始录制
       this.startTime = new Date();
       this.isRecording = true;
+      this.mini_window = true;
       this.elapsedTime = 0;
       if (!this.recording) {
         this.log = '';
@@ -230,6 +247,11 @@ export default {
         }
         const currentTime = new Date().toLocaleTimeString();
         this.log += `${'录制已开始'} - [${currentTime}]\n`;
+
+        // 调用 secondPage 函数缩小窗口
+        await this.secondPage();
+        console.log("调用缩小函数");
+
         await invoke('start_record', { recordstart: this.recordstart });
       } else {
         console.log(this.recording + '是');
@@ -244,6 +266,8 @@ export default {
     async stopRecord() {
       //停止录制
       this.isTruescreenshotting = false;
+      this.isRecording = false;
+      this.mini_window = false;
       this.logs = '';
       const recordChangeTime = new Date();
       this.recording = !this.recording;
@@ -321,30 +345,7 @@ export default {
       }
     },
 
-    //遍历文件夹函数 后续加一个从前端选择文件夹的功能
-    async searchTestDir() {
-      //选择回放文件夹
-      this.back1 = true;
-      const selected = await open({
-        directory: true,
-        multiple: false,
-        defaultPath: await appConfigDir(),
-      });
-      if (Array.isArray(selected)) {
-      } else if (selected === null) {
-      } else {
-      }
-      console.log(selected);
-      const filePath = selected;
-      invoke('search_test_dir', { filePath })
-        .then((result) => {
-          console.log(result);
-        })
-        .catch((error) => {
-          console.error('An error occurred:', error);
-        });
 
-    },
 
     //顶部小窗口
     async secondPage() {
@@ -355,7 +356,7 @@ export default {
         url: "dist/record-page.html",
         fullscreen: false,
         resizable: true,
-        width: 800,
+        width: 750,
         height: 100,
         x: 0,
         y: 0,
@@ -373,7 +374,7 @@ export default {
       // 隐藏当前窗口
       await appWindow.hide();
 
-      // 监听新窗口的关闭事件，当新窗口关闭时显示主窗口
+      // 监听新窗口的关闭事件，当新窗口关闭时显示主窗口并调用 stopRecord
       existingWindow.once('tauri://close-requested', async () => {
         await existingWindow.close();
         await appWindow.show();
@@ -398,6 +399,26 @@ export default {
       //获取文件路径的最后一个文件名，用来xhr.open(点击哪个就放哪个)
       const fullPath = selected;
       this.filename = fullPath.replace(/^.*[\\\/]/, '');
+    },
+
+    //遍历文件夹函数 后续加一个从前端选择文件夹的功能
+    async searchTestDir() {
+      //选择回放文件夹
+      this.back2 = true;
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        defaultPath: await appConfigDir(),
+      });
+      if (Array.isArray(selected)) {
+      } else if (selected === null) {
+      } else {
+      }
+      console.log(selected);
+      const filePath = selected;
+      this.selectedBatchFileName = selected;
+      this.batchRunningdWindow()
+
     },
 
 
@@ -524,6 +545,38 @@ export default {
         this.log += `${'没有选择要编辑的脚本，请选择文件夹'} - [${currentTime}]\n`;
       }
     },
+
+    batchRunningdWindow() {
+      //批量运行窗口
+      if (this.back2) {
+        console.log("batch running");
+        const filePath = this.selectedBatchFileName;
+        console.log(filePath);
+        invoke('search_test_dir', { filePath })
+          .then((result) => {
+            const resultString = JSON.stringify(result);
+            const resultEncoded = encodeURIComponent(resultString);
+            const webview = new WebviewWindow('theUniqueLabel', {
+              url: `batch_running.html?result=${resultEncoded}&filePath=${filePath}`, // 将结果作为查询参数传递
+            });
+
+            webview.once('tauri://created', function () {
+              console.log('Batch running window created');
+            });
+
+            webview.once('tauri://error', function (e) {
+              console.error('Failed to create window', e);
+            });
+          })
+          .catch((error) => {
+            console.error('An error occurred:', error);
+          });
+      } else {
+        const currentTime = new Date().toLocaleTimeString();
+        this.log += `${'没有选择要编辑的脚本，请选择文件夹'} - [${currentTime}]\n`;
+      }
+    },
+
     handleKeyDown(event) {
       //监听各种
       if (this.isPlaybacking) {
@@ -588,7 +641,6 @@ export default {
     },
 
   },
-
   mounted() {
     invoke('close_splashscreen');
     window.addEventListener("keydown", this.handleKeyDown);
@@ -599,6 +651,29 @@ export default {
       this.log += `${"提取文字执行成功！请继续操作。"} - [${currentTime}]\n`;
       console.log("你好");
 
+    });
+
+    // 监听y坐标
+    listen("y-axis", (event) => {
+      // console.log("接收到的y坐标：", event.payload.message);
+      if(event.payload.message <= 10 && this.mini_window == true){
+        // console.log("发送坐标到小窗口");
+        emit('show-child-window', event.payload.message);
+      }
+    });
+
+
+    // 监听来自多脚本运行窗口的消息
+    listen('minimize-main-window', () => {
+      console.log("缩小信息收到");
+      appWindow.minimize().catch((error) => {
+        console.error('最小化主窗口失败:', error);
+      });
+    });
+
+    // 监听从子窗口发出的 停止录制 事件
+    listen('stop-record', async () => {
+      await this.stopRecord();
     });
 
     listen('press-listen-keyboard', (event) => {

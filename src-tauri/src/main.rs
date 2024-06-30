@@ -12,6 +12,7 @@ mod record;
 // use std::time::Duration;
 use playback::playback_main::playback_main::playback_confirm;
 use playback::playback_main::playback_main::playback_main;
+use playback::playback_main::playback_main::rename_directory;
 use playback::script_edit::script_edit::read_a_record;
 use playback::script_edit::script_edit::script_write_back;
 use record::record_main::record_main::pause_record;
@@ -113,6 +114,7 @@ fn main() {
             close_splashscreen,
             read_a_record,
             script_write_back,
+            rename_directory,
             check_file_exists,
             dir_confirm,
             return_record_result,
@@ -123,7 +125,7 @@ fn main() {
             "transcribe" => {
                 //没进方法，之后再改     
                 a();
-                start_record();
+                // start_record();
             }
             "screen_shot" => {
                 // start_screen

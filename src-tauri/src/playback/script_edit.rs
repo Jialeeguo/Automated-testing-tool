@@ -131,6 +131,7 @@ pub mod script_edit {
         script
     }
 
+    //脚本编辑
     #[tauri::command]
     pub fn script_write_back(path:String,mut script: Vec<Vec<String>>) {
         script.remove(0);

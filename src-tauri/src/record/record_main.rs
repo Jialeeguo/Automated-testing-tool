@@ -29,7 +29,7 @@ pub mod record_main {
     }
     #[tauri::command]
     //参数为recordstart: bool,window: Window
-    pub async fn start_record() {
+    pub async fn start_record(window: Window) {
         println!("你好");
         let mut status = "init";
         let device_state = DeviceState::new();
@@ -81,8 +81,9 @@ pub mod record_main {
         let mut mouse_flag = MOUSE_THREAD_START.lock().unwrap();
         if *mouse_flag == false {
             *mouse_flag = true;
+            let window_clone = window.clone();
             thread::spawn(move || {
-                if let Err(error) = listen(move |event| mouse_monitor::mouse::callback(event)) {
+                if let Err(error) = listen(move |event| mouse_monitor::mouse::callback(event,&window_clone)) {
                     println!("Error: {:?}", error);
                 }
             });

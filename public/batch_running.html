@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            color: white;
+        }
+
+        h1 {
+            font-size: 3vw;
+            margin-bottom: 2vh;
+        }
+
+        button {
+            padding: 1vh 2vh;
+            margin-top: 2vh;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 2vw;
+            border-radius: 1vh;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #27ae60;
+        }
+
+        table {
+            width: 80%;
+            margin-top: 2vh;
+            border-collapse: collapse;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border-radius: 1vh;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 1vh;
+            text-align: left;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 1vh;
+            font-size: 1.6vw;
+            border: 1px solid #ddd;
+            border-radius: 0.5vh;
+        }
+
+        input[readonly] {
+            background-color: #f0f0f0;
+            /* 只读时的背景色 */
+            cursor: not-allowed;
+            /* 只读时的光标样式 */
+        }
+
+        button.add,
+        button.delete {
+            padding: 1vh 2vh;
+            font-size: 1.6vw;
+            border-radius: 0.5vh;
+        }
+    </style>
+</head>
+
+<body>
+    <table></table>
+    <form action="#">
+        <label for="lang" class="ziti">翻译对应语种</label>
+        <select id="language-select" style="width: 200px;">
+            <option value="1">自动识别</option>
+            <option value="2">英语</option>
+            <option value="3">西班牙语</option>
+            <option value="4">阿拉伯语</option>
+            <option value="5">葡萄牙语</option>
+            <option value="6">俄语</option>
+            <option value="7">法语</option>
+            <option value="8">中文</option>
+        </select>
+    </form>
+    <button onclick="updateRecords()">脚本选择</button>
+    <script>
+        const { invoke,event } = window.__TAURI__.tauri;
+        const { appWindow } = window.__TAURI__.window;
+        const { emit } = window.__TAURI__.event;
+
+
+        const queryParams = new URLSearchParams(window.location.search);
+        const resultParam = queryParams.get('result');
+        const path = queryParams.get('filePath');
+
+        if (resultParam) {
+            const resultString = decodeURIComponent(resultParam);
+            let result;
+            try {
+                result = JSON.parse(resultString);
+            } catch (e) {
+                console.error('Error parsing result:', e);
+                result = [];
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const table = document.querySelector('table');
+                const headerRow = table.insertRow();
+                const headerCell1 = document.createElement('th');
+                headerCell1.textContent = '选项';
+                headerRow.appendChild(headerCell1);
+                const headerCell2 = document.createElement('th');
+                headerCell2.textContent = '目录';
+                headerRow.appendChild(headerCell2);
+                const headerCell3 = document.createElement('th');
+                headerCell3.textContent = '操作';
+                headerRow.appendChild(headerCell3);
+
+                // 确认 result 是一个数组
+                if (Array.isArray(result)) {
+                    // 遍历数组并创建表格行
+                    result.forEach((entry) => {
+                        const row = table.insertRow();
+
+                        // 创建选项列
+                        const selectCell = row.insertCell();
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        selectCell.appendChild(checkbox);
+
+                        // 创建目录列
+                        const dirCell = row.insertCell();
+                        const input = document.createElement('input');
+                        input.value = entry;
+                        input.readOnly = true;
+                        dirCell.appendChild(input);
+
+                        // 创建操作列
+                        const actionCell = row.insertCell();
+                        const renameButton = document.createElement('button');
+                        renameButton.textContent = '重命名';
+                        const saveButton = document.createElement('button');
+                        saveButton.textContent = '保存';
+                        saveButton.style.display = 'none'; // 初始隐藏保存按钮
+
+                        renameButton.addEventListener('click', () => {
+                            input.readOnly = false;
+                            input.focus();
+                            renameButton.style.display = 'none';
+                            saveButton.style.display = 'inline-block';
+                        });
+
+                        saveButton.addEventListener('click', () => {
+                            const oldName = entry; // 原始目录名称
+                            const newName = input.value; // 新的目录名称
+
+                            input.readOnly = true;
+                            renameButton.style.display = 'inline-block';
+                            saveButton.style.display = 'none';
+
+                            // 通过 Tauri 调用后端函数进行重命名
+                            invoke('rename_directory', { oldName, newName, path })
+                                .then((response) => {
+                                    console.log('目录已重命名:', response);
+                                })
+                                .catch((error) => {
+                                    console.error('重命名失败:', error);
+                                });
+                        });
+
+                        actionCell.appendChild(renameButton);
+                        actionCell.appendChild(saveButton);
+                    });
+                } else {
+                    console.error('Parsed result is not an array:', result);
+                }
+            });
+        } else {
+            console.error('No result parameter found in URL');
+        }
+
+        async function updateRecords() {
+            const table = document.querySelector('table');
+            const selected = [];
+            const rows = table.querySelectorAll('tr');
+
+            rows.forEach((row) => {
+                const checkbox = row.querySelector('input[type="checkbox"]');
+                const input = row.querySelector('input[readonly]');
+                if (checkbox && checkbox.checked) {
+                    const directory = input.value; // 获取所选行的目录值
+                    selected.push(directory);
+                }
+            });
+
+            // 获取选定的语言值
+            const languageSelect = document.getElementById('language-select');
+            const selectedLanguage = languageSelect.value;
+            let langValue = 'zh';
+
+            // 将选中的内容输出到终端
+            console.log('选中的目录:', selected);
+            console.log('选定的语言:', selectedLanguage);
+
+            switch (selectedLanguage) {
+                case '1':
+                    langValue = 'auto';
+                    break;
+                case '8':
+                    langValue = 'zh';
+                    break;
+                case '2':
+                    langValue = 'en';
+                    break;
+                case '7':
+                    langValue = 'fra';
+                    break;
+                case '6':
+                    langValue = 'ru';
+                    break;
+                case '3':
+                    langValue = 'spa';
+                    break;
+                case '5':
+                    langValue = 'pt';
+                    break;
+                case '4':
+                    langValue = 'ara';
+                    break;
+                default:
+                    langValue = '';
+                    break;
+            }
+
+            try {
+                // 最小化窗口并发送消息到主窗口
+                await appWindow.minimize();
+                console.log("窗口已最小化");
+                await emit('minimize-main-window');
+                console.log("消息已发送到主窗口");
+
+                // 等待3秒 给主窗口最小化的时间
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+            } catch (error) {
+                console.error("最小化窗口或发送消息失败:", error);
+            }
+
+            // 批量运行
+            selected.forEach(function (script, index) {
+                const filePath = path + "\\" + script;
+                console.log('选中的目录:', filePath);
+                console.log('选定的语言:', langValue);
+                invoke('playback_main', { filePath, lang: langValue }).then(() => {
+                    // 如果是最后一个脚本，关闭窗口
+                    if (index === selected.length - 1) {
+                        appWindow.close();
+                    }
+                }).catch((error) => {
+                    console.error('执行脚本失败:', error);
+                    // 如果是最后一个脚本，关闭窗口
+                    if (index === selected.length - 1) {
+                        appWindow.close();
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+
+
+</html>

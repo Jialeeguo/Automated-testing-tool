@@ -8,6 +8,7 @@ pub mod playback_main {
     use serde::Deserialize;
     use std::fmt::format;
     use std::path::Path;
+    use std::path::PathBuf;
     use std::{
         fmt::write,
         fs::{self, File, OpenOptions},
@@ -28,6 +29,12 @@ pub mod playback_main {
 
     #[tauri::command]
     pub fn playback_main(file_path: String, lang: String, window: Window) {
+        // 检查file_path是否为空
+        if file_path.is_empty() {
+            println!("file_path为空");
+            return; // 如果为空则输出提示并退出函数
+        }
+        println!("path:{}", file_path);
         let mut save_file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -273,4 +280,40 @@ pub mod playback_main {
         }
         file
     }
+
+    //回放多个脚本
+    // #[tauri::command]
+    // pub fn batch_select(path:String,selected: Vec<String>,language:String){
+    //     // script.remove(0);
+
+    //     if selected.is_empty() {
+    //         //前端可以提前判断一下 如果没内容log输出一下
+    //     }
+    //     println!("script:{:?}",selected);
+    //     println!("path:{}",path);
+    //     println!("language:{}",language);
+    //     for script in selected{
+    //         let file_path = format!("{}{}",path,script);
+    //         // playback_main(file_path,language);
+    //     }
+    // }
+
+    //批量运行时重命名
+    #[tauri::command]
+    pub fn rename_directory(old_name: String, new_name: String, path: String) -> Result<(), String> {
+        let mut old_path = PathBuf::from(&path);
+        old_path.push(&old_name);
+    
+        let mut new_path = PathBuf::from(&path);
+        new_path.push(&new_name);
+    
+        if old_path.exists() {
+            fs::rename(&old_path, &new_path)
+                .map_err(|e| format!("Failed to rename directory: {}", e))?;
+            Ok(())
+        } else {
+            Err("Old directory does not exist".into())
+        }
+    }
+
 }

@@ -4,9 +4,11 @@ pub mod mouse {
         fs::{File, OpenOptions},
         io::Write,
     };
+    use tauri::window;
+    use tauri::{Manager, Window};
+    use serde::Serialize;
 
     use crate::record::screen_shot;
-
     use crate::MOUSE_BEFORE_PRESS;
     use crate::MOUSE_MOVE_TIME;
     use crate::MOUSE_PATH;
@@ -16,7 +18,26 @@ pub mod mouse {
     use crate::SCREEN_SHOT_FLAG;
     use crate::START_TIME;
 
-    pub fn callback(event: Event) {
+    #[derive(Clone, serde::Serialize)]
+    struct Payload {
+        message: f64,
+    }
+
+    pub fn callback(event: Event, window: &Window) {
+        let mut  y_axis:f64 = 0.0; // y坐标
+        if let EventType::MouseMove { x, y } = event.event_type {
+            y_axis = y;
+        }
+        
+        window
+        .emit(
+            "y-axis",
+            Payload {
+                message: y_axis,
+            },
+        )
+        .unwrap();
+
         let mouse_flag = MOUSE_THREAD_FLAG.lock().unwrap();
         if *mouse_flag == true {
             return;
@@ -39,7 +60,6 @@ pub mod mouse {
         let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
         if *screen_flag == true {
             //调用系统截图工具
-
             match event.event_type {
                 EventType::MouseMove { x, y } => {
                     //记录最后坐标点用于在鼠标点击动作移动动作后标注
