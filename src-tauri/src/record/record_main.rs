@@ -97,7 +97,7 @@ pub mod record_main {
                 let duration_key =
                     START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
                 println!("{}ms, 捕捉到键盘输入按下{:?}", duration_key, key);
-                let output = format!("{},key_down,{:#?}\n", duration_key, key);
+                let output = format!("{}ms,key_down,{:#?}\n", duration_key, key);
 
                 if *key != Keycode::F1
                     && *key != Keycode::F2
@@ -142,7 +142,7 @@ pub mod record_main {
                 let duration_key =
                     START_TIME.lock().unwrap().elapsed().as_millis() - *pause_time;
                 println!("{}ms, 捕捉到键盘抬起{:?}", duration_key, key);
-                let output = format!("{},key_up,{:#?}\n", duration_key, key);
+                let output = format!("{}ms,key_up,{:#?}\n", duration_key, key);
 
                 if *key != Keycode::F1
                     && *key != Keycode::F2
@@ -306,7 +306,7 @@ pub mod record_main {
                     let mut screen_flag = SCREEN_SHOT_FLAG.lock().unwrap();
                     *screen_flag = true;
                 }
-                let output = Command::new("textshot")
+                let output = Command::new("C:/Users/trookie/venv/Scripts/textshot")
                     .arg("eng+chi_sim")
                     .output()
                     .expect("无法启动 textshot 命令");

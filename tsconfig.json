@@ -1,6 +1,10 @@
 {
     "compilerOptions": {
+      "moduleResolution": "node",
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
       "target": "ESNext",
+      "forceConsistentCasingInFileNames": true,
       "useDefineForClassFields": true,
       "module": "ESNext",
       "lib": [

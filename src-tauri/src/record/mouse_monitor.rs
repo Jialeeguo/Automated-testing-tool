@@ -97,6 +97,7 @@ pub mod mouse {
     pub fn record_move(time: u128, x: String, y: String, mut file: File) {
         let mut val = String::new();
         val.push_str(&time.to_string());
+        val.push_str("ms");
         val.push(',');
         val.push_str("move");
         val.push(',');
@@ -117,6 +118,7 @@ pub mod mouse {
         match button {
             Button::Left => {
                 val.push_str(&time.to_string());
+                val.push_str("ms");
                 val.push_str(",press,Left");
                 val.push(',');
                 val.push_str(&x.to_string());
@@ -126,6 +128,7 @@ pub mod mouse {
             }
             Button::Right => {
                 val.push_str(&time.to_string());
+                val.push_str("ms");
                 val.push_str(",press,Right");
                 val.push(',');
                 val.push_str(&x.to_string());
@@ -135,6 +138,7 @@ pub mod mouse {
             }
             Button::Middle => {
                 val.push_str(&time.to_string());
+                val.push_str("ms");
                 val.push_str(",press,Middle");
                 val.push(',');
                 val.push_str(&x.to_string());
@@ -153,14 +157,17 @@ pub mod mouse {
         match button {
             Button::Left => {
                 val.push_str(&time.to_string());
+                val.push_str("ms");
                 val.push_str(",release,Left\n")
             }
             Button::Right => {
                 val.push_str(&time.to_string());
+                val.push_str("ms");
                 val.push_str(",release,Right\n")
             }
             Button::Middle => {
                 val.push_str(&time.to_string());
+                val.push_str("ms");
                 val.push_str(",release,Middle\n")
             }
             _ => {}
@@ -178,6 +185,7 @@ pub mod mouse {
         match button {
             Button::Left => {
                 val.push_str(&time.to_string());
+                val.push_str("ms");
                 val.push_str(",screen_press,Left");
                 val.push(',');
                 val.push_str(&x.to_string());
@@ -201,6 +209,7 @@ pub mod mouse {
         match button {
             Button::Left => {
                 val.push_str(&time.to_string());
+                val.push_str("ms");
                 val.push_str(",screen_release,Left");
                 val.push(',');
                 val.push_str(&x.to_string());

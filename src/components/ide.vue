@@ -12,8 +12,11 @@ import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 // @ts-ignore
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
 // @ts-ignore
+
 import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
 import * as server from './mock-server'
+// @ts-ignore
+import axios from 'axios'
 import {
   MouseStatus,
   WheelStatus,
@@ -23,7 +26,8 @@ import {
 } from "../common/Constans";
 
 let remoteDesktopDpi: Record<string, any>;
-  let dc: RTCDataChannel;
+let dc: RTCDataChannel;
+
 // ================ 初始化 init monaco-tree-editor ================
 window.MonacoEnvironment = {
   getWorker: function (_moduleId, label: string) {
@@ -35,13 +39,15 @@ window.MonacoEnvironment = {
       return new htmlWorker()
     } else if (label === 'css' || label === 'scss' || label === 'less') {
       return new cssWorker()
+    } else if (label === 'python') { 
+      // @ts-ignore
+      return new pythonWorker()
     }
     return new editorWorker()
   },
   globalAPI: true,
 }
-let monacoStore
-// mock delay to test robustness
+
 server.delay().then(() => {
   monacoStore = useMonaco(monaco)
 })
@@ -66,7 +72,7 @@ onMounted(() => {
 
 // ================ 快捷键 hotkey ==================
 const hotkeyStore = useHotkey()
-hotkeyStore.listen('root', (event: KeyboardEvent) => {})
+hotkeyStore.listen('root', (event: KeyboardEvent) => { })
 hotkeyStore.listen('editor', (event: KeyboardEvent) => {
   if (event.ctrlKey && !event.shiftKey && !event.altKey && event.key === 's') {
     // do something...
@@ -75,6 +81,10 @@ hotkeyStore.listen('editor', (event: KeyboardEvent) => {
 
 // ================ 加载文件 load files ================
 const files = ref<Files>()
+const output = ref('')
+const showTerminal = ref(true); 
+const terminalContent = ref(''); 
+let monacoStore
 const handleReload = (resolve: () => void, reject: (msg?: string) => void) => {
   server
     .fetchFiles()
@@ -86,8 +96,6 @@ const handleReload = (resolve: () => void, reject: (msg?: string) => void) => {
       reject(e.message)
     })
 }
-
-
 
 const handleSaveFile = (path: string, content: string, resolve: () => void, reject: (msg?: string) => void) => {
   server
@@ -144,9 +152,6 @@ const handleRename = (path: string, newPath: string, resolve: () => void, reject
 }
 
 // ================ 自定义菜单 custom menu =================
-/**
- * fileMenu and folderMenu Will insert into the context menu of sider file list
- */
 const fileMenu = ref([
   { label: 'Custom Selection 1', value: 'any type that not null' },
   { label: 'Custom Selection 2', value: 2 },
@@ -167,10 +172,6 @@ const handleContextMenuSelect = (path: string, item: { label: string | ComputedR
 }
 
 // ================ 拖拽事件 drag event =================
-/**
- * 当把拖动文件树中的数据拖进编辑器时，在当前光标处插入自定义的import语句
- * When drag filelist data into monaco editor, insert custom statement at cursor position
- */
 const handleDragInEditor = (srcPath: string, targetPath: string, type: 'file' | 'folder') => {
   if (!targetPath.endsWith('.ts') && !srcPath.endsWith('.js')) {
     return
@@ -193,7 +194,6 @@ function _longestCommonPrefix(strs: string[]): string {
   return result
 }
 
-//计算相对路径 getRelativePath
 const _relativePathFrom = (returnPath: string, fromPath: string): string => {
   const prefix = _longestCommonPrefix([returnPath, fromPath])
   returnPath = returnPath.replace(prefix, '').replace(/\\/g, '/')
@@ -209,130 +209,171 @@ const _relativePathFrom = (returnPath: string, fromPath: string): string => {
   }
   return (relativePath += returnPath)
 }
-const desktop = ref<HTMLVideoElement>();
 
-const startScreenSharing = async () => {
+const runCode = async () => {
+  const editor = monacoStore.getEditor()
+  const code = editor.getValue()
+
+  console.log('Sending code to server:', code)
+
   try {
-    const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: false,
-    });
-
-    // 将获取的媒体流设置到视频元素
-    if (desktop.value) {
-      desktop.value.srcObject = stream;
+    const response = await axios.post('http://localhost:5000/run-code', { code });
+    console.log('Server response:', response.data);
+    showTerminal.value = true; 
+    if (response.data.output) {
+      terminalContent.value = response.data.output;
+    } else if (response.data.error) {
+      terminalContent.value = response.data.error;
     } else {
-      console.error('Video element not found');
+      terminalContent.value = 'No output or error received from server';
     }
   } catch (error) {
-    console.error('Error starting screen sharing:', error);
+    console.error('Error running code:', error.message);
+    terminalContent.value = '运行代码时发生错误：' + error.message;
+    showTerminal.value = true; 
   }
 };
-
-// 鼠标按下事件处理
-const mouseDown = (e: MouseEvent) => {
-  sendMouseEvent(e.x, e.y, mouseType(MouseStatus.MOUSE_DOWN, e.button));
+const closeTerminal = () => {
+  showTerminal.value = false;
 };
-
-// 鼠标松开事件处理
-const mouseUp = (e: MouseEvent) => {
-  sendMouseEvent(e.x, e.y, mouseType(MouseStatus.MOUSE_UP, e.button));
-};
-
-// 滚轮事件处理
-const wheel = (e: WheelEvent) => {
-  let type = e.deltaY > 0 ? WheelStatus.WHEEL_UP : WheelStatus.WHEEL_DOWN;
-  sendMouseEvent(e.x, e.y, type);
-};
-
-// 鼠标移动事件处理
-const mouseMove = (e: MouseEvent) => {
-  sendMouseEvent(e.x, e.y, MouseStatus.MOUSE_MOVE);
-};
-
-// 鼠标右键单击事件处理
-const rightClick = (e: MouseEvent) => {
-  sendMouseEvent(e.x, e.y, MouseStatus.RIGHT_CLICK);
-};
-
-// 发送鼠标事件
-const sendMouseEvent = (x: number, y: number, eventType: string) => {
-  if (remoteDesktopDpi) {
-    let widthRatio = remoteDesktopDpi.width / desktop.value!.clientWidth;
-    let heightRatio = remoteDesktopDpi.height / desktop.value!.clientHeight;
-
-    let data = {
-      x: parseInt((x * widthRatio).toFixed(0)),
-      y: parseInt((y * heightRatio).toFixed(0)),
-      eventType: eventType,
-    };
-    sendToClient({
-      type: InputEventType.MOUSE_EVENT,
-      data: data,
-    });
-  }
-};
-const sendToClient = (msg: Record<string, any>) => {
-  let msgJSON = JSON.stringify(msg);
-  dc.readyState == "open" && dc.send(msgJSON);
-};
-// 获取鼠标事件类型
-const mouseType = (mouseStatus: MouseStatus, button: number) => {
-  let type = "";
-  switch (button) {
-    case 0:
-      type = "left-" + mouseStatus;
-      break;
-    case 2:
-      type = "right-" + mouseStatus;
-      break;
-    // TODO 更多的按钮
-  }
-
-  return type;
-};
-
 </script>
 
 <template>
-
-  <MonacoTreeEditor
-    :font-size="16"
-    :files="files"
-    :sider-min-width="240"
-    filelist-title="源代码存储管理库"
-    language="en-US"
-    @reload="handleReload"
-    @new-file="handleNewFile"
-    @new-folder="handleNewFolder"
-    @save-file="handleSaveFile"
-    @delete-file="handleDeleteFile"
-    @delete-folder="handleDeleteFolder"
-    @rename-file="handleRename"
-    @rename-folder="handleRename"
-    :file-menu="fileMenu"
-    :folder-menu="folderMenu"
-    @contextmenu-select="handleContextMenuSelect"
-    :settings-menu="settingsMenu"
-    @drag-in-editor="handleDragInEditor"
-    ref="editorRef"
-  >
-</MonacoTreeEditor>
-
-/*没改好的video和button */
-<!-- <video ref="desktop" width=640 height=480   class="resizable-video" style="background-color: black;" 
-@mousedown="mouseDown($event)" @mouseup="mouseUp($event)"
-    @mousemove="mouseMove($event)" @wheel="wheel($event)" @contextmenu.prevent="rightClick($event)" autoplay></video>
-
-<button @click="startScreenSharing">共享</button> -->
-
+  <div class="editor-container">
+    <MonacoTreeEditor
+      :font-size="14"
+      :files="files"
+      :sider-min-width="240"
+      filelist-title="os-9-IDE"
+      language="python"
+      @reload="handleReload"
+      @new-file="handleNewFile"
+      @new-folder="handleNewFolder"
+      @save-file="handleSaveFile"
+      @delete-file="handleDeleteFile"
+      @delete-folder="handleDeleteFolder"
+      @rename-file="handleRename"
+      @rename-folder="handleRename"
+      :file-menu="fileMenu"
+      :folder-menu="folderMenu"
+      @contextmenu-select="handleContextMenuSelect"
+      :settings-menu="settingsMenu"
+      @drag-in-editor="handleDragInEditor"
+      ref="editorRef"
+    ></MonacoTreeEditor>
+    <button class="run-button" @click="runCode"></button>
+    <div v-if="showTerminal" class="terminal-container">
+      <div class="terminal-header">
+        <span>终端</span>
+        <button class="close-button" @click="closeTerminal">❌</button>
+      </div>
+      <div class="terminal-body">
+        <pre>{{ terminalContent }}</pre>
+      </div>
+    </div>
+  </div>
 </template>
 
+
 <style>
-/* 添加可拉伸样式类 */
-.resizable-video {
-  resize: both;  /* 允许水平和垂直拉伸 */
-  overflow: hidden;  /* 隐藏溢出部分 */
-  border: 1px solid #ccc;  /* 添加边框 */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+}
+
+.monaco-tree-editor {
+  flex: 1;
+}
+
+.run-button {
+  margin: 10px;
+  position: absolute;
+  top: -10px;
+  left: 180px; 
+  background-color: transparent;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.run-button::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 20px solid rgb(8, 190, 8);
+  transform: rotate(90deg);
+  margin-right: 5px;
+}
+
+.run-button:hover::before {
+  border-bottom-color: darkgreen;
+}
+
+.output-container {
+  background-color: rgb(37, 37, 37);
+  color: #d4d4d4;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.terminal-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 180px; 
+  background-color: #1e1e1e; 
+  color: #d4d4d4; 
+  border-top: 1px solid #333;
+  box-sizing: border-box;
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: -10px 10px;
+  background-color: #2d2d2d; 
+  border-bottom: 1px solid #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #d4d4d4;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.close-button:hover {
+  color: #ff5555;
+}
+
+.terminal-body {
+  padding: 10px;
+  overflow-y: auto;
+}
+
 </style>
