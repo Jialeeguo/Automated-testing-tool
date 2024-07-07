@@ -1,7 +1,11 @@
 <script setup lang="ts">
 // @ts-ignore
 import { Editor as MonacoTreeEditor, useMessage, useHotkey, useMonaco, type Files } from '~lib'
-import { ComputedRef, onMounted, ref, nextTick,  } from 'vue'
+import { ComputedRef} from 'vue'
+import { onMounted, ref } from 'vue';
+
+
+let monacoStore;
 import * as monaco from 'monaco-editor'
 // @ts-ignore
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
@@ -12,11 +16,67 @@ import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 // @ts-ignore
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
 // @ts-ignore
+
 import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
-// @ts-ignore
 import * as server from './mock-server'
 // @ts-ignore
 import axios from 'axios'
+import {
+  MouseStatus,
+  WheelStatus,
+  KeyboardStatus,
+  MessageType,
+  InputEventType,
+} from "../common/Constans";
+
+let remoteDesktopDpi: Record<string, any>;
+let dc: RTCDataChannel;
+onMounted(() => {
+  monacoStore = useMonaco(monaco);
+});
+const insertCode = async (codeType: string) => {
+  const editor = monacoStore.getEditor();
+  const position = editor.getPosition();
+  let codeSnippet = '';
+  switch (codeType) {
+    case 'screenshot':
+      try {
+        const response = await axios.post('http://localhost:5000/api/capture-and-crop');
+        const imagePath = response.data.path;
+        codeSnippet = `screenshot_path = "${imagePath}"\n`; // 插入截图路径
+      } catch (error) {
+        console.error('截图错误:', error);
+      }
+      break;
+    case 'location':
+      codeSnippet = 'location()\n';
+      break;
+    case 'click':
+      codeSnippet = 'click()\n';
+      break;
+    case 'doubleclick':
+      codeSnippet = 'doubleClick()\n';
+      break;
+    case 'exist':
+      codeSnippet = 'exist()\n';
+      break;
+    case 'input':
+      codeSnippet = 'input()\n';
+      break;
+    case 'type':
+      codeSnippet = 'type()\n';
+      break;
+    case 'sleep':
+      codeSnippet = 'sleep()';
+      break;
+    default:
+      break;
+  }
+  editor.executeEdits('', [{
+    range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+    text: codeSnippet,
+  }]);
+};
 // ================ 初始化 init monaco-tree-editor ================
 window.MonacoEnvironment = {
   getWorker: function (_moduleId, label: string) {
@@ -28,6 +88,9 @@ window.MonacoEnvironment = {
       return new htmlWorker()
     } else if (label === 'css' || label === 'scss' || label === 'less') {
       return new cssWorker()
+    } else if (label === 'python') { 
+      // @ts-ignore
+      return new pythonWorker()
     }
     return new editorWorker()
   },
@@ -44,113 +107,18 @@ onMounted(() => {
   const id = messageStore.info({
     content: 'testing..',
     loading: true,
-  });
+  })
   setTimeout(() => {
-    messageStore.close(id);
+    messageStore.close(id)
     messageStore.success({
       content: 'Hello Editor',
       closeable: true,
       timeoutMs: 15000,
       textTip: 'testing successed!',
-    });
-  }, 5000);
+    })
+  }, 5000)
+})
 
-  // 配置Python语言
-  monaco.languages.register({ id: 'python' });
-  monaco.languages.setMonarchTokensProvider('python', {
-    keywords: ['import', 'from', 'def', 'class', 'if', 'else', 'elif', 'return', 'for', 'while', 'try', 'except', 'finally', 'with', 'as', 'pass', 'break', 'continue', 'yield', 'lambda', 'global', 'nonlocal', 'assert', 'del', 'print'],
-    operators: ['+', '-', '*', '**', '/', '//', '%', '@', '<<', '>>', '&', '|', '^', '~', ':', '=', '+=', '-=', '*=', '/=', '//=', '%=', '@=', '&=', '|=', '^=', '>>=', '<<=', '**='],
-    brackets: [
-      { open: '(', close: ')', token: 'delimiter.parenthesis' },
-      { open: '[', close: ']', token: 'delimiter.square' },
-      { open: '{', close: '}', token: 'delimiter.curly' }
-    ],
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
-    tokenizer: {
-      root: [
-        [/[a-zA-Z_]\w*/, {
-          cases: {
-            '@keywords': 'keyword',
-            '@default': 'identifier'
-          }
-        }],
-        { include: '@whitespace' },
-        [/[{}()\[\]]/, '@brackets'],
-        [/[<>](?!@symbols)/, '@brackets'],
-        [/!(?=([^=]|$))/, 'delimiter'],
-        [/@symbols/, {
-          cases: {
-            '@operators': 'operator',
-            '@default': ''
-          }
-        }],
-        [/@\s*[a-zA-Z_\$][\w\$]*/, 'type.identifier'],
-        [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-        [/0[xX][0-9a-fA-F]+/, 'number.hex'],
-        [/0[oO]?[0-7]+/, 'number.octal'],
-        [/0[bB][01]+/, 'number.binary'],
-        [/\d+/, 'number'],
-        [/[;,.]/, 'delimiter'],
-        [/"([^"\\]|\\.)*$/, 'string.invalid'],
-        [/'([^'\\]|\\.)*$/, 'string.invalid'],
-        [/'([^'\\]|\\.)*$/, 'string.invalid'],
-        [/"/, 'string', '@string_double'],
-        [/'/, 'string', '@string_single']
-      ],
-      whitespace: [
-        [/[ \t\r\n]+/, ''],
-        [/(^#.*$)/, 'comment'],
-      ],
-      string_double: [
-        [/[^\\"]+/, 'string'],
-        [/\\./, 'string.escape'],
-        [/"/, 'string', '@pop']
-      ],
-      string_single: [
-        [/[^\\']+/, 'string'],
-        [/\\./, 'string.escape'],
-        [/'/, 'string', '@pop']
-      ],
-    },
-  });
-
-  monaco.languages.setLanguageConfiguration('python', {
-    comments: {
-      lineComment: '#'
-    },
-    brackets: [
-      ['{', '}'],
-      ['[', ']'],
-      ['(', ')']
-    ],
-    autoClosingPairs: [
-      { open: '{', close: '}' },
-      { open: '[', close: ']' },
-      { open: '(', close: ')' },
-      { open: '"', close: '"' },
-      { open: "'", close: "'" }
-    ]
-  });
-
-  nextTick(() => {
-    const container = document.getElementById('editor-container');
-    if (container) {
-      const editorInstance = monaco.editor.create(container, {
-        value: '',
-        language: 'python'
-      });
-
-      // 加载文件内容并更新编辑器
-      axios.get('/path/to/python/file').then(response => {
-        editorInstance.setValue(response.data);
-      }).catch(error => {
-        console.error('Error fetching file:', error);
-      });
-    } else {
-      console.error('Container element not found. Monaco editor instance not created.');
-    }
-  });
-});
 // ================ 快捷键 hotkey ==================
 const hotkeyStore = useHotkey()
 hotkeyStore.listen('root', (event: KeyboardEvent) => { })
@@ -163,9 +131,8 @@ hotkeyStore.listen('editor', (event: KeyboardEvent) => {
 // ================ 加载文件 load files ================
 const files = ref<Files>()
 const output = ref('')
-const showTerminal = ref(true);
-const terminalContent = ref('');
-let monacoStore
+const showTerminal = ref(true); 
+const terminalContent = ref(''); 
 const handleReload = (resolve: () => void, reject: (msg?: string) => void) => {
   server
     .fetchFiles()
@@ -300,7 +267,7 @@ const runCode = async () => {
   try {
     const response = await axios.post('http://localhost:5000/run-code', { code });
     console.log('Server response:', response.data);
-    showTerminal.value = true;
+    showTerminal.value = true; 
     if (response.data.output) {
       terminalContent.value = response.data.output;
     } else if (response.data.error) {
@@ -311,7 +278,7 @@ const runCode = async () => {
   } catch (error) {
     console.error('Error running code:', error.message);
     terminalContent.value = '运行代码时发生错误：' + error.message;
-    showTerminal.value = true;
+    showTerminal.value = true; 
   }
 };
 const closeTerminal = () => {
@@ -321,32 +288,54 @@ const closeTerminal = () => {
 
 <template>
   <div class="editor-container">
-    <MonacoTreeEditor :font-size="14" :files="files" :sider-min-width="240" filelist-title="os-9-IDE" language="python"
-      @reload="handleReload" @new-file="handleNewFile" @new-folder="handleNewFolder" @save-file="handleSaveFile"
-      @delete-file="handleDeleteFile" @delete-folder="handleDeleteFolder" @rename-file="handleRename"
-      @rename-folder="handleRename" :file-menu="fileMenu" :folder-menu="folderMenu"
-      @contextmenu-select="handleContextMenuSelect" :settings-menu="settingsMenu" @drag-in-editor="handleDragInEditor"
-      ref="editorRef"></MonacoTreeEditor>
+    <MonacoTreeEditor
+      :font-size="14"
+      :files="files"
+      :sider-min-width="240"
+      filelist-title="os-9-IDE"
+      language="python"
+      @reload="handleReload"
+      @new-file="handleNewFile"
+      @new-folder="handleNewFolder"
+      @save-file="handleSaveFile"
+      @delete-file="handleDeleteFile"
+      @delete-folder="handleDeleteFolder"
+      @rename-file="handleRename"
+      @rename-folder="handleRename"
+      :file-menu="fileMenu"
+      :folder-menu="folderMenu"
+      @contextmenu-select="handleContextMenuSelect"
+      :settings-menu="settingsMenu"
+      @drag-in-editor="handleDragInEditor"
+      ref="editorRef"
+    ></MonacoTreeEditor>
     <button class="run-button" @click="runCode"></button>
-    <div v-if="showTerminal" class="terminal-container">
+    <div class="buttons-container">
+        <button @click="insertCode('screenshot')">screenshot</button>
+        <button @click="insertCode('location')">location</button>
+        <button @click="insertCode('click')">click</button>
+        <button @click="insertCode('doubleclick')">doubleClick</button>
+        <button @click="insertCode('exist')">exist</button>
+        <button @click="insertCode('input')">input</button>
+        <button @click="insertCode('type')">type</button>
+        <button @click="insertCode('sleep')">sleep</button>
+    </div>
+    <div v-if="showTerminal" class="terminal">
       <div class="terminal-header">
-        <span>输出</span>
-        <button class="close-button" @click="closeTerminal">❌</button>
+        <span>终端</span>
+        <button @click="closeTerminal">关闭</button>
       </div>
-      <div class="terminal-body">
-        <pre>{{ terminalContent }}</pre>
-      </div>
+      <pre>{{ terminalContent }}</pre>
     </div>
   </div>
 </template>
 
-
-
-<style>
+<style scoped>
 .container {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  background-color: #1e1e1e; /* 设置背景颜色为深色 */
 }
 
 .editor-container {
@@ -354,17 +343,85 @@ const closeTerminal = () => {
   flex-direction: column;
   flex: 1;
   position: relative;
+  background-color: #1e1e1e; /* 确保编辑器容器背景颜色与整个容器一致 */
 }
 
 .monaco-tree-editor {
   flex: 1;
+  background-color: #1e1e1e; /* 确保Monaco Tree Editor背景颜色与整个容器一致 */
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* 垂直居中按钮 */
+  padding: 10px;
+  background-color: #1e1e1e; /* 设置按钮容器背景色与终端一致 */
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  flex-shrink: 0; /* 禁止按钮容器收缩 */
+  width: 100%; /* 让按钮容器占满可用宽度 */
+  box-sizing: border-box; /* 确保内边距和边框包含在元素的总宽度和高度内 */
+}
+
+.buttons-container button {
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: #1e1e1e; /* 设置按钮背景色与终端一致 */
+  color: #ffffff; /* 设置按钮文本颜色为白色 */
+  flex: 1; /* 让按钮占据可用空间，自由延伸 */
+  margin-right: 5px; /* 按钮之间的间距 */
+  box-sizing: border-box; /* 确保内边距和边框包含在元素的总宽度和高度内 */
+}
+
+.buttons-container button:last-child {
+  margin-right: 0; /* 最后一个按钮没有右间距 */
+}
+
+.buttons-container button:hover {
+  background-color: #333; /* 鼠标悬停时的背景色 */
+}
+
+.terminal {
+  flex-shrink: 0; /* 禁止终端收缩 */
+  background-color: #1e1e1e;
+  color: #ffffff;
+  padding: 10px;
+  overflow-y: auto; /* 如果内容溢出，显示滚动条 */
+  height: 130px;
+  box-sizing: border-box; /* 确保内边距和边框包含在元素的总宽度和高度内 */
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #444;
+}
+
+.terminal-header button {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.terminal pre {
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: #1e1e1e;
+  padding: 10px;
+  margin: 0;
 }
 
 .run-button {
   margin: 10px;
   position: absolute;
   top: -10px;
-  left: 180px;
+  left: 180px; 
   background-color: transparent;
   border: none;
   padding: 10px 15px;
@@ -382,64 +439,12 @@ const closeTerminal = () => {
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-bottom: 20px solid rgb(8, 190, 8);
+  border-bottom: 20px solid rgb(8, 190, 8); /* 这里定义了绿色的三角形 */
   transform: rotate(90deg);
   margin-right: 5px;
 }
 
 .run-button:hover::before {
-  border-bottom-color: darkgreen;
-}
-
-.output-container {
-  background-color: rgb(37, 37, 37);
-  color: #d4d4d4;
-  padding: 10px;
-  border-top: 1px solid #ccc;
-  max-height: 200px;
-  overflow-y: auto;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.terminal-container {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 180px;
-  background-color: #1e1e1e;
-  color: #d4d4d4;
-  border-top: 1px solid #333;
-  box-sizing: border-box;
-}
-
-.terminal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: -10px 10px;
-  background-color: #2d2d2d;
-  border-bottom: 1px solid #333;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  color: #d4d4d4;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.close-button:hover {
-  color: #ff5555;
-}
-
-.terminal-body {
-  padding: 10px;
-  overflow-y: auto;
+  border-bottom-color: darkgreen; /* 鼠标悬停时改变三角形颜色 */
 }
 </style>
