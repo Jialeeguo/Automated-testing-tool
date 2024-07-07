@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // @ts-ignore
 import { Editor as MonacoTreeEditor, useMessage, useHotkey, useMonaco, type Files } from '~lib'
-import { ComputedRef, onMounted, ref } from 'vue'
+import { ComputedRef, onMounted, ref, nextTick,  } from 'vue'
 import * as monaco from 'monaco-editor'
 // @ts-ignore
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
@@ -12,22 +12,11 @@ import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 // @ts-ignore
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
 // @ts-ignore
-
 import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
+// @ts-ignore
 import * as server from './mock-server'
 // @ts-ignore
 import axios from 'axios'
-import {
-  MouseStatus,
-  WheelStatus,
-  KeyboardStatus,
-  MessageType,
-  InputEventType,
-} from "../common/Constans";
-
-let remoteDesktopDpi: Record<string, any>;
-let dc: RTCDataChannel;
-
 // ================ 初始化 init monaco-tree-editor ================
 window.MonacoEnvironment = {
   getWorker: function (_moduleId, label: string) {
@@ -39,9 +28,6 @@ window.MonacoEnvironment = {
       return new htmlWorker()
     } else if (label === 'css' || label === 'scss' || label === 'less') {
       return new cssWorker()
-    } else if (label === 'python') { 
-      // @ts-ignore
-      return new pythonWorker()
     }
     return new editorWorker()
   },
@@ -58,18 +44,113 @@ onMounted(() => {
   const id = messageStore.info({
     content: 'testing..',
     loading: true,
-  })
+  });
   setTimeout(() => {
-    messageStore.close(id)
+    messageStore.close(id);
     messageStore.success({
       content: 'Hello Editor',
       closeable: true,
       timeoutMs: 15000,
       textTip: 'testing successed!',
-    })
-  }, 5000)
-})
+    });
+  }, 5000);
 
+  // 配置Python语言
+  monaco.languages.register({ id: 'python' });
+  monaco.languages.setMonarchTokensProvider('python', {
+    keywords: ['import', 'from', 'def', 'class', 'if', 'else', 'elif', 'return', 'for', 'while', 'try', 'except', 'finally', 'with', 'as', 'pass', 'break', 'continue', 'yield', 'lambda', 'global', 'nonlocal', 'assert', 'del', 'print'],
+    operators: ['+', '-', '*', '**', '/', '//', '%', '@', '<<', '>>', '&', '|', '^', '~', ':', '=', '+=', '-=', '*=', '/=', '//=', '%=', '@=', '&=', '|=', '^=', '>>=', '<<=', '**='],
+    brackets: [
+      { open: '(', close: ')', token: 'delimiter.parenthesis' },
+      { open: '[', close: ']', token: 'delimiter.square' },
+      { open: '{', close: '}', token: 'delimiter.curly' }
+    ],
+    symbols: /[=><!~?:&|+\-*\/\^%]+/,
+    tokenizer: {
+      root: [
+        [/[a-zA-Z_]\w*/, {
+          cases: {
+            '@keywords': 'keyword',
+            '@default': 'identifier'
+          }
+        }],
+        { include: '@whitespace' },
+        [/[{}()\[\]]/, '@brackets'],
+        [/[<>](?!@symbols)/, '@brackets'],
+        [/!(?=([^=]|$))/, 'delimiter'],
+        [/@symbols/, {
+          cases: {
+            '@operators': 'operator',
+            '@default': ''
+          }
+        }],
+        [/@\s*[a-zA-Z_\$][\w\$]*/, 'type.identifier'],
+        [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+        [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+        [/0[oO]?[0-7]+/, 'number.octal'],
+        [/0[bB][01]+/, 'number.binary'],
+        [/\d+/, 'number'],
+        [/[;,.]/, 'delimiter'],
+        [/"([^"\\]|\\.)*$/, 'string.invalid'],
+        [/'([^'\\]|\\.)*$/, 'string.invalid'],
+        [/'([^'\\]|\\.)*$/, 'string.invalid'],
+        [/"/, 'string', '@string_double'],
+        [/'/, 'string', '@string_single']
+      ],
+      whitespace: [
+        [/[ \t\r\n]+/, ''],
+        [/(^#.*$)/, 'comment'],
+      ],
+      string_double: [
+        [/[^\\"]+/, 'string'],
+        [/\\./, 'string.escape'],
+        [/"/, 'string', '@pop']
+      ],
+      string_single: [
+        [/[^\\']+/, 'string'],
+        [/\\./, 'string.escape'],
+        [/'/, 'string', '@pop']
+      ],
+    },
+  });
+
+  monaco.languages.setLanguageConfiguration('python', {
+    comments: {
+      lineComment: '#'
+    },
+    brackets: [
+      ['{', '}'],
+      ['[', ']'],
+      ['(', ')']
+    ],
+    autoClosingPairs: [
+      { open: '{', close: '}' },
+      { open: '[', close: ']' },
+      { open: '(', close: ')' },
+      { open: '"', close: '"' },
+      { open: "'", close: "'" }
+    ]
+  });
+
+  nextTick(() => {
+    const container = document.getElementById('editor-container');
+    if (container) {
+      const editorInstance = monaco.editor.create(container, {
+        value: '',
+        language: 'python'
+      });
+
+      // 加载文件内容并更新编辑器
+      axios.get('/path/to/python/file').then(response => {
+        editorInstance.setValue(response.data);
+      }).catch(error => {
+        console.error('Error fetching file:', error);
+      });
+    } else {
+      console.error('Container element not found. Monaco editor instance not created.');
+    }
+  });
+});
 // ================ 快捷键 hotkey ==================
 const hotkeyStore = useHotkey()
 hotkeyStore.listen('root', (event: KeyboardEvent) => { })
@@ -82,8 +163,8 @@ hotkeyStore.listen('editor', (event: KeyboardEvent) => {
 // ================ 加载文件 load files ================
 const files = ref<Files>()
 const output = ref('')
-const showTerminal = ref(true); 
-const terminalContent = ref(''); 
+const showTerminal = ref(true);
+const terminalContent = ref('');
 let monacoStore
 const handleReload = (resolve: () => void, reject: (msg?: string) => void) => {
   server
@@ -219,7 +300,7 @@ const runCode = async () => {
   try {
     const response = await axios.post('http://localhost:5000/run-code', { code });
     console.log('Server response:', response.data);
-    showTerminal.value = true; 
+    showTerminal.value = true;
     if (response.data.output) {
       terminalContent.value = response.data.output;
     } else if (response.data.error) {
@@ -230,7 +311,7 @@ const runCode = async () => {
   } catch (error) {
     console.error('Error running code:', error.message);
     terminalContent.value = '运行代码时发生错误：' + error.message;
-    showTerminal.value = true; 
+    showTerminal.value = true;
   }
 };
 const closeTerminal = () => {
@@ -240,31 +321,16 @@ const closeTerminal = () => {
 
 <template>
   <div class="editor-container">
-    <MonacoTreeEditor
-      :font-size="14"
-      :files="files"
-      :sider-min-width="240"
-      filelist-title="os-9-IDE"
-      language="python"
-      @reload="handleReload"
-      @new-file="handleNewFile"
-      @new-folder="handleNewFolder"
-      @save-file="handleSaveFile"
-      @delete-file="handleDeleteFile"
-      @delete-folder="handleDeleteFolder"
-      @rename-file="handleRename"
-      @rename-folder="handleRename"
-      :file-menu="fileMenu"
-      :folder-menu="folderMenu"
-      @contextmenu-select="handleContextMenuSelect"
-      :settings-menu="settingsMenu"
-      @drag-in-editor="handleDragInEditor"
-      ref="editorRef"
-    ></MonacoTreeEditor>
+    <MonacoTreeEditor :font-size="14" :files="files" :sider-min-width="240" filelist-title="os-9-IDE" language="python"
+      @reload="handleReload" @new-file="handleNewFile" @new-folder="handleNewFolder" @save-file="handleSaveFile"
+      @delete-file="handleDeleteFile" @delete-folder="handleDeleteFolder" @rename-file="handleRename"
+      @rename-folder="handleRename" :file-menu="fileMenu" :folder-menu="folderMenu"
+      @contextmenu-select="handleContextMenuSelect" :settings-menu="settingsMenu" @drag-in-editor="handleDragInEditor"
+      ref="editorRef"></MonacoTreeEditor>
     <button class="run-button" @click="runCode"></button>
     <div v-if="showTerminal" class="terminal-container">
       <div class="terminal-header">
-        <span>终端</span>
+        <span>输出</span>
         <button class="close-button" @click="closeTerminal">❌</button>
       </div>
       <div class="terminal-body">
@@ -273,6 +339,7 @@ const closeTerminal = () => {
     </div>
   </div>
 </template>
+
 
 
 <style>
@@ -297,7 +364,7 @@ const closeTerminal = () => {
   margin: 10px;
   position: absolute;
   top: -10px;
-  left: 180px; 
+  left: 180px;
   background-color: transparent;
   border: none;
   padding: 10px 15px;
@@ -343,9 +410,9 @@ const closeTerminal = () => {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 180px; 
-  background-color: #1e1e1e; 
-  color: #d4d4d4; 
+  height: 180px;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
   border-top: 1px solid #333;
   box-sizing: border-box;
 }
@@ -355,7 +422,7 @@ const closeTerminal = () => {
   justify-content: space-between;
   align-items: center;
   padding: -10px 10px;
-  background-color: #2d2d2d; 
+  background-color: #2d2d2d;
   border-bottom: 1px solid #333;
 }
 
@@ -375,5 +442,4 @@ const closeTerminal = () => {
   padding: 10px;
   overflow-y: auto;
 }
-
 </style>
